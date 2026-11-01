@@ -20,5 +20,27 @@
   "credit": "\"Pluto color mapmosaic\" by NASA / Johns Hopkins University Applied Physics Laboratory…, public domain, via Wikimedia Commons",
   "notes": [],
   "saved": "2026-11-01T19:09:42.076Z"
+ },
+ {
+  "file": "photos/textures/venus-radar.jpg",
+  "media": "image",
+  "ref": "commons:42608581",
+  "title": "Cylindrical Map of Venus",
+  "creator": "NASA / Jet Propulsion Laboratory",
+  "creatorUrl": null,
+  "date": "1994-10-12",
+  "license": "public domain",
+  "licenseCode": "pd",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "creditRequired": false,
+  "page": "https://commons.wikimedia.org/wiki/File:Cylindrical_Map_of_Venus.jpg",
+  "via": "Wikimedia Commons",
+  "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/19/Cylindrical_Map_of_Venus.jpg/3840px-Cylindrical_Map_of_Venus.jpg",
+  "width": 3840,
+  "height": 1920,
+  "bytes": 2360054,
+  "credit": "\"Cylindrical Map of Venus\" by NASA / Jet Propulsion Laboratory, public domain, via Wikimedia Commons",
+  "notes": [],
+  "saved": "2026-11-01T19:39:30.064Z"
  }
 ]

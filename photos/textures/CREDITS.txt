@@ -2,3 +2,4 @@
 Лицензия: Creative Commons Attribution 4.0 International (CC BY 4.0).
 Файлы уменьшены и пересжаты для сайта.
 Карта Плутона (pluto-map.jpg): NASA/JHUAPL/SwRI, New Horizons, общественное достояние, через Wikimedia Commons. Источник в credits.json.
+Радарная карта Венеры (venus-radar.jpg): NASA/JPL, Magellan, общественное достояние, через Wikimedia Commons. Края карты на 240° в. д.
