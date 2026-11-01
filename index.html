@@ -1,0 +1,1062 @@
+<title>Небо для Насти</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#0c0b17">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400;1,500&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  /* layout: одна колонка ночного неба; главный экран — созвездие из 7 звёзд, главы открываются листами поверх неба */
+  :root {
+    --ink: #0c0b17;
+    --ink-2: #16142a;
+    --ink-3: #1f1c38;
+    --line: rgba(236, 226, 255, 0.12);
+    --line-2: rgba(236, 226, 255, 0.22);
+    --star: #f4eeff;
+    --muted: #9a92b6;
+    --rose: #f3a6c4;
+    --gold: #f2cf86;
+    --lilac: #b9a4ff;
+    --mint: #9fe0c9;
+    --danger: #ff8fa3;
+    --display: "Cormorant Garamond", "Times New Roman", Georgia, serif;
+    --body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --r: 18px;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--star);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.55;
+    overflow-x: hidden;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 8px; }
+
+  #sky, #fx { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #sky { z-index: 0; }
+  #fx { z-index: 60; pointer-events: none; }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-block: 28px 40px;
+  }
+  .screen { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 20px; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1, h2, h3 { font-family: var(--display); font-weight: 500; margin: 0; text-wrap: balance; line-height: 1.1; }
+  h1 { font-size: 44px; font-style: italic; }
+  h2 { font-size: 36px; font-style: italic; }
+  h3 { font-size: 22px; }
+  p { margin: 0; }
+  .lede { color: var(--muted); font-size: 15px; max-width: 34ch; }
+  .story { font-family: var(--display); font-size: 21px; line-height: 1.4; color: var(--star); }
+  .story em { color: var(--rose); }
+
+  .sheet {
+    background: color-mix(in srgb, var(--ink-2) 82%, transparent);
+    border: 1px solid var(--line);
+    border-radius: 26px;
+    padding: 24px 20px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field label { font-size: 13px; color: var(--muted); }
+  input[type="text"] {
+    width: 100%;
+    height: 52px;
+    border-radius: 14px;
+    border: 1px solid var(--line-2);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--star);
+    font: 500 17px var(--body);
+    padding: 0 16px;
+    outline: none;
+    transition: border-color .2s, background .2s;
+  }
+  input[type="text"]:focus { border-color: var(--rose); background: rgba(255, 255, 255, 0.07); }
+  input.bad { border-color: var(--danger); }
+
+  .btn {
+    height: 52px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--star);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 0 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform .15s, opacity .2s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn.ghost { background: transparent; color: var(--star); border: 1px solid var(--line-2); }
+  .btn.small { height: 38px; font-size: 13px; padding: 0 14px; border-radius: 12px; }
+  .link-btn { background: none; border: 0; color: var(--rose); font-size: 13px; cursor: pointer; padding: 4px 0; align-self: flex-start; }
+  .msg { min-height: 20px; font-size: 13px; color: var(--danger); }
+  .hint-box { font-size: 14px; color: var(--gold); border-left: 2px solid var(--gold); padding: 4px 0 4px 12px; }
+
+  /* ---------- Небо (хаб) ---------- */
+  .hub-head { display: flex; flex-direction: column; gap: 6px; }
+  .hub-head .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .progress { font-family: var(--mono); font-size: 12px; color: var(--gold); white-space: nowrap; }
+  .sky-map { width: 100%; max-width: 100%; aspect-ratio: 100 / 118; position: relative; }
+  .sky-map svg { width: 100%; height: 100%; overflow: visible; display: block; }
+  .node { cursor: pointer; outline: none; }
+  .node .halo { transition: opacity .4s; }
+  .node text { font-family: var(--mono); font-size: 3px; letter-spacing: 0.08em; fill: var(--muted); text-anchor: middle; }
+  .node .ttl { font-family: var(--display); font-style: italic; font-size: 4.4px; letter-spacing: 0; fill: var(--star); }
+  .node.locked .ttl { fill: var(--muted); }
+  .node:focus-visible .ring { stroke: var(--gold); stroke-width: .6; }
+  .words {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    min-height: 34px;
+  }
+  .word-chip {
+    font-family: var(--display); font-style: italic; font-size: 20px;
+    padding: 2px 12px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--gold);
+  }
+  .word-chip.empty { color: var(--muted); border-style: dashed; min-width: 56px; text-align: center; }
+
+  .toast {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    width: min(420px, calc(100% - 32px));
+    background: var(--ink-3); border: 1px solid var(--line-2); border-radius: 18px;
+    padding: 14px 16px; z-index: 70; display: flex; gap: 12px; align-items: center; justify-content: space-between;
+  }
+  .toast b { font-family: var(--mono); font-weight: 500; color: var(--gold); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Глава ---------- */
+  .ch-top { display: flex; align-items: center; justify-content: space-between; }
+  .back { background: none; border: 0; color: var(--muted); font-size: 14px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; padding: 6px 0; }
+  .ch-head { display: flex; flex-direction: column; gap: 10px; }
+  .stage { display: flex; flex-direction: column; gap: 16px; align-items: stretch; }
+
+  /* 1. соедини звёзды */
+  .dots-wrap { width: 100%; max-width: 360px; align-self: center; aspect-ratio: 1 / 0.95; }
+  .dots-wrap svg { width: 100%; height: 100%; display: block; overflow: visible; touch-action: manipulation; }
+  .dot circle.hit { fill: transparent; cursor: pointer; }
+  .dot text { font-family: var(--mono); font-size: 9px; fill: var(--muted); text-anchor: middle; pointer-events: none; }
+
+  /* 2. пятнашки */
+  .slide {
+    position: relative; width: 100%; max-width: 330px; aspect-ratio: 1; align-self: center;
+    border-radius: 16px; overflow: hidden; background: var(--ink-3); border: 1px solid var(--line-2);
+    touch-action: manipulation;
+  }
+  .tile {
+    position: absolute; width: calc(100% / 3); height: calc(100% / 3);
+    border: 0; padding: 0; cursor: pointer;
+    background-size: 300% 300%;
+    box-shadow: inset 0 0 0 1px rgba(12, 11, 23, .55);
+    transition: transform .22s cubic-bezier(.2, .8, .2, 1);
+  }
+  .slide.solved .tile { box-shadow: none; }
+  .tile-num { position: absolute; top: 4px; left: 6px; font: 500 10px var(--mono); color: rgba(255,255,255,.75); text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+  .slide.solved .tile-num { opacity: 0; }
+
+  /* 4. мемори */
+  .mem { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .card { aspect-ratio: 3 / 4; perspective: 600px; border: 0; background: none; padding: 0; cursor: pointer; }
+  .card-in { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .45s cubic-bezier(.2, .8, .2, 1); }
+  .card.open .card-in, .card.got .card-in { transform: rotateY(180deg); }
+  .face { position: absolute; inset: 0; border-radius: 12px; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: grid; place-items: center; overflow: hidden; }
+  .face.back-f { background: var(--ink-3); border: 1px solid var(--line-2); }
+  .face.back-f::after { content: ""; width: 10px; height: 10px; background: var(--lilac); transform: rotate(45deg); opacity: .6; box-shadow: 0 0 12px var(--lilac); }
+  .face.front { transform: rotateY(180deg); background: var(--star); color: var(--ink); font-size: 30px; }
+  .face.front img { width: 100%; height: 100%; object-fit: cover; }
+  .card.got .face.front { box-shadow: 0 0 0 2px var(--gold), 0 0 18px rgba(242, 207, 134, .5); }
+
+  /* 5. шифр */
+  .cipher-line { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .cchip { font-family: var(--mono); font-size: 18px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line-2); color: var(--gold); min-width: 52px; text-align: center; }
+  .grid-wrap { overflow-x: auto; }
+  table.poly { border-collapse: collapse; margin: 0 auto; font-family: var(--mono); font-size: 14px; }
+  table.poly th, table.poly td { width: 40px; height: 36px; text-align: center; border: 1px solid var(--line); }
+  table.poly th { color: var(--lilac); font-weight: 500; }
+  table.poly th.greek { font-family: var(--display); font-size: 20px; font-style: italic; }
+
+  /* 6. мелодия */
+  .pads { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 320px; width: 100%; align-self: center; }
+  .pad { aspect-ratio: 1; border-radius: 24px; border: 1px solid var(--line-2); background: var(--ink-3); cursor: pointer; position: relative; transition: transform .1s; }
+  .pad::after { content: ""; position: absolute; inset: 22%; border-radius: 50%; background: var(--c); opacity: .22; transition: opacity .15s, box-shadow .15s; }
+  .pad.lit::after { opacity: 1; box-shadow: 0 0 40px var(--c); }
+  .pad:active { transform: scale(.96); }
+  .pads.wait .pad { pointer-events: none; }
+  .round { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+
+  /* 7. финал */
+  .answer-line { min-height: 56px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; padding: 10px; border-radius: 16px; border: 1px dashed var(--line-2); }
+  .pool { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .wtile { font-family: var(--display); font-style: italic; font-size: 22px; padding: 4px 14px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--ink-3); cursor: pointer; color: var(--star); }
+  .answer-line .wtile { color: var(--gold); border-color: rgba(242, 207, 134, .5); }
+  .letter { display: flex; flex-direction: column; gap: 14px; font-family: var(--display); font-size: 21px; line-height: 1.45; }
+  .letter .sig { font-style: italic; color: var(--rose); text-align: right; }
+
+  /* ---------- Награда ---------- */
+  .reward { display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: center; }
+  .got-word { font-family: var(--display); font-style: italic; font-size: 54px; color: var(--gold); line-height: 1; text-shadow: 0 0 30px rgba(242, 207, 134, .35); }
+  .got-word span { display: inline-block; }
+  .coupon { position: relative; width: 100%; max-width: 340px; border-radius: 18px; overflow: hidden; }
+  .coupon-in {
+    background: var(--star); color: var(--ink); padding: 22px 18px; min-height: 140px;
+    display: flex; flex-direction: column; gap: 8px; justify-content: center; align-items: center;
+    background-image: radial-gradient(circle at 0 50%, var(--ink-2) 10px, transparent 11px), radial-gradient(circle at 100% 50%, var(--ink-2) 10px, transparent 11px);
+  }
+  .coupon-in .eyebrow { color: #6d6488; }
+  .coupon-text { font-family: var(--display); font-size: 25px; font-weight: 600; line-height: 1.15; text-wrap: balance; }
+  .coupon-note { font-size: 12px; color: #6d6488; }
+  .foil { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+
+  /* ---------- Режим разработчика ---------- */
+  .dev { border: 1px dashed var(--gold); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
+  .dev code { font-family: var(--mono); font-size: 11px; word-break: break-all; color: var(--gold); }
+  .dev .row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .shake { animation: shake .4s; }
+  @keyframes shake { 20%, 60% { transform: translateX(-7px); } 40%, 80% { transform: translateX(7px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<canvas id="fx" aria-hidden="true"></canvas>
+<main class="app" id="app"></main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* =====================================================================
+   НАСТРОЙКИ — всё, что нужно поменять под себя, находится здесь.
+   Ответы на загадки хранятся как SHA-256, чтобы их нельзя было
+   подсмотреть в коде. Хеш нового ответа: открой сайт с #dev в конце
+   адреса (index.html#dev) и введи слово в генератор внизу.
+   ===================================================================== */
+const CONFIG = {
+  herName: "Настя",
+  // День 1 открывается в этот день, дальше по одной главе каждый день
+  startDate: "2026-11-02",
+  unlockHour: 9, // во сколько утра загорается новая звезда
+
+  gate: {
+    question: "Как я называю тебя, когда никто не слышит?",
+    hint: "Ласково и с неба",
+    answerHash: "ce4935245b12ea11ad36ed4ff3e7950b40512d818c9da85fbf3d793cf304e456" // «звёздочка»
+  },
+
+  chapters: [
+    {
+      type: "dots",
+      title: "Первая звезда",
+      story: "Каждое созвездие начинается с одной звезды. Соедини их по порядку и посмотри, что получится.",
+      word: "ты",
+      coupon: "Завтрак, который готовлю я"
+    },
+    {
+      type: "slide",
+      title: "Осколки",
+      story: "Одна картинка рассыпалась на кусочки. Верни каждый на место: двигай плитки в пустую клетку.",
+      photo: "", // путь к вашей фотке, например "photos/us.jpg". Пусто — нарисую сам
+      word: "лучшее",
+      coupon: "Вечер фильмов, выбираешь ты"
+    },
+    {
+      type: "note",
+      title: "Записка",
+      story: "Сегодня звезда спрятана не на экране, а у тебя дома.",
+      riddle: "Там, где каждое утро начинается с горячей кружки, на самой верхней полке, за самой большой из них, тебя ждёт бумажка. Слово на ней и есть ключ.",
+      hint: "Кухня. Верхняя полка. Посмотри за кружками.",
+      answerHash: "fff5ef4543f69e461f8f83d0b489bc4cecfecdf75c8ca6c2ffb26971e5a97fae", // «рассвет»
+      word: "что",
+      coupon: "Прогулка туда, куда скажешь"
+    },
+    {
+      type: "memory",
+      title: "Пары",
+      story: "Здесь шесть пар маленьких вещей, из которых сложены наши дни. Найди все.",
+      // Можно эмодзи, слово или путь к фото: "photos/1.jpg"
+      cards: ["🌙", "☕", "🎧", "🎮", "🌸", "🍓"],
+      word: "со",
+      coupon: "Массаж, 30 минут без телефона"
+    },
+    {
+      type: "cipher",
+      title: "Звёздный шифр",
+      story: "Звёзды в созвездиях называют греческими буквами: α Лиры, β Ориона. Я зашифровал так одно слово.",
+      secret: "обними", // слово, которое она расшифрует (видно в коде, но таблица на экране всё равно его выдаёт)
+      after: "Это тоже задание. Выполнить в течение дня.",
+      word: "мной",
+      coupon: "Поездка за город на выходных"
+    },
+    {
+      type: "melody",
+      title: "Мелодия",
+      story: "Звёзды умеют звучать. Послушай, какие из них поют, и повтори за ними.",
+      rounds: 6,
+      word: "случалось",
+      coupon: "Плейлист, который я соберу только для тебя"
+    },
+    {
+      type: "final",
+      title: "Созвездие",
+      story: "Все звёзды на месте. Осталось сложить слова, которые они тебе оставили.",
+      letter: [
+        "Это небо я собирал для тебя неделю.",
+        "Каждая звезда здесь про то, как мне с тобой хорошо: по утрам, в дороге, за глупыми играми и под нашу музыку.",
+        "Спасибо, что ты есть. Я рядом, сегодня и дальше."
+      ],
+      signature: "Твой",
+      coupon: "Последняя звезда ждёт тебя в реальности: спроси меня о ней сегодня вечером"
+    }
+  ]
+};
+
+/* ===================================================================== */
+
+const $ = (s, r = document) => r.querySelector(s);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII"];
+const DEV = location.hash === "#dev";
+
+// gsap может не загрузиться — тогда просто без анимаций
+const G = window.gsap || {
+  to: (t, v) => { apply(t, v); v.onComplete && v.onComplete(); },
+  from: () => {}, fromTo: (t, a, b) => { apply(t, b); b.onComplete && b.onComplete(); },
+  set: (t, v) => apply(t, v), timeline: () => ({ to(){return this}, from(){return this}, add(){return this}, call(f){f();return this} })
+};
+function apply(t, v) { (typeof t === "string" ? document.querySelectorAll(t) : t.length != null ? t : [t]).forEach(n => { if (v.opacity != null) n.style.opacity = v.opacity; }); }
+if (window.gsap && REDUCED) gsap.globalTimeline.timeScale(20);
+
+/* ---------- хеши ---------- */
+const norm = s => String(s).toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9]/g, "");
+async function sha(s) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(norm(s)));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+window.sha = sha;
+
+/* ---------- прогресс ---------- */
+const KEY = "nebo-progress-v1";
+let state = { gate: false, done: [] };
+try { const raw = localStorage.getItem(KEY); if (raw) state = Object.assign(state, JSON.parse(raw)); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+const isDone = i => state.done.includes(i);
+
+function unlockTime(i) {
+  const [y, m, d] = CONFIG.startDate.split("-").map(Number);
+  return new Date(y, m - 1, d + i, CONFIG.unlockHour, 0, 0);
+}
+function status(i) {
+  if (isDone(i)) return "done";
+  if (i > 0 && !isDone(i - 1)) return DEV ? "open" : "blocked";
+  if (DEV || Date.now() >= unlockTime(i).getTime()) return "open";
+  return "locked";
+}
+function fmtLeft(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+  const p = n => String(n).padStart(2, "0");
+  return (d ? d + " д " : "") + p(h) + ":" + p(m) + ":" + p(sec);
+}
+
+/* ---------- звёздное небо ---------- */
+const sky = $("#sky"), sctx = sky.getContext("2d");
+const fxc = $("#fx"), fctx = fxc.getContext("2d");
+let W = 0, H = 0, DPR = 1, stars = [], ptr = { x: 0, y: 0, tx: 0, ty: 0 }, shoot = null;
+function resize() {
+  DPR = Math.min(2, devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  [sky, fxc].forEach(c => { c.width = W * DPR; c.height = H * DPR; });
+  sctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  fctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const n = Math.round(W * H / 3200);
+  stars = Array.from({ length: n }, () => ({ x: Math.random() * W, y: Math.random() * H, z: Math.random(), p: Math.random() * 6.28, s: .4 + Math.random() * 1.2 }));
+  if (REDUCED) drawSky(0);
+}
+addEventListener("resize", resize);
+addEventListener("pointermove", e => { ptr.tx = (e.clientX / W - .5); ptr.ty = (e.clientY / H - .5); }, { passive: true });
+
+function drawSky(t) {
+  ptr.x += (ptr.tx - ptr.x) * .04; ptr.y += (ptr.ty - ptr.y) * .04;
+  const g = sctx.createRadialGradient(W * .5, H * 1.1, 0, W * .5, H * 1.1, H * 1.2);
+  g.addColorStop(0, "#2a1f45"); g.addColorStop(.55, "#120f22"); g.addColorStop(1, "#0c0b17");
+  sctx.fillStyle = g; sctx.fillRect(0, 0, W, H);
+  for (const s of stars) {
+    const a = .35 + .65 * Math.abs(Math.sin(t * .0008 * (0.5 + s.z) + s.p));
+    const x = s.x - ptr.x * 18 * s.z, y = s.y - ptr.y * 18 * s.z;
+    sctx.globalAlpha = a * (.4 + s.z * .6);
+    sctx.fillStyle = s.z > .92 ? "#f2cf86" : s.z > .85 ? "#f3a6c4" : "#f4eeff";
+    sctx.beginPath(); sctx.arc(x, y, s.s * (.6 + s.z * .7), 0, 6.283); sctx.fill();
+  }
+  sctx.globalAlpha = 1;
+  if (!REDUCED) {
+    if (!shoot && Math.random() < .0025) shoot = { x: Math.random() * W * .8, y: Math.random() * H * .4, l: 0 };
+    if (shoot) {
+      shoot.l += 1;
+      const len = 90, k = shoot.l * 9;
+      const x1 = shoot.x + k, y1 = shoot.y + k * .45;
+      const gr = sctx.createLinearGradient(x1 - len, y1 - len * .45, x1, y1);
+      gr.addColorStop(0, "rgba(244,238,255,0)"); gr.addColorStop(1, "rgba(244,238,255,.9)");
+      sctx.strokeStyle = gr; sctx.lineWidth = 1.4;
+      sctx.beginPath(); sctx.moveTo(x1 - len, y1 - len * .45); sctx.lineTo(x1, y1); sctx.stroke();
+      if (shoot.l > 40) shoot = null;
+    }
+  }
+}
+
+/* ---------- частицы ---------- */
+let parts = [];
+const PCOL = ["#f2cf86", "#f3a6c4", "#f4eeff", "#b9a4ff"];
+function burst(x, y, n = 70) {
+  if (REDUCED) n = 16;
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * 6.283, v = 1.5 + Math.random() * 5;
+    parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5, life: 1, d: .012 + Math.random() * .015, s: 1 + Math.random() * 2.2, c: PCOL[i % 4], g: .06 });
+  }
+}
+function burstAt(node) { const r = node.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2); }
+function heartParticles(cx, cy, scale) {
+  const n = REDUCED ? 120 : 420;
+  for (let i = 0; i < n; i++) {
+    const t = Math.random() * 6.283;
+    const hx = 16 * Math.sin(t) ** 3, hy = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+    const f = .82 + Math.random() * .22;
+    parts.push({ x: Math.random() * W, y: Math.random() * H, tx: cx + hx * scale * f, ty: cy + hy * scale * f, life: 1, d: 0, s: .8 + Math.random() * 1.8, c: PCOL[i % 4], home: true, delay: Math.random() * 40, p: Math.random() * 6.28 });
+  }
+}
+function fadeHeart() { parts.forEach(p => { if (p.home) { p.home = false; p.vx = (Math.random() - .5) * 2; p.vy = -Math.random() * 2; p.d = .006 + Math.random() * .01; p.g = .01; } }); }
+function drawFx(t) {
+  fctx.clearRect(0, 0, W, H);
+  parts = parts.filter(p => p.life > 0);
+  for (const p of parts) {
+    if (p.home) {
+      if (p.delay > 0) { p.delay--; } else { p.x += (p.tx - p.x) * .06; p.y += (p.ty - p.y) * .06; }
+      fctx.globalAlpha = .55 + .45 * Math.sin(t * .004 + p.p);
+    } else {
+      p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= .985; p.life -= p.d;
+      fctx.globalAlpha = Math.max(0, p.life);
+    }
+    fctx.fillStyle = p.c;
+    fctx.beginPath(); fctx.arc(p.x, p.y, p.s, 0, 6.283); fctx.fill();
+  }
+  fctx.globalAlpha = 1;
+}
+function loop(t) { if (!REDUCED) drawSky(t); drawFx(t); requestAnimationFrame(loop); }
+
+/* ---------- переходы ---------- */
+const app = $("#app");
+function show(node) {
+  app.innerHTML = "";
+  app.appendChild(node);
+  scrollTo(0, 0);
+  G.from(node.children, { y: 18, opacity: 0, duration: .7, stagger: .08, ease: "power3.out" });
+}
+function shake(node) { node.classList.remove("shake"); void node.offsetWidth; node.classList.add("shake"); }
+
+let toastTimer = null;
+function toast(html, ms = 3500) {
+  const t = $("#toast");
+  clearInterval(toastTimer);
+  t.innerHTML = html; t.hidden = false;
+  G.fromTo(t, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: .35 });
+  clearTimeout(t._h);
+  t._h = setTimeout(() => { t.hidden = true; clearInterval(toastTimer); }, ms);
+  return t;
+}
+
+/* =====================================================================
+   ЭКРАН ВХОДА
+   ===================================================================== */
+function renderGate() {
+  const s = el("section", "screen");
+  s.innerHTML = `
+    <div class="hub-head">
+      <span class="eyebrow">Только для одного человека</span>
+      <h1>Небо, которое я собрал для тебя</h1>
+    </div>
+    <form class="sheet" id="gateForm" novalidate>
+      <div class="field">
+        <label for="gateIn">${esc(CONFIG.gate.question)}</label>
+        <input type="text" id="gateIn" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+      </div>
+      <button class="link-btn" type="button" id="gateHintBtn">Подсказка</button>
+      <p class="hint-box" id="gateHint" hidden>${esc(CONFIG.gate.hint)}</p>
+      <button class="btn" type="submit">Открыть небо</button>
+      <p class="msg" id="gateMsg" role="status"></p>
+    </form>`;
+  show(s);
+  $("#gateHintBtn").onclick = () => { $("#gateHint").hidden = false; $("#gateHintBtn").hidden = true; };
+  $("#gateForm").onsubmit = async e => {
+    e.preventDefault();
+    const inp = $("#gateIn");
+    if (await sha(inp.value) === CONFIG.gate.answerHash) {
+      state.gate = true; save();
+      burstAt(inp);
+      setTimeout(renderHub, 500);
+    } else {
+      inp.classList.add("bad");
+      $("#gateMsg").textContent = "Не то слово. Попробуй ещё раз.";
+      shake($("#gateForm"));
+    }
+  };
+  $("#gateIn").oninput = () => { $("#gateIn").classList.remove("bad"); $("#gateMsg").textContent = ""; };
+}
+
+/* =====================================================================
+   СОЗВЕЗДИЕ (ГЛАВНЫЙ ЭКРАН)
+   ===================================================================== */
+// точки складываются в сердце; DIP — ложбинка, закрывается после финала
+const POS = [[30, 24], [11, 46], [23, 77], [50, 106], [77, 77], [89, 46], [70, 24]];
+const DIP = [50, 40];
+
+function renderHub() {
+  const done = state.done.length;
+  const s = el("section", "screen");
+  const words = CONFIG.chapters.slice(0, 6).map((c, i) =>
+    isDone(i) ? `<span class="word-chip">${esc(c.word)}</span>` : `<span class="word-chip empty">·</span>`).join("");
+
+  let lines = "";
+  for (let i = 0; i < 6; i++) {
+    const [x1, y1] = POS[i], [x2, y2] = POS[i + 1];
+    const lit = isDone(i) && isDone(i + 1);
+    lines += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${lit ? "#f2cf86" : "rgba(236,226,255,.14)"}" stroke-width="${lit ? .5 : .3}" ${lit ? "" : 'stroke-dasharray="1 1.4"'}/>`;
+  }
+  const allDone = isDone(6);
+  lines += `<polyline points="${POS[6].join(",")} ${DIP.join(",")} ${POS[0].join(",")}" fill="none" stroke="${allDone ? "#f2cf86" : "rgba(236,226,255,.08)"}" stroke-width="${allDone ? .5 : .3}" ${allDone ? "" : 'stroke-dasharray="1 1.4"'}/>`;
+
+  let nodes = "";
+  CONFIG.chapters.forEach((c, i) => {
+    const st = status(i), [x, y] = POS[i];
+    const col = st === "done" ? "#f2cf86" : st === "open" ? "#f3a6c4" : "#5d567a";
+    const r = st === "done" ? 2.6 : st === "open" ? 2.3 : 1.5;
+    const below = y > 60 && i !== 3 ? 7.5 : i === 3 ? 8 : -6.5;
+    const ttl = st === "locked" || st === "blocked" ? "скоро" : c.title;
+    nodes += `
+      <g class="node ${st}" data-i="${i}" tabindex="0" role="button" aria-label="Глава ${i + 1}: ${st === "locked" ? "ещё закрыта" : esc(c.title)}">
+        <circle cx="${x}" cy="${y}" r="9" fill="transparent"/>
+        <circle class="halo" cx="${x}" cy="${y}" r="${r * 3.2}" fill="url(#halo-${st === "done" ? "g" : st === "open" ? "r" : "d"})"/>
+        <circle class="ring" cx="${x}" cy="${y}" r="${r + 1.6}" fill="none" stroke="${col}" stroke-width=".25" opacity="${st === "open" ? 1 : .5}"/>
+        <circle class="core" cx="${x}" cy="${y}" r="${r}" fill="${col}"/>
+        <text x="${x}" y="${y + below}">ДЕНЬ ${ROMAN[i]}</text>
+        <text class="ttl" x="${x}" y="${y + below + (below > 0 ? 5 : -4)}">${esc(ttl)}</text>
+      </g>`;
+  });
+
+  s.innerHTML = `
+    <div class="hub-head">
+      <div class="row"><span class="eyebrow">Небо для ${esc(CONFIG.herName)}</span><span class="progress">${done} / 7 звёзд</span></div>
+      <h1>${allDone ? "Созвездие собрано" : "Каждый день загорается новая звезда"}</h1>
+    </div>
+    <div class="sky-map">
+      <svg viewBox="0 -2 100 122" aria-label="Созвездие из семи звёзд">
+        <defs>
+          <radialGradient id="halo-g"><stop offset="0" stop-color="#f2cf86" stop-opacity=".55"/><stop offset="1" stop-color="#f2cf86" stop-opacity="0"/></radialGradient>
+          <radialGradient id="halo-r"><stop offset="0" stop-color="#f3a6c4" stop-opacity=".5"/><stop offset="1" stop-color="#f3a6c4" stop-opacity="0"/></radialGradient>
+          <radialGradient id="halo-d"><stop offset="0" stop-color="#5d567a" stop-opacity=".25"/><stop offset="1" stop-color="#5d567a" stop-opacity="0"/></radialGradient>
+        </defs>
+        ${lines}${nodes}
+      </svg>
+    </div>
+    <div class="field" style="align-items:center">
+      <span class="eyebrow">Слова, которые оставили звёзды</span>
+      <div class="words">${words}</div>
+    </div>
+    ${DEV ? devPanel() : ""}`;
+  show(s);
+
+  if (!REDUCED && window.gsap) {
+    s.querySelectorAll(".node.open .halo").forEach(h => gsap.to(h, { opacity: .35, duration: 1.4, yoyo: true, repeat: -1, ease: "sine.inOut" }));
+  }
+  s.querySelectorAll(".node").forEach(n => {
+    const go = () => tapNode(+n.dataset.i, n);
+    n.addEventListener("click", go);
+    n.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+  });
+  if (DEV) bindDev();
+}
+
+function tapNode(i, n) {
+  const st = status(i);
+  if (st === "open" || st === "done") { burstAt(n.querySelector(".core")); setTimeout(() => openChapter(i), 250); return; }
+  if (st === "blocked") { toast(`<span>Сначала зажги звезду дня ${ROMAN[i - 1]}</span>`); return; }
+  const t = toast(`<span>Эта звезда загорится через</span><b id="cd"></b>`, 6000);
+  const tick = () => { const b = $("#cd", t); if (b) b.textContent = fmtLeft(unlockTime(i) - Date.now()); };
+  tick(); toastTimer = setInterval(tick, 1000);
+}
+
+/* =====================================================================
+   ГЛАВА
+   ===================================================================== */
+function openChapter(i) {
+  const c = CONFIG.chapters[i];
+  const s = el("section", "screen");
+  s.innerHTML = `
+    <div class="ch-top">
+      <button class="back" id="back" type="button">← К небу</button>
+      <span class="eyebrow">День ${ROMAN[i]} из VII</span>
+    </div>
+    <div class="ch-head">
+      <span class="eyebrow">Глава ${ROMAN[i]}</span>
+      <h2>${esc(c.title)}</h2>
+      <p class="story">${esc(c.story)}</p>
+    </div>
+    <div class="sheet stage" id="stage"></div>`;
+  show(s);
+  $("#back").onclick = renderHub;
+  const stage = $("#stage");
+  const win = () => winChapter(i, stage);
+  if (isDone(i) && c.type !== "final") { showReward(i, stage, false); return; }
+  ({ dots: gDots, slide: gSlide, note: gNote, memory: gMemory, cipher: gCipher, melody: gMelody, final: gFinal })[c.type](c, stage, win, i);
+}
+
+function winChapter(i, stage) {
+  const first = !isDone(i);
+  if (first) { state.done.push(i); save(); }
+  burstAt(stage);
+  setTimeout(() => {
+    G.to(stage.children, { opacity: 0, y: -10, duration: .35, onComplete: () => showReward(i, stage, first) });
+  }, 450);
+}
+
+function showReward(i, stage, fresh) {
+  const c = CONFIG.chapters[i];
+  stage.innerHTML = "";
+  const r = el("div", "reward");
+  r.innerHTML = `
+    <span class="eyebrow">${fresh ? "Звезда зажглась" : "Эта звезда уже горит"}</span>
+    <p class="lede">Она оставила тебе слово:</p>
+    <div class="got-word">${[...c.word].map(ch => `<span>${esc(ch)}</span>`).join("")}</div>
+    ${c.after ? `<p class="hint-box">${esc(c.after)}</p>` : ""}
+    <div class="coupon" id="coupon"></div>
+    <button class="btn ghost" type="button" id="toSky">Вернуться к небу</button>`;
+  stage.appendChild(r);
+  G.set(stage.children, { opacity: 1, y: 0 });
+  G.from(r.querySelectorAll(".got-word span"), { y: 30, opacity: 0, rotate: -12, duration: .7, stagger: .07, ease: "back.out(2)" });
+  scratchCard($("#coupon"), c.coupon, i === 6 ? "Главный подарок" : "Подарок дня");
+  $("#toSky").onclick = renderHub;
+}
+
+/* ---------- купон-скретч ---------- */
+function scratchCard(box, text, label) {
+  box.innerHTML = `<div class="coupon-in"><span class="eyebrow">${esc(label)}</span><div class="coupon-text">${esc(text)}</div><span class="coupon-note">Действует бессрочно. Предъяви мне.</span></div><canvas class="foil" aria-label="Сотри, чтобы открыть подарок"></canvas>`;
+  const cv = box.querySelector("canvas"), cx = cv.getContext("2d");
+  requestAnimationFrame(() => {
+    const r = box.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1);
+    cv.width = r.width * d; cv.height = r.height * d; cx.scale(d, d);
+    const g = cx.createLinearGradient(0, 0, r.width, r.height);
+    g.addColorStop(0, "#c9b07a"); g.addColorStop(.35, "#f5e3b5"); g.addColorStop(.6, "#b89a5e"); g.addColorStop(1, "#ead7a5");
+    cx.fillStyle = g; cx.fillRect(0, 0, r.width, r.height);
+    for (let k = 0; k < 120; k++) { cx.fillStyle = `rgba(255,255,255,${Math.random() * .35})`; cx.fillRect(Math.random() * r.width, Math.random() * r.height, 1.5, 1.5); }
+    cx.fillStyle = "rgba(60,45,20,.75)"; cx.textAlign = "center";
+    cx.font = "italic 500 26px 'Cormorant Garamond', serif"; cx.fillText("сотри пальцем", r.width / 2, r.height / 2 + 4);
+    cx.font = "500 10px 'JetBrains Mono', monospace"; cx.fillText("ПОДАРОК", r.width / 2, r.height / 2 - 22);
+    cx.globalCompositeOperation = "destination-out";
+    let down = false, last = null, n = 0, gone = false;
+    const pt = e => { const b = cv.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top]; };
+    const draw = p => {
+      cx.lineWidth = 44; cx.lineCap = "round"; cx.beginPath();
+      cx.moveTo(...(last || p)); cx.lineTo(...p); cx.stroke();
+      cx.beginPath(); cx.arc(p[0], p[1], 22, 0, 6.283); cx.fill(); last = p;
+      if (++n % 8 === 0) check();
+    };
+    const check = () => {
+      if (gone) return;
+      const data = cx.getImageData(0, 0, cv.width, cv.height).data;
+      let clear = 0, tot = 0;
+      for (let k = 3; k < data.length; k += 64) { tot++; if (data[k] < 40) clear++; }
+      if (clear / tot > .5) {
+        gone = true;
+        G.to(cv, { opacity: 0, duration: .6, onComplete: () => cv.remove() });
+        burstAt(box);
+      }
+    };
+    cv.addEventListener("pointerdown", e => { down = true; last = null; cv.setPointerCapture(e.pointerId); draw(pt(e)); });
+    cv.addEventListener("pointermove", e => { if (down) draw(pt(e)); });
+    const up = () => { down = false; last = null; };
+    cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+  });
+}
+
+/* =====================================================================
+   МЕХАНИКИ
+   ===================================================================== */
+
+/* 1. Соедини звёзды по порядку */
+function gDots(c, stage, win) {
+  const N = 10, pts = [];
+  for (let k = 0; k < N; k++) {
+    const t = Math.PI + k / N * 6.283; // начинаем от нижнего кончика сердца
+    const x = 16 * Math.sin(t) ** 3, y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+    pts.push([150 + x * 8.4, 128 + y * 8.4]);
+  }
+  stage.innerHTML = `
+    <p class="lede">Нажимай на звёзды от 1 до ${N}.</p>
+    <div class="dots-wrap"><svg viewBox="0 0 300 285" id="dotsSvg">
+      <polyline id="dLine" fill="none" stroke="#f2cf86" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" points=""/>
+      <path id="dFill" fill="#f3a6c4" opacity="0" d=""/>
+      ${pts.map(([x, y], k) => `
+        <g class="dot" data-k="${k}">
+          <circle cx="${x}" cy="${y}" r="5" fill="${k === 0 ? "#f3a6c4" : "#f4eeff"}" class="core"/>
+          <circle cx="${x}" cy="${y}" r="20" class="hit"/>
+          <text x="${x}" y="${y < 128 ? y - 12 : y + 20}">${k + 1}</text>
+        </g>`).join("")}
+    </svg></div>`;
+  let next = 0; const path = [];
+  stage.querySelectorAll(".dot").forEach(g => g.addEventListener("click", () => {
+    const k = +g.dataset.k;
+    if (k !== next) { shake(stage.querySelector(".dots-wrap")); return; }
+    path.push(pts[k].join(","));
+    g.querySelector(".core").setAttribute("fill", "#f2cf86");
+    G.fromTo(g.querySelector(".core"), { attr: { r: 9 } }, { attr: { r: 5 }, duration: .4 });
+    $("#dLine").setAttribute("points", path.join(" "));
+    next++;
+    const nx = stage.querySelector(`.dot[data-k="${next}"] .core`);
+    if (nx) nx.setAttribute("fill", "#f3a6c4");
+    if (next === N) {
+      path.push(pts[0].join(","));
+      $("#dLine").setAttribute("points", path.join(" "));
+      $("#dFill").setAttribute("d", "M" + pts.map(p => p.join(",")).join("L") + "Z");
+      G.to("#dFill", { opacity: .25, duration: .8 });
+      setTimeout(win, 900);
+    }
+  }));
+}
+
+/* 2. Пятнашки 3×3 */
+function puzzleImage(src) {
+  if (src) return Promise.resolve(src);
+  const cv = document.createElement("canvas"); cv.width = cv.height = 900;
+  const x = cv.getContext("2d");
+  const g = x.createLinearGradient(0, 0, 0, 900);
+  g.addColorStop(0, "#1b1636"); g.addColorStop(.6, "#4a2b5e"); g.addColorStop(1, "#f3a6c4");
+  x.fillStyle = g; x.fillRect(0, 0, 900, 900);
+  for (let k = 0; k < 260; k++) { x.globalAlpha = Math.random(); x.fillStyle = "#f4eeff"; x.beginPath(); x.arc(Math.random() * 900, Math.random() * 560, Math.random() * 2.2, 0, 6.283); x.fill(); }
+  x.globalAlpha = 1;
+  x.fillStyle = "#f2cf86"; x.beginPath(); x.arc(660, 220, 90, 0, 6.283); x.fill();
+  x.fillStyle = "#1b1636"; x.beginPath(); x.arc(700, 190, 82, 0, 6.283); x.fill();
+  x.fillStyle = "#120f22";
+  x.beginPath(); x.moveTo(0, 900); x.lineTo(0, 700); x.quadraticCurveTo(220, 600, 450, 690); x.quadraticCurveTo(680, 780, 900, 650); x.lineTo(900, 900); x.fill();
+  x.fillStyle = "#f4eeff"; x.textAlign = "center";
+  x.font = "italic 500 120px 'Cormorant Garamond', serif"; x.fillText("ты и я", 450, 470);
+  x.font = "500 26px 'JetBrains Mono', monospace"; x.fillStyle = "#f2cf86"; x.fillText("ПОД ОДНИМ НЕБОМ", 450, 530);
+  return Promise.resolve(cv.toDataURL("image/jpeg", .9));
+}
+function gSlide(c, stage, win) {
+  stage.innerHTML = `<p class="lede">Нажми на плитку рядом с пустой клеткой, чтобы сдвинуть её. Цифры в углу подскажут порядок.</p><div class="slide" id="slide"></div><button class="btn ghost small" id="peek" type="button" style="align-self:center">Подсмотреть картинку</button>`;
+  const box = $("#slide");
+  puzzleImage(c.photo).then(img => {
+    // pos[t] — клетка, где сейчас стоит плитка t; плитка 8 — пустая
+    let pos = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    const nb = cell => [cell - 3, cell + 3, cell % 3 ? cell - 1 : -1, cell % 3 < 2 ? cell + 1 : -1].filter(v => v >= 0 && v < 9);
+    let prev = -1;
+    for (let k = 0; k < 120; k++) {
+      const empty = pos[8], opts = nb(empty).filter(v => v !== prev);
+      const target = opts[Math.floor(Math.random() * opts.length)];
+      const t = pos.indexOf(target);
+      prev = empty; pos[t] = empty; pos[8] = target;
+    }
+    if (pos.every((p, t) => p === t)) { const t = pos.indexOf(nb(8)[0]); [pos[t], pos[8]] = [pos[8], pos[t]]; }
+    const tiles = [];
+    for (let t = 0; t < 8; t++) {
+      const b = el("button", "tile", `<span class="tile-num">${t + 1}</span>`);
+      b.type = "button";
+      b.style.backgroundImage = `url("${img}")`;
+      b.style.backgroundPosition = `${(t % 3) * 50}% ${Math.floor(t / 3) * 50}%`;
+      b.setAttribute("aria-label", "Плитка " + (t + 1));
+      b.onclick = () => move(t);
+      box.appendChild(b); tiles.push(b);
+    }
+    const place = () => tiles.forEach((b, t) => b.style.transform = `translate(${(pos[t] % 3) * 100}%, ${Math.floor(pos[t] / 3) * 100}%)`);
+    place();
+    let solved = false;
+    function move(t) {
+      if (solved || !nb(pos[8]).includes(pos[t])) return;
+      [pos[t], pos[8]] = [pos[8], pos[t]];
+      place();
+      if (pos.every((p, k) => p === k)) {
+        solved = true;
+        const last = el("div", "tile");
+        last.style.cssText = `background-image:url("${img}");background-position:100% 100%;transform:translate(200%,200%);opacity:0`;
+        box.appendChild(last);
+        box.classList.add("solved");
+        G.to(last, { opacity: 1, duration: .6 });
+        setTimeout(win, 1100);
+      }
+    }
+    $("#peek").onclick = () => {
+      const ov = el("div", "tile");
+      ov.style.cssText = `width:100%;height:100%;background-image:url("${img}");background-size:cover;z-index:5`;
+      box.appendChild(ov);
+      setTimeout(() => G.to(ov, { opacity: 0, duration: .4, onComplete: () => ov.remove() }), 1400);
+    };
+  });
+}
+
+/* 3. Офлайн-записка */
+function gNote(c, stage, win) {
+  stage.innerHTML = `
+    <p class="story" style="font-size:19px">${esc(c.riddle)}</p>
+    <div class="field">
+      <label for="noteIn">Слово с записки</label>
+      <input type="text" id="noteIn" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+    </div>
+    <p class="hint-box" id="noteHint" hidden>${esc(c.hint)}</p>
+    <button class="btn" type="button" id="noteGo">Проверить</button>
+    <p class="msg" id="noteMsg" role="status"></p>`;
+  let fails = 0;
+  const go = async () => {
+    const inp = $("#noteIn");
+    if (await sha(inp.value) === c.answerHash) { win(); return; }
+    fails++; inp.classList.add("bad"); shake(stage);
+    $("#noteMsg").textContent = fails >= 2 ? "Держи подсказку." : "Не то слово. Поищи ещё.";
+    if (fails >= 2) $("#noteHint").hidden = false;
+  };
+  $("#noteGo").onclick = go;
+  $("#noteIn").onkeydown = e => { if (e.key === "Enter") go(); };
+  $("#noteIn").oninput = () => { $("#noteIn").classList.remove("bad"); $("#noteMsg").textContent = ""; };
+}
+
+/* 4. Мемори */
+const isImg = v => /\.(jpe?g|png|webp|gif|avif)$/i.test(v) || /^(https?:|data:)/.test(v);
+function gMemory(c, stage, win) {
+  const deck = [...c.cards, ...c.cards].map((v, k) => ({ v, id: k % c.cards.length })).sort(() => Math.random() - .5);
+  stage.innerHTML = `<p class="lede">Открывай по две карточки. Совпали — остаются открытыми.</p><div class="mem" id="mem"></div><p class="round" id="memMoves">Ходов: 0</p>`;
+  const grid = $("#mem");
+  let open = [], got = 0, moves = 0, busy = false;
+  deck.forEach((d, k) => {
+    const b = el("button", "card", `<div class="card-in"><div class="face back-f"></div><div class="face front">${isImg(d.v) ? `<img src="${esc(d.v)}" alt="">` : esc(d.v)}</div></div>`);
+    b.type = "button"; b.setAttribute("aria-label", "Карточка " + (k + 1));
+    b.onclick = () => {
+      if (busy || b.classList.contains("open") || b.classList.contains("got")) return;
+      b.classList.add("open"); open.push([b, d]);
+      if (open.length < 2) return;
+      moves++; $("#memMoves").textContent = "Ходов: " + moves;
+      const [[b1, d1], [b2, d2]] = open; open = [];
+      if (d1.id === d2.id) {
+        setTimeout(() => { b1.classList.add("got"); b2.classList.add("got"); burstAt(b2); }, 350);
+        if (++got === c.cards.length) setTimeout(win, 1100);
+      } else {
+        busy = true;
+        setTimeout(() => { b1.classList.remove("open"); b2.classList.remove("open"); busy = false; }, 850);
+      }
+    };
+    grid.appendChild(b);
+  });
+  G.from(grid.children, { scale: .6, opacity: 0, duration: .5, stagger: .04, ease: "back.out(2)" });
+}
+
+/* 5. Шифр Полибия с греческими буквами */
+function gCipher(c, stage, win) {
+  const AB = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ", GR = ["α", "β", "γ", "δ", "ε", "ζ"];
+  const word = c.secret.toUpperCase();
+  const code = [...word].map(ch => { const k = AB.indexOf(ch); return k < 0 ? ch : GR[Math.floor(k / 6)] + (k % 6 + 1); });
+  let table = `<tr><th></th>${[1, 2, 3, 4, 5, 6].map(n => `<th>${n}</th>`).join("")}</tr>`;
+  for (let r = 0; r < 6; r++) {
+    table += `<tr><th class="greek">${GR[r]}</th>`;
+    for (let col = 0; col < 6; col++) table += `<td>${AB[r * 6 + col] || ""}</td>`;
+    table += "</tr>";
+  }
+  stage.innerHTML = `
+    <span class="eyebrow">Зашифрованное слово</span>
+    <div class="cipher-line">${code.map(x => `<span class="cchip">${esc(x)}</span>`).join("")}</div>
+    <button class="link-btn" type="button" id="cHintBtn">Как это читать?</button>
+    <p class="hint-box" id="cHint" hidden>Каждая пара — это буква. Греческая буква указывает строку таблицы, цифра указывает столбец. Например, β3 — это Ж.</p>
+    <div class="grid-wrap"><table class="poly">${table}</table></div>
+    <div class="field">
+      <label for="cIn">Расшифрованное слово</label>
+      <input type="text" id="cIn" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+    </div>
+    <button class="btn" type="button" id="cGo">Проверить</button>
+    <p class="msg" id="cMsg" role="status"></p>`;
+  $("#cHintBtn").onclick = () => { $("#cHint").hidden = false; $("#cHintBtn").hidden = true; };
+  const go = () => {
+    if (norm($("#cIn").value) === norm(c.secret)) { win(); return; }
+    $("#cIn").classList.add("bad"); $("#cMsg").textContent = "Почти. Проверь каждую пару по таблице."; shake(stage);
+  };
+  $("#cGo").onclick = go;
+  $("#cIn").onkeydown = e => { if (e.key === "Enter") go(); };
+  $("#cIn").oninput = () => { $("#cIn").classList.remove("bad"); $("#cMsg").textContent = ""; };
+}
+
+/* 6. Мелодия звёзд (повтори последовательность) */
+let AC = null;
+function tone(freq, dur = .42, type = "sine", vol = .22) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .02); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+    o.connect(g).connect(AC.destination); o.start(t); o.stop(t + dur + .05);
+  } catch (e) {}
+}
+function gMelody(c, stage, win) {
+  const PADS = [{ c: "#f3a6c4", f: 523.25 }, { c: "#f2cf86", f: 659.25 }, { c: "#b9a4ff", f: 783.99 }, { c: "#9fe0c9", f: 880.0 }];
+  stage.innerHTML = `
+    <p class="lede">Звёзды споют короткую мелодию. Повтори её, нажимая в том же порядке. С каждым раундом она становится длиннее. Включи звук.</p>
+    <div class="pads wait" id="pads">${PADS.map((p, k) => `<button class="pad" type="button" style="--c:${p.c}" data-k="${k}" aria-label="Звезда ${k + 1}"></button>`).join("")}</div>
+    <p class="round" id="round">Раунд 0 из ${c.rounds}</p>
+    <button class="btn" type="button" id="mStart">Послушать звёзды</button>`;
+  const padsEl = $("#pads"), pads = [...padsEl.children];
+  const seq = Array.from({ length: c.rounds }, () => Math.floor(Math.random() * 4));
+  let round = 0, step = 0;
+  const flash = (k, ms = 380) => { pads[k].classList.add("lit"); tone(PADS[k].f); setTimeout(() => pads[k].classList.remove("lit"), ms); };
+  const play = () => {
+    padsEl.classList.add("wait"); step = 0;
+    $("#round").textContent = `Раунд ${round + 1} из ${c.rounds}`;
+    seq.slice(0, round + 1).forEach((k, n) => setTimeout(() => flash(k), 600 + n * 620));
+    setTimeout(() => padsEl.classList.remove("wait"), 600 + (round + 1) * 620);
+  };
+  $("#mStart").onclick = () => { $("#mStart").hidden = true; play(); };
+  pads.forEach((p, k) => p.addEventListener("click", () => {
+    flash(k, 220);
+    if (k !== seq[step]) {
+      padsEl.classList.add("wait"); tone(160, .5, "triangle", .18); shake(padsEl);
+      $("#round").textContent = "Мимо. Слушай ещё раз.";
+      setTimeout(play, 1200); return;
+    }
+    step++;
+    if (step > round) {
+      round++;
+      if (round === c.rounds) { padsEl.classList.add("wait"); [0, 1, 2, 3].forEach((q, n) => setTimeout(() => flash(q, 300), 300 + n * 140)); setTimeout(win, 1200); return; }
+      burstAt(padsEl); setTimeout(play, 700);
+    }
+  }));
+}
+
+/* 7. Финал: сложи фразу */
+function gFinal(c, stage, win, i) {
+  const words = CONFIG.chapters.slice(0, 6).map(x => x.word);
+  const pool = words.map((w, k) => ({ w, k })).sort(() => Math.random() - .5);
+  stage.innerHTML = `
+    <p class="lede">Нажимай на слова в правильном порядке. Ошибся — нажми на слово в строке, и оно вернётся.</p>
+    <div class="answer-line" id="ans" aria-live="polite"></div>
+    <div class="pool" id="pool"></div>`;
+  const ans = $("#ans"), poolEl = $("#pool");
+  const picked = [];
+  const render = () => {
+    ans.innerHTML = ""; poolEl.innerHTML = "";
+    picked.forEach((p, n) => { const b = el("button", "wtile", esc(p.w)); b.type = "button"; b.onclick = () => { picked.splice(n, 1); render(); }; ans.appendChild(b); });
+    pool.filter(p => !picked.includes(p)).forEach(p => { const b = el("button", "wtile", esc(p.w)); b.type = "button"; b.onclick = () => { picked.push(p); render(); check(); }; poolEl.appendChild(b); });
+  };
+  const check = () => {
+    if (picked.length < words.length) return;
+    if (picked.every((p, n) => p.k === n)) finale(c, stage, i);
+    else { shake(ans); setTimeout(() => { picked.length = 0; render(); }, 600); }
+  };
+  render();
+}
+
+function finale(c, stage, i) {
+  const first = !isDone(i);
+  if (first) { state.done.push(i); save(); }
+  const phrase = CONFIG.chapters.slice(0, 6).map(x => x.word).join(" ");
+  G.to(".app", { opacity: 0, duration: .8, onComplete: () => {
+    const s = Math.min(W, H) / 46;
+    heartParticles(W / 2, H * .42, s);
+    const cap = el("div", "", `<p class="story" style="text-align:center;font-size:28px;font-style:italic">${esc(phrase)}</p>`);
+    cap.style.cssText = "position:fixed;left:16px;right:16px;bottom:calc(16% + env(safe-area-inset-bottom,0px));z-index:61;opacity:0";
+    document.body.appendChild(cap);
+    G.to(cap, { opacity: 1, duration: 1.2, delay: 1.6 });
+    setTimeout(() => {
+      fadeHeart();
+      G.to(cap, { opacity: 0, duration: .8, onComplete: () => cap.remove() });
+      stage.innerHTML = "";
+      const L = el("div", "letter");
+      stage.appendChild(L);
+      document.querySelector(".ch-head h2").textContent = "Письмо";
+      document.querySelector(".ch-head .story").textContent = "";
+      G.to(".app", { opacity: 1, duration: .8 });
+      typeLetter(L, c.letter, c.signature).then(() => {
+        const r = el("div", "reward");
+        r.innerHTML = `<div class="coupon" id="coupon"></div><button class="btn ghost" type="button" id="toSky">Посмотреть на созвездие</button>`;
+        stage.appendChild(r);
+        G.from(r, { opacity: 0, y: 16, duration: .6 });
+        scratchCard($("#coupon"), c.coupon, "Главный подарок");
+        $("#toSky").onclick = renderHub;
+      });
+    }, REDUCED ? 2500 : 5200);
+  } });
+}
+
+function typeLetter(box, paras, sig) {
+  return new Promise(done => {
+    const all = [...paras.map(p => ({ t: p, sig: false })), { t: sig, sig: true }];
+    let pi = 0;
+    const nextP = () => {
+      if (pi >= all.length) { done(); return; }
+      const { t, sig } = all[pi++];
+      const p = el("p", sig ? "sig" : ""); box.appendChild(p);
+      if (REDUCED) { p.textContent = t; nextP(); return; }
+      let k = 0;
+      const tick = () => { p.textContent = t.slice(0, ++k); if (k < t.length) setTimeout(tick, t[k - 1] === "." || t[k - 1] === "," ? 180 : 32); else setTimeout(nextP, 500); };
+      tick();
+    };
+    nextP();
+  });
+}
+
+/* =====================================================================
+   РЕЖИМ РАЗРАБОТЧИКА (index.html#dev)
+   ===================================================================== */
+function devPanel() {
+  const sched = CONFIG.chapters.map((c, i) => `${ROMAN[i]}: ${unlockTime(i).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}`).join(" · ");
+  return `
+    <div class="dev">
+      <span class="eyebrow">Режим разработчика · все главы открыты</span>
+      <p>Расписание: ${esc(sched)}</p>
+      <div class="field"><label for="hashIn">Хеш для нового ответа</label><input type="text" id="hashIn" autocomplete="off" spellcheck="false"></div>
+      <code id="hashOut">введи слово</code>
+      <div class="row">
+        <button class="btn small" type="button" id="hashCopy">Скопировать хеш</button>
+        <button class="btn small ghost" type="button" id="devReset">Сбросить прогресс</button>
+      </div>
+    </div>`;
+}
+function bindDev() {
+  $("#hashIn").oninput = async () => { $("#hashOut").textContent = $("#hashIn").value ? await sha($("#hashIn").value) : "введи слово"; };
+  $("#hashCopy").onclick = () => {
+    const t = $("#hashOut").textContent;
+    navigator.clipboard?.writeText(t).then(() => toast("<span>Хеш скопирован</span>", 1500)).catch(() => { const r = document.createRange(); r.selectNodeContents($("#hashOut")); getSelection().removeAllRanges(); getSelection().addRange(r); });
+  };
+  $("#devReset").onclick = () => { state = { gate: true, done: [] }; save(); renderHub(); };
+}
+
+/* ---------- старт ---------- */
+resize();
+requestAnimationFrame(loop);
+(state.gate || DEV ? renderHub : renderGate)();
+</script>
