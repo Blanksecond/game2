@@ -94,9 +94,8 @@ a { color: inherit; }
 .gate { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 24px; pointer-events: none; }
 .gate__in { width: min(100%, 980px); display: grid; justify-items: center; gap: 36px; text-align: center; pointer-events: auto; }
 .gate h1 { font: 300 clamp(38px, 8.4vw, 124px)/0.95 var(--display); letter-spacing: -0.03em; text-transform: uppercase; }
-.gate__card { width: min(100%, 440px); padding: 24px; border-radius: 24px; background: var(--glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: inset 0 0 0 1px var(--edge); display: grid; gap: 12px; text-align: left; }
-.gate__card label { color: var(--muted); font-size: 15px; }
-.gate__card .btn { width: 100%; }
+.gate__lead { max-width: 40ch; color: var(--muted); font-size: 18px; }
+.gate .btn { min-width: 260px; min-height: 58px; font-size: 16px; }
 
 /* ---------- HUD ---------- */
 .hud { position: fixed; z-index: 10; pointer-events: none; opacity: 0; }
@@ -388,14 +387,8 @@ a { color: inherit; }
 <section class="gate" id="gate" hidden aria-labelledby="gateTitle">
   <div class="gate__in">
     <h1 id="gateTitle">Семь планет до Солнца</h1>
-    <form class="gate__card" id="gateForm" novalidate>
-      <label for="gateIn" id="gateQ"></label>
-      <input class="input" type="text" id="gateIn" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
-      <p class="msg" id="gateMsg" role="status"></p>
-      <button class="link" type="button" id="gateHintBtn" style="justify-self:start">Подсказка</button>
-      <p class="note" id="gateHint" hidden></p>
-      <button class="btn" type="submit">Взлетаем</button>
-    </form>
+    <p class="gate__lead" id="gateLead">Путешествие по Солнечной системе. На каждой планете своё задание и открытка, а в конце тебя ждёт Солнце.</p>
+    <button class="btn" type="button" id="startBtn">Начать путешествие</button>
   </div>
 </section>
 
@@ -411,18 +404,12 @@ a { color: inherit; }
 <script>
 /* =====================================================================
    НАСТРОЙКИ — всё, что нужно поменять под себя, находится здесь.
-   Ответы на вход и на записку хранятся как SHA-256, чтобы их нельзя
+   Ответ на записку хранится как SHA-256, чтобы его нельзя
    было подсмотреть в коде. Хеш нового ответа: открой сайт с #dev
    в конце адреса (index.html#dev) и введи слово в генератор в «Маршруте».
    ===================================================================== */
 const CONFIG = {
   herName: "Настя",
-
-  gate: {
-    question: "Как я называю тебя, когда никто не слышит?",
-    hint: "Ласково и с неба",
-    answerHash: "ce4935245b12ea11ad36ed4ff3e7950b40512d818c9da85fbf3d793cf304e456" // «звёздочка»
-  },
 
   // Порядок планет = порядок слов в финальной фразе
   planets: [
@@ -537,7 +524,7 @@ async function sha(s) {
 
 /* ---------- прогресс ---------- */
 const KEY = "nebo-progress-v2";
-let state = { gate: false, done: [], scratched: [] };
+let state = { done: [], scratched: [] };
 try { const raw = localStorage.getItem(KEY); if (raw) state = Object.assign(state, JSON.parse(raw)); } catch (e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
 const isDone = i => state.done.includes(i);
@@ -582,7 +569,7 @@ function boot() {
   if (booted) return; booted = true;
   const out = () => {
     $("#loader").remove();
-    if (state.gate || DEV) enter(false); else showGate();
+    if (DEV) enter(false); else showStart();
   };
   APP.progress(1);
   if (G && !REDUCED) {
@@ -596,7 +583,7 @@ function bootFlat() {
   document.body.classList.add("is-flat");
   ["#gl", ".vignette", "#labels"].forEach(s => $(s).hidden = true);
   $("#loader").remove();
-  if (state.gate || DEV) enter(false); else showGate();
+  if (DEV) enter(false); else showStart();
 }
 // если WebGL нет или 3D не ответило за 15 секунд — плоский режим
 (() => {
@@ -606,26 +593,16 @@ function bootFlat() {
   setTimeout(() => { if (!APP.gl) bootFlat(); }, 15000);
 })();
 
-/* ---------- вход ---------- */
-function showGate() {
+/* ---------- стартовый экран ---------- */
+function showStart() {
   $("#gate").hidden = false;
-  $("#gateQ").textContent = CONFIG.gate.question;
-  $("#gateHint").textContent = CONFIG.gate.hint;
+  $("#startBtn").textContent = doneCount() ? "Продолжить путешествие" : "Начать путешествие";
   reveal($("#gateTitle"), "Семь планет до Солнца", 0.1);
-  if (G && !REDUCED) G.from(".gate__card", { y: 40, opacity: 0, duration: 1.2, ease: "expo.out", delay: 0.7 });
-  $("#gateHintBtn").onclick = () => { $("#gateHint").hidden = false; $("#gateHintBtn").hidden = true; };
-  $("#gateIn").oninput = () => { $("#gateIn").classList.remove("is-bad"); $("#gateMsg").textContent = ""; };
-  $("#gateForm").onsubmit = async e => {
-    e.preventDefault();
-    const inp = $("#gateIn");
-    if (await sha(inp.value) === CONFIG.gate.answerHash) {
-      state.gate = true; save(); inp.blur();
-      const go = () => { $("#gate").hidden = true; enter(true); };
-      if (G && !REDUCED) G.to("#gate", { opacity: 0, filter: "blur(12px)", scale: 1.04, duration: 0.9, ease: "power3.in", onComplete: go });
-      else go();
-    } else {
-      inp.classList.add("is-bad"); $("#gateMsg").textContent = "Не то слово. Попробуй ещё раз."; shake($("#gateForm"));
-    }
+  if (G && !REDUCED) G.from(["#gateLead", "#startBtn"], { y: 30, opacity: 0, duration: 1.2, ease: "expo.out", stagger: 0.1, delay: 0.8 });
+  $("#startBtn").onclick = () => {
+    const go = () => { $("#gate").hidden = true; enter(true); };
+    if (G && !REDUCED) G.to("#gate", { opacity: 0, filter: "blur(12px)", scale: 1.04, duration: 0.9, ease: "power3.in", onComplete: go });
+    else go();
   };
 }
 
@@ -1281,7 +1258,7 @@ function bindDev() {
   $("#hashIn").oninput = async () => { $("#hashOut").textContent = $("#hashIn").value ? await sha($("#hashIn").value) : "введи слово"; };
   $("#hashCopy").onclick = () => navigator.clipboard?.writeText($("#hashOut").textContent);
   $("#devAll").onclick = () => { state.done = [0, 1, 2, 3, 4, 5]; save(); refresh(); };
-  $("#devReset").onclick = () => { state = { gate: true, done: [], scratched: [] }; save(); refresh(); };
+  $("#devReset").onclick = () => { state = { done: [], scratched: [] }; save(); refresh(); };
 }
 
 /* ---------- клавиши и кнопки ---------- */
@@ -1320,20 +1297,77 @@ manager.onProgress = (url, a, b) => APP.progress(a / b);
 const loader = new THREE.TextureLoader(manager);
 const T = f => { const t = loader.load(`photos/textures/${f}`); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
 
-/* ---------- звёзды и Млечный Путь ---------- */
+/* ---------- фон: туманности и Млечный Путь рисуются шейдером, звёзды чёткие ---------- */
 const dot = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const x = c.getContext("2d"), g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, "rgba(255,255,255,1)"); g.addColorStop(0.5, "rgba(255,255,255,0.8)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
-scene.add(new THREE.Mesh(new THREE.SphereGeometry(1400, 48, 24), new THREE.MeshBasicMaterial({ map: T("2k_stars_milky_way.jpg"), side: THREE.BackSide, color: new THREE.Color(0.5, 0.52, 0.62), depthWrite: false })));
+const NOISE = `
+  float hash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+  float noise(vec3 x) {
+    vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(mix(hash(i), hash(i + vec3(1,0,0)), f.x), mix(hash(i + vec3(0,1,0)), hash(i + vec3(1,1,0)), f.x), f.y),
+               mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x), mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y), f.z);
+  }
+  float fbm(vec3 p) { float v = 0.0, a = 0.5; for (int k = 0; k < 5; k++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }`;
+const skyMat = new THREE.ShaderMaterial({
+  uniforms: { t: { value: 0 } },
+  vertexShader: `varying vec3 vD; void main(){ vD = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `uniform float t; varying vec3 vD; ${NOISE}
+    void main(){
+      vec3 d = normalize(vD);
+      float band = exp(-pow(dot(d, normalize(vec3(0.3, 1.0, 0.45))), 2.0) * 7.0); // полоса Млечного Пути
+      float n = fbm(d * 2.6 + vec3(0.0, 0.0, t * 0.004));
+      float m = fbm(d * 5.2 + 7.3);
+      float dust = smoothstep(0.48, 0.78, fbm(d * 8.0 + 3.1));
+      vec3 col = mix(vec3(0.05, 0.08, 0.22), vec3(0.19, 0.05, 0.24), smoothstep(0.3, 0.7, m));
+      col = mix(col, vec3(0.32, 0.12, 0.09), smoothstep(0.55, 0.85, n) * 0.55);
+      col *= smoothstep(0.28, 0.8, n) * (0.6 + band * 1.3) * 1.7;
+      col += vec3(0.62, 0.56, 0.5) * band * pow(m, 2.0) * 0.32;
+      col *= 1.0 - dust * 0.65 * band;
+      gl_FragColor = vec4(col, 1.0);
+    }`,
+  side: THREE.BackSide, depthWrite: false
+});
+scene.add(new THREE.Mesh(new THREE.SphereGeometry(1200, 64, 32), skyMat));
+const starMat = new THREE.ShaderMaterial({
+  uniforms: { t: { value: 0 }, px: { value: renderer.getPixelRatio() } },
+  vertexShader: `attribute float size; attribute vec3 tint; attribute float phase; uniform float t; uniform float px;
+    varying vec3 vC; varying float vA; varying float vS;
+    void main(){
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      vA = 0.72 + 0.28 * sin(t * (0.5 + phase * 1.8) + phase * 40.0);
+      vC = tint; vS = size; gl_PointSize = size * px;
+    }`,
+  fragmentShader: `varying vec3 vC; varying float vA; varying float vS;
+    void main(){
+      vec2 p = gl_PointCoord - 0.5; float r = length(p);
+      float a = smoothstep(0.2, 0.0, r) * 1.3 + exp(-r * r * 26.0) * 0.6;
+      if (vS > 5.0) a += (exp(-abs(p.x) * 46.0) * exp(-abs(p.y) * 5.0) + exp(-abs(p.y) * 46.0) * exp(-abs(p.x) * 5.0)) * 0.7; // лучи у ярких
+      a *= vA; if (a < 0.01) discard;
+      gl_FragColor = vec4(vC * a, a);
+    }`,
+  blending: THREE.AdditiveBlending, transparent: true, depthWrite: false
+});
 {
-  const n = 2200, pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
-  for (let k = 0; k < n; k++) {
-    const r = 300 + Math.random() * 900, th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
-    pos.set([r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph), r * Math.sin(ph) * Math.sin(th)], k * 3);
-    const w = 0.7 + Math.random() * 0.3; col.set([w, w, Math.min(1, w + Math.random() * 0.15)], k * 3);
+  const n = MOBILE() ? 7000 : 12000, pos = [], size = [], tint = [], phase = [];
+  const axis = new THREE.Vector3(0.3, 1.0, 0.45).normalize(), v = new THREE.Vector3();
+  const tints = [[0.72, 0.82, 1], [0.95, 0.96, 1], [1, 0.93, 0.82], [1, 0.82, 0.62]];
+  while (pos.length < n * 3) {
+    v.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+    if (v.lengthSq() > 1 || v.lengthSq() < 0.01) continue;
+    v.normalize();
+    const band = Math.exp(-Math.pow(v.dot(axis), 2) * 7); // звёзд гуще в полосе Млечного Пути
+    if (Math.random() > 0.3 + band * 0.7) continue;
+    v.multiplyScalar(1000);
+    pos.push(v.x, v.y, v.z);
+    size.push(1.3 + Math.pow(Math.random(), 7) * 8);
+    tint.push(...tints[Math.floor(Math.random() * tints.length)]);
+    phase.push(Math.random());
   }
   const g = new THREE.BufferGeometry();
-  g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-  g.setAttribute("color", new THREE.BufferAttribute(col, 3));
-  scene.add(new THREE.Points(g, new THREE.PointsMaterial({ size: 2.2, map: dot, vertexColors: true, transparent: true, opacity: 0.95, depthWrite: false })));
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute("size", new THREE.Float32BufferAttribute(size, 1));
+  g.setAttribute("tint", new THREE.Float32BufferAttribute(tint, 3));
+  g.setAttribute("phase", new THREE.Float32BufferAttribute(phase, 1));
+  scene.add(new THREE.Points(g, starMat));
 }
 
 /* ---------- свечения ---------- */
@@ -1601,6 +1635,7 @@ function frame() {
   simT += dt * ts.v;
   sun.rotation.y += dt * 0.03;
   sun.material.uniforms.t.value = t;
+  skyMat.uniforms.t.value = t; starMat.uniforms.t.value = t;
   const pulse = 1 + Math.sin(t * 1.3) * 0.025;
   glowA.scale.set(SUN_R * 7.5 * pulse, SUN_R * 7.5 * pulse, 1);
   belt.rotation.y += dt * 0.012 * ts.v;
