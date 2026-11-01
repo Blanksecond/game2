@@ -1,308 +1,549 @@
-<title>Небо для Насти</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<meta name="theme-color" content="#0c0b17">
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="robots" content="noindex">
+<title>Семь планет до Солнца</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400;1,500&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500&family=Prata&display=swap" rel="stylesheet">
 <style>
-  /* layout: одна колонка ночного неба; главный экран — созвездие из 7 звёзд, главы открываются листами поверх неба */
-  :root {
-    --ink: #0c0b17;
-    --ink-2: #16142a;
-    --ink-3: #1f1c38;
-    --line: rgba(236, 226, 255, 0.12);
-    --line-2: rgba(236, 226, 255, 0.22);
-    --star: #f4eeff;
-    --muted: #9a92b6;
-    --rose: #f3a6c4;
-    --gold: #f2cf86;
-    --lilac: #b9a4ff;
-    --mint: #9fe0c9;
-    --danger: #ff8fa3;
-    --display: "Cormorant Garamond", "Times New Roman", Georgia, serif;
-    --body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-    --r: 18px;
-    color-scheme: dark;
-  }
+/* =====================================================================
+   «Семь планет до Солнца». Цвета взяты из самих снимков NASA:
+   чёрный космос, светлая бумага, солнечное золото.
+   ===================================================================== */
+:root {
+  --bg: #000;
+  --surface: #11100e;
+  --surface-2: #1c1a17;
+  --surface-3: #2a2723;
+  --paper: #ebe7e0;
+  --paper-2: #dcd6cc;
+  --paper-ink: #17130e;
+  --paper-soft: #5d5446;
+  --ink: #ebe7e0;
+  --muted: #a59d8f;
+  --accent: #f2b544;
+  --accent-ink: #17130e;
+  --sun-field: #b8410e;
+  --bad: #ff8a6b;
 
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  [hidden] { display: none !important; }
-  html, body { height: 100%; }
-  body {
-    margin: 0;
-    background: var(--ink);
-    color: var(--star);
-    font-family: var(--body);
-    font-size: 15px;
-    line-height: 1.55;
-    overflow-x: hidden;
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
-  }
-  button { font: inherit; color: inherit; }
-  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 8px; }
+  --display: "Prata", "Times New Roman", Georgia, serif;
+  --text: "Golos Text", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  #sky, #fx { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
-  #sky { z-index: 0; }
-  #fx { z-index: 60; pointer-events: none; }
+  --step-small: 1rem;
+  --step-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+  --step-lead: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
+  --step-head: clamp(2.5rem, 1.2rem + 3.8vw, 4.75rem);
+  --step-display: clamp(4.5rem, 1rem + 13vw, 13.5rem);
 
-  .app {
-    position: relative;
-    z-index: 1;
-    min-height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-block: 28px 40px;
-  }
-  .screen { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 20px; }
+  --m: clamp(16px, 2.2vw, 32px);
+  --gap-section: clamp(120px, 14vw, 220px);
 
-  .eyebrow {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  h1, h2, h3 { font-family: var(--display); font-weight: 500; margin: 0; text-wrap: balance; line-height: 1.1; }
-  h1 { font-size: 44px; font-style: italic; }
-  h2 { font-size: 36px; font-style: italic; }
-  h3 { font-size: 22px; }
-  p { margin: 0; }
-  .lede { color: var(--muted); font-size: 15px; max-width: 34ch; }
-  .story { font-family: var(--display); font-size: 21px; line-height: 1.4; color: var(--star); }
-  .story em { color: var(--rose); }
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
 
-  .sheet {
-    background: color-mix(in srgb, var(--ink-2) 82%, transparent);
-    border: 1px solid var(--line);
-    border-radius: 26px;
-    padding: 24px 20px;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-  }
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 var(--step-body)/1.55 var(--text);
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  overflow-x: clip;
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3, p, ol, ul, figure { margin: 0; }
+ol, ul { padding: 0; list-style: none; }
+button, select, input { font: inherit; color: inherit; }
+a { color: inherit; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+::selection { background: var(--accent); color: var(--accent-ink); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-  .field { display: flex; flex-direction: column; gap: 8px; }
-  .field label { font-size: 13px; color: var(--muted); }
-  input[type="text"] {
-    width: 100%;
-    height: 52px;
-    border-radius: 14px;
-    border: 1px solid var(--line-2);
-    background: rgba(255, 255, 255, 0.04);
-    color: var(--star);
-    font: 500 17px var(--body);
-    padding: 0 16px;
-    outline: none;
-    transition: border-color .2s, background .2s;
-  }
-  input[type="text"]:focus { border-color: var(--rose); background: rgba(255, 255, 255, 0.07); }
-  input.bad { border-color: var(--danger); }
+h1, h2, h3, .display { font-family: var(--display); font-weight: 400; letter-spacing: -0.02em; line-height: 0.98; }
 
-  .btn {
-    height: 52px;
-    border: 0;
-    border-radius: 14px;
-    background: var(--star);
-    color: var(--ink);
-    font-weight: 600;
-    font-size: 15px;
-    cursor: pointer;
-    padding: 0 20px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: transform .15s, opacity .2s;
-  }
-  .btn:active { transform: scale(0.97); }
-  .btn.ghost { background: transparent; color: var(--star); border: 1px solid var(--line-2); }
-  .btn.small { height: 38px; font-size: 13px; padding: 0 14px; border-radius: 12px; }
-  .link-btn { background: none; border: 0; color: var(--rose); font-size: 13px; cursor: pointer; padding: 4px 0; align-self: flex-start; }
-  .msg { min-height: 20px; font-size: 13px; color: var(--danger); }
-  .hint-box { font-size: 14px; color: var(--gold); border-left: 2px solid var(--gold); padding: 4px 0 4px 12px; }
+/* ---------- кнопки: одна форма на весь сайт, квадратные углы ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 56px; padding: 0 28px; border: 0; border-radius: 0; cursor: pointer;
+  background: var(--paper-ink); color: var(--paper);
+  font: 500 var(--step-body)/1.1 var(--text); text-decoration: none; text-align: center;
+  transition: transform 160ms var(--ease-out), background-color 200ms ease, opacity 200ms ease;
+  touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+.btn:active { transform: scale(0.97); }
+.btn--sun { background: var(--accent); color: var(--accent-ink); }
+.btn--paper { background: var(--paper); color: var(--paper-ink); }
+.btn--dark { background: var(--surface-2); color: var(--ink); }
+.btn--small { min-height: 44px; padding: 0 18px; font-size: var(--step-small); }
+.btn[aria-disabled="true"], .btn:disabled { background: var(--paper-2); color: var(--paper-soft); cursor: default; }
+.btn--dark:disabled { background: var(--surface); color: var(--muted); }
+.btn[aria-disabled="true"]:active, .btn:disabled:active { transform: none; }
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { background: #2b241b; }
+  .btn--sun:hover { background: #f7c561; }
+  .btn--paper:hover { background: #fff8ec; }
+  .btn--dark:hover { background: var(--surface-3); }
+  .btn[aria-disabled="true"]:hover, .btn:disabled:hover { background: var(--paper-2); }
+  .btn--dark:disabled:hover { background: var(--surface); }
+}
+.link {
+  background: none; border: 0; padding: 8px 0; cursor: pointer; color: var(--muted);
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; font-size: var(--step-small);
+}
 
-  /* ---------- Небо (хаб) ---------- */
-  .hub-head { display: flex; flex-direction: column; gap: 6px; }
-  .hub-head .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-  .progress { font-family: var(--mono); font-size: 12px; color: var(--gold); white-space: nowrap; }
-  .sky-map { width: 100%; max-width: 100%; aspect-ratio: 100 / 118; position: relative; }
-  .sky-map svg { width: 100%; height: 100%; overflow: visible; display: block; }
-  .node { cursor: pointer; outline: none; }
-  .node .halo { transition: opacity .4s; }
-  .node text { font-family: var(--mono); font-size: 3px; letter-spacing: 0.08em; fill: var(--muted); text-anchor: middle; }
-  .node .ttl { font-family: var(--display); font-style: italic; font-size: 4.4px; letter-spacing: 0; fill: var(--star); }
-  .node.locked .ttl { fill: var(--muted); }
-  .node:focus-visible .ring { stroke: var(--gold); stroke-width: .6; }
-  .words {
-    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
-    min-height: 34px;
-  }
-  .word-chip {
-    font-family: var(--display); font-style: italic; font-size: 20px;
-    padding: 2px 12px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--gold);
-  }
-  .word-chip.empty { color: var(--muted); border-style: dashed; min-width: 56px; text-align: center; }
+/* ---------- верхняя строка ---------- */
+.top {
+  position: absolute; inset: 0 0 auto 0; z-index: 5;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  padding: 20px calc(var(--m) + 12px); font-size: var(--step-small); pointer-events: none;
+}
+.top > * { pointer-events: auto; }
+.top .mark { color: var(--paper-ink); text-decoration: none; font-weight: 500; }
+.top .count { color: var(--ink); background: var(--surface-2); padding: 8px 12px; }
 
-  .toast {
-    position: fixed; left: 50%; transform: translateX(-50%);
-    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-    width: min(420px, calc(100% - 32px));
-    background: var(--ink-3); border: 1px solid var(--line-2); border-radius: 18px;
-    padding: 14px 16px; z-index: 70; display: flex; gap: 12px; align-items: center; justify-content: space-between;
-  }
-  .toast b { font-family: var(--mono); font-weight: 500; color: var(--gold); font-variant-numeric: tabular-nums; }
+/* =====================================================================
+   ПЕРВЫЙ ЭКРАН (и экран входа): лист слева, планета справа
+   ===================================================================== */
+.hero { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; min-height: 100svh; }
+.sheet {
+  background: var(--paper); color: var(--paper-ink);
+  display: grid; grid-template-rows: 1fr auto 1fr; justify-items: center; text-align: center;
+  padding: 96px clamp(24px, 4vw, 64px) 40px; min-height: calc(100svh - 24px);
+}
+.sheet__body { grid-row: 2; display: grid; justify-items: center; max-width: 34rem; width: 100%; }
+.sheet h1 { font-size: var(--step-head); max-width: 9ch; }
+.sheet .lead { margin-top: 36px; max-width: 40ch; }
+.sheet .btn { margin-top: 36px; min-width: 260px; }
+.sheet__foot { grid-row: 3; align-self: end; display: grid; gap: 2px; color: var(--paper-soft); font-size: var(--step-small); }
+.sheet__foot strong { color: var(--paper-ink); font-weight: 500; }
 
-  /* ---------- Глава ---------- */
-  .ch-top { display: flex; align-items: center; justify-content: space-between; }
-  .back { background: none; border: 0; color: var(--muted); font-size: 14px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; padding: 6px 0; }
-  .ch-head { display: flex; flex-direction: column; gap: 10px; }
-  .stage { display: flex; flex-direction: column; gap: 16px; align-items: stretch; }
+.gate-form { margin-top: 32px; width: min(100%, 26rem); display: grid; gap: 12px; text-align: left; }
+.gate-form label { font-weight: 500; }
+.gate-form .input { background: var(--paper-2); color: var(--paper-ink); }
+.gate-form .btn { margin-top: 8px; width: 100%; min-width: 0; }
+.gate-form .link { color: var(--paper-soft); justify-self: start; }
+.gate-form .msg { color: var(--sun-field); }
+.gate-form .hint { color: var(--paper-soft); }
 
-  /* 1. соедини звёзды */
-  .dots-wrap { width: 100%; max-width: 360px; align-self: center; aspect-ratio: 1 / 0.95; }
-  .dots-wrap svg { width: 100%; height: 100%; display: block; overflow: visible; touch-action: manipulation; }
-  .dot circle.hit { fill: transparent; cursor: pointer; }
-  .dot text { font-family: var(--mono); font-size: 9px; fill: var(--muted); text-anchor: middle; pointer-events: none; }
+.view {
+  position: sticky; top: 12px; height: calc(100svh - 24px);
+  background: #000; overflow: hidden; display: grid; grid-template-rows: 1fr auto;
+}
+.view__pic { position: relative; overflow: hidden; }
+.view__pic img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+@media (prefers-reduced-motion: no-preference) {
+  .view__pic img { animation: drift 28s ease-in-out infinite alternate; }
+}
+@keyframes drift { from { transform: scale(1.02); } to { transform: scale(1.09) translateY(-1.5%); } }
+.view__name { position: absolute; left: 20px; bottom: 8px; z-index: 1; font-size: var(--step-display); color: var(--ink); line-height: 0.82; pointer-events: none; }
+.view__bar {
+  min-height: 56px; background: var(--paper); color: var(--paper-ink);
+  display: flex; justify-content: space-between; align-items: center; gap: 4px 16px; flex-wrap: wrap;
+  padding: 10px 20px; font-size: var(--step-small);
+}
+.view__bar b { font-weight: 500; font-variant-numeric: tabular-nums; }
 
-  /* 2. пятнашки */
-  .slide {
-    position: relative; width: 100%; max-width: 330px; aspect-ratio: 1; align-self: center;
-    border-radius: 16px; overflow: hidden; background: var(--ink-3); border: 1px solid var(--line-2);
-    touch-action: manipulation;
-  }
-  .tile {
-    position: absolute; width: calc(100% / 3); height: calc(100% / 3);
-    border: 0; padding: 0; cursor: pointer;
-    background-size: 300% 300%;
-    box-shadow: inset 0 0 0 1px rgba(12, 11, 23, .55);
-    transition: transform .22s cubic-bezier(.2, .8, .2, 1);
-  }
-  .slide.solved .tile { box-shadow: none; }
-  .tile-num { position: absolute; top: 4px; left: 6px; font: 500 10px var(--mono); color: rgba(255,255,255,.75); text-shadow: 0 1px 2px rgba(0,0,0,.6); }
-  .slide.solved .tile-num { opacity: 0; }
+/* =====================================================================
+   ВЕСЬ ПУТЬ В МАСШТАБЕ: горизонтальный перелёт при прокрутке
+   ===================================================================== */
+.scale { position: relative; margin-top: var(--gap-section); }
+.scale__pin { position: sticky; top: 0; height: 100svh; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+.scale__head { padding: 8svh var(--m) 0; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; }
+.scale__head h2 { grid-column: 1 / span 8; font-size: var(--step-head); }
+.scale__notes { grid-column: 1 / span 8; display: flex; gap: 48px; margin-top: 28px; }
+.scale__notes p { width: 17rem; font-size: var(--step-small); color: var(--muted); }
+.scale__notes p:first-child { color: var(--ink); }
+.scale__band { --H: min(56svh, 60vw); position: relative; overflow: clip; align-self: end; height: calc(var(--H) + 96px); margin-bottom: 4svh; }
+.track { position: absolute; left: 0; top: 0; height: 100%; display: flex; align-items: stretch; gap: clamp(48px, 7vw, 120px); padding-right: 12vw; will-change: transform; }
+.stop {
+  position: relative; display: grid; grid-template-rows: var(--H) auto; justify-items: center; flex: none; min-width: 120px;
+  background: none; border: 0; padding: 0; color: inherit; cursor: pointer;
+}
+.orb { position: relative; width: var(--box); height: var(--H); }
+.orb img, .orb .crop { position: absolute; left: 50%; top: 50%; width: var(--box); height: auto; max-width: none; transform: translate(-50%, -50%); }
+.crop { aspect-ratio: 1; background-repeat: no-repeat; border-radius: 50%; }
+.stop__cap { padding-top: 20px; text-align: center; display: grid; gap: 2px; }
+.stop__cap b { font: 400 var(--step-lead)/1.1 var(--display); }
+.stop__cap span { font-size: var(--step-small); color: var(--muted); white-space: nowrap; }
+.stop.is-done .stop__cap span { color: var(--accent); }
+@media (hover: hover) and (pointer: fine) {
+  .stop .orb { transition: transform 400ms var(--ease-out); }
+  .stop:hover .orb { transform: scale(1.04); }
+}
+.stop--sun { min-width: 0; width: calc(var(--H) * 0.42); justify-items: start; }
+.sun-arc {
+  position: absolute; top: 50%; right: 0; width: calc(var(--H) * 6.2); aspect-ratio: 1; border-radius: 50%;
+  transform: translateY(-50%); background: url("photos/planets/sun.jpg") 50% 48% / 127% auto no-repeat;
+}
+.stop--sun .stop__cap { position: absolute; bottom: 0; left: var(--m); text-align: left; z-index: 1; }
+.no-pin .scale__pin { position: relative; height: auto; min-height: 100svh; }
+.no-pin .scale__band { overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; }
+.no-pin .track { position: relative; }
+.no-pin .stop { scroll-snap-align: center; }
 
-  /* 4. мемори */
-  .mem { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .card { aspect-ratio: 3 / 4; perspective: 600px; border: 0; background: none; padding: 0; cursor: pointer; }
-  .card-in { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .45s cubic-bezier(.2, .8, .2, 1); }
-  .card.open .card-in, .card.got .card-in { transform: rotateY(180deg); }
-  .face { position: absolute; inset: 0; border-radius: 12px; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: grid; place-items: center; overflow: hidden; }
-  .face.back-f { background: var(--ink-3); border: 1px solid var(--line-2); }
-  .face.back-f::after { content: ""; width: 10px; height: 10px; background: var(--lilac); transform: rotate(45deg); opacity: .6; box-shadow: 0 0 12px var(--lilac); }
-  .face.front { transform: rotateY(180deg); background: var(--star); color: var(--ink); font-size: 30px; }
-  .face.front img { width: 100%; height: 100%; object-fit: cover; }
-  .card.got .face.front { box-shadow: 0 0 0 2px var(--gold), 0 0 18px rgba(242, 207, 134, .5); }
+/* =====================================================================
+   МАРШРУТНЫЙ ЛИСТ
+   ===================================================================== */
+.route { position: relative; margin-top: var(--gap-section); padding: 12svh var(--m); min-height: 100svh; }
+.route__bg { position: absolute; inset: 0; overflow: hidden; }
+.route__bg img { width: 100%; height: 100%; object-fit: cover; object-position: 20% 50%; }
+.route__wrap { position: relative; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; }
+.paper {
+  grid-column: 7 / span 6; justify-self: center; width: min(640px, 100%); position: relative;
+  background: var(--paper); color: var(--paper-ink); padding: 72px 64px 64px; text-align: center;
+}
+.paper::before, .paper::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 12px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='12'%3E%3Ccircle cx='12' cy='12' r='12' fill='%23ebe7e0'/%3E%3C/svg%3E") repeat-x;
+}
+.paper::before { top: -12px; }
+.paper::after { bottom: -12px; transform: scaleY(-1); }
+.paper h2 { font-size: var(--step-head); }
+.paper__note { margin: 16px auto 0; max-width: 34ch; font-size: var(--step-small); color: var(--paper-soft); }
+.group { margin-top: 56px; }
+.group h3 { font-size: var(--step-lead); margin-bottom: 12px; }
+.item {
+  display: grid; grid-template-columns: 1fr auto; column-gap: 24px; text-align: left; width: 100%; max-width: 26.25rem;
+  margin: 0 auto; padding: 10px 12px; background: none; border: 0; color: inherit; cursor: pointer;
+  transition: background-color 200ms ease, transform 160ms var(--ease-out);
+}
+.item:active { transform: scale(0.985); }
+@media (hover: hover) and (pointer: fine) { .item:hover { background: var(--paper-2); } }
+.item__name { font-weight: 500; }
+.item__state { text-align: right; color: var(--paper-soft); }
+.item.is-done .item__state { color: var(--paper-ink); }
+.item__desc { grid-column: 1 / -1; font-size: var(--step-small); color: var(--paper-soft); line-height: 1.45; }
+.paper__end { margin-top: 48px; color: var(--paper-soft); font-size: var(--step-small); }
 
-  /* 5. шифр */
-  .cipher-line { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-  .cchip { font-family: var(--mono); font-size: 18px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line-2); color: var(--gold); min-width: 52px; text-align: center; }
-  .grid-wrap { overflow-x: auto; }
-  table.poly { border-collapse: collapse; margin: 0 auto; font-family: var(--mono); font-size: 14px; }
-  table.poly th, table.poly td { width: 40px; height: 36px; text-align: center; border: 1px solid var(--line); }
-  table.poly th { color: var(--lilac); font-weight: 500; }
-  table.poly th.greek { font-family: var(--display); font-size: 20px; font-style: italic; }
+/* =====================================================================
+   ОТКРЫТКИ С ДОРОГИ
+   ===================================================================== */
+.cards { margin-top: var(--gap-section); }
+.cards__head { padding: 0 var(--m); display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; margin-bottom: 56px; }
+.cards__head h2 { grid-column: 3 / span 7; font-size: var(--step-head); }
+.cards__head p { grid-column: 3 / span 5; margin-top: 20px; max-width: 44ch; }
+.band { display: flex; height: 68svh; min-height: 420px; }
+.panel {
+  position: relative; flex: var(--g) 1 0; min-width: 0; overflow: hidden; border: 0; padding: 0;
+  background: #000; cursor: pointer; text-align: left; color: var(--ink);
+  transition: flex-grow 500ms var(--ease-in-out);
+}
+.panel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(var(--z, 1.6)); transform-origin: var(--o, 50% 50%); transition: transform 700ms var(--ease-out); }
+.panel__text { position: absolute; left: 0; right: 0; bottom: 0; padding: 20px; overflow: hidden; background: rgba(0, 0, 0, 0.62); display: grid; gap: 4px; }
+.panel__text b { font: 400 var(--step-lead)/1.1 var(--display); }
+.panel__text span { font-size: var(--step-small); color: var(--muted); }
+.panel.is-locked img { filter: grayscale(1) brightness(0.45); }
+@media (hover: hover) and (pointer: fine) {
+  .panel:hover { flex-grow: 6; }
+  .panel:hover img { transform: scale(calc(var(--z, 1.6) * 1.04)); }
+}
+.cards__foot { padding: 16px var(--m) 0; color: var(--muted); font-size: var(--step-small); }
 
-  /* 6. мелодия */
-  .pads { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 320px; width: 100%; align-self: center; }
-  .pad { aspect-ratio: 1; border-radius: 24px; border: 1px solid var(--line-2); background: var(--ink-3); cursor: pointer; position: relative; transition: transform .1s; }
-  .pad::after { content: ""; position: absolute; inset: 22%; border-radius: 50%; background: var(--c); opacity: .22; transition: opacity .15s, box-shadow .15s; }
-  .pad.lit::after { opacity: 1; box-shadow: 0 0 40px var(--c); }
-  .pad:active { transform: scale(.96); }
-  .pads.wait .pad { pointer-events: none; }
-  .round { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+/* =====================================================================
+   ПОСЛЕДНЯЯ ОСТАНОВКА
+   ===================================================================== */
+.final {
+  position: relative; margin-top: var(--gap-section); background: var(--sun-field); color: var(--paper);
+  min-height: 72svh; padding: 0 var(--m); display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; overflow: hidden;
+}
+.final__say { grid-column: 1 / span 4; align-self: end; padding-bottom: 64px; font-size: var(--step-lead); line-height: 1.4; max-width: 22ch; }
+.reply {
+  grid-column: 6 / span 7; align-self: end; margin-bottom: -60px; background: var(--paper); color: var(--paper-ink);
+  aspect-ratio: 7 / 5; padding: 48px 48px 96px; transform: rotate(-2deg); transform-origin: 50% 100%;
+  display: grid; align-content: center; justify-items: center; text-align: center; gap: 18px;
+}
+.reply h2 { font-size: var(--step-head); }
+.reply p { max-width: 34ch; }
+.words { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 10px; margin: 6px 0 8px; }
+.words span { min-width: 4.5ch; padding: 6px 10px; background: var(--paper-2); font: 400 var(--step-lead)/1.2 var(--display); color: var(--paper-soft); }
+.words span.is-got { background: var(--paper-ink); color: var(--paper); }
+.reply .btn { width: 100%; }
 
-  /* 7. финал */
-  .answer-line { min-height: 56px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; padding: 10px; border-radius: 16px; border: 1px dashed var(--line-2); }
-  .pool { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-  .wtile { font-family: var(--display); font-style: italic; font-size: 22px; padding: 4px 14px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--ink-3); cursor: pointer; color: var(--star); }
-  .answer-line .wtile { color: var(--gold); border-color: rgba(242, 207, 134, .5); }
-  .letter { display: flex; flex-direction: column; gap: 14px; font-family: var(--display); font-size: 21px; line-height: 1.45; }
-  .letter .sig { font-style: italic; color: var(--rose); text-align: right; }
+/* =====================================================================
+   ПОДВАЛ
+   ===================================================================== */
+.foot {
+  position: relative; background: var(--paper); color: var(--paper-ink);
+  min-height: 100svh; padding: 40px var(--m) 20px; display: grid; grid-template-rows: auto auto 1fr auto auto;
+}
+.foot__cols { display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 24px; font-size: var(--step-small); }
+.foot__cols li { color: var(--paper-soft); }
+.foot__cols li:first-child { color: var(--paper-ink); font-weight: 500; margin-bottom: 4px; }
+.foot__cols a { text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.foot__name { grid-row: 4; width: 100%; height: auto; display: block; }
+.foot__name text { font-family: var(--display); fill: var(--paper-ink); }
+.foot__legal { grid-row: 5; max-width: 60ch; margin-top: 16px; font-size: var(--step-small); color: var(--paper-soft); }
+.dev { margin-top: 40px; background: var(--paper-2); padding: 24px; display: grid; gap: 12px; max-width: 44rem; font-size: var(--step-small); }
+.dev h2 { font-size: var(--step-lead); }
+.dev .input { background: var(--paper); color: var(--paper-ink); }
+.dev code { word-break: break-all; font-size: 0.875rem; }
+.dev .row { display: flex; gap: 8px; flex-wrap: wrap; }
 
-  /* ---------- Награда ---------- */
-  .reward { display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: center; }
-  .got-word { font-family: var(--display); font-style: italic; font-size: 54px; color: var(--gold); line-height: 1; text-shadow: 0 0 30px rgba(242, 207, 134, .35); }
-  .got-word span { display: inline-block; }
-  .coupon { position: relative; width: 100%; max-width: 340px; border-radius: 18px; overflow: hidden; }
-  .coupon-in {
-    background: var(--star); color: var(--ink); padding: 22px 18px; min-height: 140px;
-    display: flex; flex-direction: column; gap: 8px; justify-content: center; align-items: center;
-    background-image: radial-gradient(circle at 0 50%, var(--ink-2) 10px, transparent 11px), radial-gradient(circle at 100% 50%, var(--ink-2) 10px, transparent 11px);
-  }
-  .coupon-in .eyebrow { color: #6d6488; }
-  .coupon-text { font-family: var(--display); font-size: 25px; font-weight: 600; line-height: 1.15; text-wrap: balance; }
-  .coupon-note { font-size: 12px; color: #6d6488; }
-  .foil { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+/* =====================================================================
+   ГЛАВА
+   ===================================================================== */
+.chapter {
+  position: fixed; inset: 0; z-index: 20; background: #000; color: var(--ink);
+  display: grid; grid-template-columns: 1fr 1fr; overflow-y: auto; overscroll-behavior: contain;
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 320ms var(--ease-out), transform 420ms var(--ease-drawer);
+}
+.chapter.is-open { opacity: 1; transform: none; }
+.chapter__pic { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+.chapter__pic img { position: absolute; width: 150%; height: auto; max-width: none; left: -25%; top: 18%; }
+.chapter__body { padding: 32px clamp(20px, 4vw, 64px) 64px; display: grid; align-content: start; min-width: 0; }
+.chapter__close { justify-self: start; }
+.chapter h2 { margin-top: 10svh; font-size: var(--step-display); line-height: 0.85; }
+.chapter__meta { margin-top: 16px; color: var(--muted); font-size: var(--step-small); }
+.chapter__story { margin-top: 24px; max-width: 42ch; font-size: var(--step-lead); line-height: 1.35; }
+.stage { margin-top: 40px; display: grid; gap: 16px; justify-items: start; max-width: 36rem; }
+.step { color: var(--muted); font-size: var(--step-small); }
+.task { max-width: 42ch; }
+.fact { max-width: 42ch; padding: 20px; background: var(--surface-2); }
+.fact b { font-weight: 500; color: var(--accent); }
+.input {
+  width: 100%; min-height: 56px; padding: 0 16px; border: 0; border-radius: 0;
+  background: var(--surface-2); color: var(--ink); font-size: 1.125rem;
+}
+.input.is-bad { background: #3a1d14; }
+.msg { min-height: 1.55em; color: var(--bad); font-size: var(--step-small); }
+.hint { color: var(--muted); max-width: 42ch; font-size: var(--step-small); }
+.field { display: grid; gap: 8px; width: 100%; }
+.field label { font-size: var(--step-small); color: var(--muted); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.shake { animation: shake 360ms var(--ease-out); }
+@keyframes shake { 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
+@media (prefers-reduced-motion: reduce) { .shake { animation: none; } }
 
-  /* ---------- Режим разработчика ---------- */
-  .dev { border: 1px dashed var(--gold); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
-  .dev code { font-family: var(--mono); font-size: 11px; word-break: break-all; color: var(--gold); }
-  .dev .row { display: flex; gap: 8px; flex-wrap: wrap; }
+/* Венера: роза */
+.rose { width: min(100%, 440px); aspect-ratio: 1; background: var(--surface); touch-action: manipulation; }
+.rose .line { fill: none; stroke: var(--accent); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.rose .ghost { fill: none; stroke: #2a2723; stroke-width: 1; }
+.rose .pt { cursor: pointer; }
+.rose .pt circle.core { fill: var(--ink); transition: fill 200ms ease; }
+.rose .pt.is-next circle.core { fill: var(--accent); }
+.rose .pt.is-hit circle.core { fill: var(--accent); }
+.rose .pt circle.hit { fill: transparent; }
+.rose .pt text { fill: var(--muted); font: 500 11px var(--text); text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
+.rose .pt.is-hit text { fill: var(--accent); }
+.mirror { font: 400 var(--step-lead)/1.4 var(--display); transform: scaleX(-1); max-width: 30ch; padding: 20px; background: var(--surface-2); }
 
-  /* ---------- 3D-галактика ---------- */
-  #gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; touch-action: none; }
-  .app { z-index: 3; }
-  .dim {
-    position: fixed; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .9s;
-    background: radial-gradient(120% 80% at 50% 30%, rgba(7, 6, 15, .35), rgba(7, 6, 15, .88));
-  }
-  .dim.on { opacity: 1; }
-  .labels { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
-  .lbl {
-    position: absolute; left: 0; top: 0; background: none; border: 0; padding: 6px 10px; cursor: pointer;
-    text-align: center; white-space: nowrap; pointer-events: auto; will-change: transform;
-  }
-  .lbl .d { display: block; font: 500 10px var(--mono); letter-spacing: .16em; color: var(--muted); }
-  .lbl .t { display: block; font: italic 500 19px var(--display); color: var(--star); text-shadow: 0 0 14px rgba(7, 6, 15, .95), 0 0 2px rgba(7, 6, 15, .9); }
-  .lbl.done .t { color: var(--gold); }
-  .lbl.locked .t, .lbl.blocked .t { color: var(--muted); }
-  .app.hub3d { pointer-events: none; }
-  .app.hub3d .screen > *:not(.spacer) { pointer-events: auto; }
-  .hub3d-screen { min-height: calc(100vh - 68px); min-height: calc(100dvh - 68px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
-  .hub3d-screen .spacer { flex: 1; min-height: 46vh; pointer-events: none; }
-  .hub3d-screen h1 { font-size: 38px; text-shadow: 0 0 24px rgba(7, 6, 15, .9); }
-  .tap-hint { font-size: 12px; color: var(--muted); text-align: center; }
-  .caption3d {
-    position: fixed; left: 16px; right: 16px; z-index: 61; text-align: center; opacity: 0;
-    bottom: calc(14% + env(safe-area-inset-bottom, 0px));
-    font: italic 500 30px/1.25 var(--display); color: var(--gold); text-shadow: 0 0 30px rgba(242, 207, 134, .45);
-  }
+/* Марс: марсоход */
+.mars-grid {
+  position: relative; width: min(100%, 440px); display: grid; grid-template-columns: repeat(var(--c), 1fr);
+  background: url("photos/planets/mars.jpg") 40% 45% / 260% auto; touch-action: manipulation;
+}
+.mars-grid::before { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.35); }
+.cell { position: relative; aspect-ratio: 1; display: grid; place-items: center; }
+.cell .crater { width: 64%; aspect-ratio: 1; border-radius: 50%; background: #1d140c; box-shadow: inset 0 0 0 4px #4a3220; /* taste-skill-ignore: кратер в игре */ }
+.cell .flag { width: 46%; aspect-ratio: 1; background: var(--accent); clip-path: polygon(0 0, 100% 30%, 18% 60%, 18% 100%, 0 100%); }
+.cell .sample { width: 32%; aspect-ratio: 1; background: var(--paper); transform: rotate(45deg); transition: opacity 200ms ease, transform 200ms var(--ease-out); }
+.cell .sample.is-got { opacity: 0; transform: rotate(45deg) scale(0.5); }
+.rover {
+  position: absolute; left: 0; top: 0; width: calc(100% / var(--c)); aspect-ratio: 1; display: grid; place-items: center; z-index: 2;
+  transition: transform 300ms var(--ease-in-out);
+}
+.rover svg { width: 78%; height: auto; }
+.rover.is-crash { animation: shake 360ms var(--ease-out); }
+.pad-row { display: grid; grid-template-columns: repeat(4, 56px); gap: 8px; }
+.pad-row .btn { padding: 0; font-size: 1.375rem; }
+.program { display: flex; flex-wrap: wrap; gap: 6px; min-height: 44px; width: 100%; padding: 8px; background: var(--surface); align-content: flex-start; }
+.program button { width: 36px; height: 36px; border: 0; background: var(--surface-3); color: var(--ink); cursor: pointer; font-size: 1.125rem; }
+.program .empty { color: var(--muted); font-size: var(--step-small); padding: 6px 4px; }
+.signal { font: 400 var(--step-head)/1 var(--display); font-variant-numeric: tabular-nums; color: var(--accent); }
+.sunset { width: min(100%, 440px); aspect-ratio: 4 / 3; display: block; }
 
-  .shake { animation: shake .4s; }
-  @keyframes shake { 20%, 60% { transform: translateX(-7px); } 40%, 80% { transform: translateX(7px); } }
+/* Юпитер: мемори */
+.mem { display: grid; grid-template-columns: repeat(var(--cols, 4), 1fr); gap: 8px; width: min(100%, 460px); }
+.card { aspect-ratio: 1; perspective: 700px; border: 0; padding: 0; background: none; cursor: pointer; color: inherit; }
+.card__in { display: block; position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 420ms var(--ease-out); }
+.card.is-open .card__in, .card.is-got .card__in { transform: rotateY(180deg); }
+.card__f { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: grid; place-items: center; overflow: hidden; }
+.card__back { background: var(--surface-2); }
+.card__back::after { content: ""; width: 26%; aspect-ratio: 1; border-radius: 50%; background: var(--surface-3); }
+.card__front { transform: rotateY(180deg); background: #000; background-repeat: no-repeat; }
+.card__front img { width: 100%; height: 100%; object-fit: cover; }
+.card__front.is-name { background: var(--paper); color: var(--paper-ink); font: 400 clamp(0.8125rem, 3.1vw, 1.25rem)/1.1 var(--display); padding: 4px; overflow-wrap: anywhere; text-align: center; }
+.card.is-got .card__in { transition: transform 420ms var(--ease-out), opacity 300ms ease; }
+.card.is-got .card__front { outline: 3px solid var(--accent); outline-offset: -3px; }
+@media (prefers-reduced-motion: reduce) { .card__in { transition: none; } }
 
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-  }
+/* Сатурн: шифровальный диск */
+.disk { width: min(100%, 400px); aspect-ratio: 1; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.disk text { font: 500 13px var(--text); text-anchor: middle; dominant-baseline: middle; }
+.disk .outer text { fill: var(--ink); }
+.disk .inner text { fill: var(--accent); }
+.disk .inner { transition: transform 220ms var(--ease-out); }
+.disk.is-drag .inner { transition: none; }
+.cipher { font: 400 var(--step-lead)/1.5 var(--display); letter-spacing: 0.12em; color: var(--accent); word-spacing: 0.4em; }
+
+/* Нептун: золотая пластинка */
+.record { position: relative; width: min(100%, 340px); aspect-ratio: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.sector { border: 0; cursor: pointer; background: var(--c); transition: transform 160ms var(--ease-out), background-color 160ms ease; }
+.sector:nth-child(1) { border-radius: 100% 0 0 0; }
+.sector:nth-child(2) { border-radius: 0 100% 0 0; }
+.sector:nth-child(3) { border-radius: 0 0 0 100%; }
+.sector:nth-child(4) { border-radius: 0 0 100% 0; }
+.sector:active { transform: scale(0.97); }
+.sector.is-lit { background: #ffe9a8; }
+.record.is-wait .sector { cursor: default; }
+.record__hole { position: absolute; left: 50%; top: 50%; width: 22%; aspect-ratio: 1; border-radius: 50%; background: #000; transform: translate(-50%, -50%); pointer-events: none; display: grid; place-items: center; }
+.record__hole::after { content: ""; width: 22%; aspect-ratio: 1; border-radius: 50%; background: var(--paper); }
+
+/* Солнце: фраза и письмо */
+.answer-line, .pool { display: flex; flex-wrap: wrap; gap: 8px; min-height: 64px; width: 100%; padding: 10px; }
+.answer-line { background: var(--surface-2); }
+.wtile { min-height: 48px; padding: 0 16px; border: 0; background: var(--paper); color: var(--paper-ink); font: 400 var(--step-lead)/1 var(--display); cursor: pointer; transition: transform 160ms var(--ease-out); }
+.wtile:active { transform: scale(0.96); }
+.answer-line .wtile { background: var(--accent); }
+.letter { background: var(--paper); color: var(--paper-ink); padding: 40px 32px; display: grid; gap: 18px; width: 100%; font-size: var(--step-lead); line-height: 1.45; }
+.letter .sig { font-family: var(--display); text-align: right; }
+.phrase { font: 400 var(--step-head)/1.05 var(--display); color: var(--accent); max-width: 14ch; }
+
+/* =====================================================================
+   ОТКРЫТКА
+   ===================================================================== */
+.post {
+  position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 16px; overflow-y: auto;
+  background: rgba(0, 0, 0, 0.78); opacity: 0; transition: opacity 240ms var(--ease-out);
+}
+.post.is-open { opacity: 1; }
+.postcard {
+  width: min(760px, 100%); background: var(--paper); color: var(--paper-ink);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 32px; padding: 32px;
+  transform: rotate(-1.5deg) scale(0.94) translateY(16px); opacity: 0;
+  transition: transform 520ms var(--ease-out), opacity 320ms var(--ease-out);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); /* taste-skill-ignore: открытка — всплывающий диалог */
+}
+.post.is-open .postcard { transform: rotate(-1.5deg); opacity: 1; }
+.postcard__stamp { aspect-ratio: 4 / 5; overflow: hidden; background: #000; }
+.postcard__stamp img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.5); }
+.postcard__text { display: grid; align-content: space-between; gap: 20px; }
+.postcard__text h3 { font-size: var(--step-lead); }
+.postcard__word { font: 400 var(--step-head)/0.9 var(--display); }
+.postcard__note { color: var(--paper-soft); font-size: var(--step-small); margin-top: 8px; }
+.postcard__after { background: var(--paper-ink); color: var(--paper); padding: 14px 16px; }
+.coupon { position: relative; background: var(--paper-2); min-height: 112px; }
+.coupon__in { padding: 16px; display: grid; gap: 4px; }
+.coupon__in span { font-size: var(--step-small); color: var(--paper-soft); }
+.coupon__in b { font-weight: 500; }
+.coupon canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; transition: opacity 500ms ease; }
+
+/* ---------- появление частей секции ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .js .rise { opacity: 0; transform: translateY(24px); transition: opacity 700ms var(--ease-out), transform 900ms var(--ease-out); transition-delay: calc(var(--i, 0) * 80ms); }
+  .js .rise.is-in { opacity: 1; transform: none; }
+}
+
+/* =====================================================================
+   ТЕЛЕФОН
+   ===================================================================== */
+@media (max-width: 900px) {
+  .top { padding: 18px 24px; }
+  .top .mark { color: var(--ink); }
+  .hero { grid-template-columns: 1fr; gap: 0; }
+  .view { grid-row: 1; height: 56svh; z-index: 0; }
+  .view__name { font-size: 22vw; left: 14px; bottom: calc(8svh + 4px); }
+  .view__bar { padding: 10px 14px; }
+  .sheet { grid-row: 2; position: relative; z-index: 1; min-height: auto; padding: 44px 22px 32px; margin-top: -8svh; grid-template-rows: auto auto; }
+  .sheet__body { grid-row: 1; }
+  .sheet h1 { font-size: min(13vw, 4.5rem); }
+  .sheet .lead { margin-top: 24px; }
+  .sheet .btn { width: 100%; min-width: 0; margin-top: 28px; }
+  .sheet__foot { grid-row: 2; margin-top: 32px; }
+  .hero--gate .view { height: 34svh; }
+  .hero--gate .view__name { font-size: 16vw; }
+  .hero--gate .sheet { margin-top: -4svh; padding-top: 32px; }
+
+  .scale__head { grid-template-columns: 1fr; }
+  .scale__head h2 { grid-column: 1; }
+  .scale__notes { grid-column: 1; flex-direction: column; gap: 8px; margin-top: 20px; }
+  .scale__notes p { width: auto; }
+  .scale__band { --H: 44svh; }
+
+  .route { padding: 64px 10px; }
+  .route__wrap { grid-template-columns: 1fr; }
+  .paper { grid-column: 1; padding: 48px 12px 40px; }
+  .group { margin-top: 44px; }
+  .item { max-width: none; }
+
+  .cards__head { grid-template-columns: 1fr; margin-bottom: 32px; }
+  .cards__head h2, .cards__head p { grid-column: 1; }
+  .band { display: grid; grid-template-columns: repeat(6, 1fr); grid-auto-rows: 28svh; height: auto; min-height: 0; }
+  .panel:nth-child(1), .panel:nth-child(4), .panel:nth-child(5) { grid-column: span 4; }
+  .panel:nth-child(2), .panel:nth-child(3), .panel:nth-child(6) { grid-column: span 2; }
+  .panel__text { padding: 12px 16px; }
+  .panel__text b { font-size: 1.125rem; }
+
+  .final { grid-template-columns: 1fr; padding: 72px 16px 0; min-height: 0; }
+  .final__say { grid-column: 1; padding-bottom: 40px; }
+  .reply { grid-column: 1; width: 92%; justify-self: center; aspect-ratio: auto; padding: 36px 22px 84px; transform: rotate(-1deg); margin-bottom: -40px; }
+
+  .foot__cols { grid-template-columns: 1fr 1fr; row-gap: 32px; }
+  .foot { min-height: 88svh; }
+
+  .chapter { grid-template-columns: 1fr; }
+  .chapter__pic { position: relative; height: 40svh; }
+  .chapter__pic img { width: 160%; left: -30%; top: 22%; }
+  .chapter__body { padding: 20px 16px 64px; margin-top: -12svh; position: relative; }
+  .chapter__close { position: fixed; top: 16px; left: 16px; z-index: 2; }
+  .chapter h2 { margin-top: 0; }
+
+  .postcard { grid-template-columns: 1fr; gap: 18px; padding: 20px; }
+  .postcard__stamp { aspect-ratio: 16 / 9; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chapter, .chapter.is-open { transform: none; }
+  .postcard, .post.is-open .postcard { transform: rotate(-1.5deg); }
+  .panel, .panel img, .rover, .disk .inner { transition: none; }
+}
 </style>
+</head>
+<body>
+<div id="app"></div>
 
-<canvas id="sky" aria-hidden="true"></canvas>
-<canvas id="gl" aria-hidden="true" hidden></canvas>
-<div class="dim" id="dim" aria-hidden="true"></div>
-<div class="labels" id="labels" hidden></div>
-<canvas id="fx" aria-hidden="true"></canvas>
-<main class="app" id="app"></main>
-<div class="toast" id="toast" hidden></div>
+<div class="chapter" id="chapter" role="dialog" aria-modal="true" aria-labelledby="chTitle" hidden>
+  <div class="chapter__pic"><img id="chPic" src="" width="1400" height="1400" alt=""></div>
+  <div class="chapter__body">
+    <button class="btn btn--dark btn--small chapter__close" type="button" id="chClose">К маршруту</button>
+    <h2 id="chTitle"></h2>
+    <p class="chapter__meta" id="chMeta"></p>
+    <p class="chapter__story" id="chStory"></p>
+    <div class="stage" id="stage"></div>
+  </div>
+</div>
+
+<div class="post" id="post" role="dialog" aria-modal="true" aria-labelledby="postTitle" hidden>
+  <div class="postcard">
+    <div class="postcard__stamp"><img id="postPic" src="" alt=""></div>
+    <div class="postcard__text">
+      <h3 id="postTitle"></h3>
+      <div>
+        <p class="postcard__word" id="postWord"></p>
+        <p class="postcard__note" id="postNote"></p>
+      </div>
+      <p class="postcard__after" id="postAfter" hidden></p>
+      <div class="coupon" id="coupon"></div>
+      <button class="btn" type="button" id="postClose">Дальше по маршруту</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* =====================================================================
    НАСТРОЙКИ — всё, что нужно поменять под себя, находится здесь.
-   Ответы на загадки хранятся как SHA-256, чтобы их нельзя было
-   подсмотреть в коде. Хеш нового ответа: открой сайт с #dev в конце
-   адреса (index.html#dev) и введи слово в генератор внизу.
+   Ответы на вход и на записку хранятся как SHA-256, чтобы их нельзя
+   было подсмотреть в коде. Хеш нового ответа: открой сайт с #dev
+   в конце адреса (index.html#dev) и введи слово в генератор внизу.
    ===================================================================== */
 const CONFIG = {
   herName: "Настя",
-  // День 1 открывается в этот день, дальше по одной главе каждый день
-  startDate: "2026-11-02",
-  unlockHour: 9, // во сколько утра загорается новая звезда
 
   gate: {
     question: "Как я называю тебя, когда никто не слышит?",
@@ -310,90 +551,96 @@ const CONFIG = {
     answerHash: "ce4935245b12ea11ad36ed4ff3e7950b40512d818c9da85fbf3d793cf304e456" // «звёздочка»
   },
 
-  chapters: [
+  // Порядок планет = порядок слов в финальной фразе
+  planets: [
     {
-      type: "dots",
-      title: "Первая звезда",
-      story: "Каждое созвездие начинается с одной звезды. Соедини их по порядку и посмотри, что получится.",
+      key: "venus", type: "venus", name: "Венера", to: "на Венеру", from: "с Венеры", nth: "Первая",
+      light: "6 световых минут от Солнца", img: "venus.jpg", diam: 12104, frac: 0.87, z: 1.25,
+      story: "Её назвали в честь богини любви. С неё и начнём.",
+      // Ответ на зеркальное послание: любое из этих слов
+      mirror: "На Венере солнце встаёт на западе. А моё солнце просыпается рядом со мной. Напиши, как его зовут.",
+      mirrorAnswers: ["настя", "анастасия", "настюша", "настенька", "солнце"],
       word: "ты",
       coupon: "Завтрак, который готовлю я"
     },
     {
-      type: "slide",
-      title: "Осколки",
-      story: "Одна картинка рассыпалась на кусочки. Верни каждый на место: двигай плитки в пустую клетку.",
-      photo: "", // путь к вашей фотке, например "photos/us.jpg". Пусто — нарисую сам
+      key: "earth", type: "earth", name: "Земля", to: "на Землю", from: "с Земли", nth: "Вторая",
+      light: "8 световых минут от Солнца", img: "earth.jpg", diam: 12742, frac: 0.89, z: 1.3,
+      story: "Единственная планета, где есть ты. Поэтому задание здесь не на экране, а у тебя дома.",
+      // Записок может быть несколько: каждая загадка ведёт к следующей
+      notes: [
+        {
+          riddle: "Там, где каждое утро начинается с горячей кружки, на самой верхней полке, за самой большой из них, тебя ждёт бумажка. Слово на ней и есть ключ.",
+          hint: "Кухня. Верхняя полка. Посмотри за кружками.",
+          answerHash: "fff5ef4543f69e461f8f83d0b489bc4cecfecdf75c8ca6c2ffb26971e5a97fae" // «рассвет»
+        }
+      ],
       word: "лучшее",
-      coupon: "Вечер фильмов, выбираешь ты"
-    },
-    {
-      type: "note",
-      title: "Записка",
-      story: "Сегодня звезда спрятана не на экране, а у тебя дома.",
-      riddle: "Там, где каждое утро начинается с горячей кружки, на самой верхней полке, за самой большой из них, тебя ждёт бумажка. Слово на ней и есть ключ.",
-      hint: "Кухня. Верхняя полка. Посмотри за кружками.",
-      answerHash: "fff5ef4543f69e461f8f83d0b489bc4cecfecdf75c8ca6c2ffb26971e5a97fae", // «рассвет»
-      word: "что",
       coupon: "Прогулка туда, куда скажешь"
     },
     {
-      type: "memory",
-      title: "Пары",
-      story: "Здесь шесть пар маленьких вещей, из которых сложены наши дни. Найди все.",
-      // Можно эмодзи, слово или путь к фото: "photos/1.jpg"
-      cards: ["🌙", "☕", "🎧", "🎮", "🌸", "🍓"],
+      key: "mars", type: "mars", name: "Марс", to: "на Марс", from: "с Марса", nth: "Третья",
+      light: "13 световых минут от Солнца", img: "mars.jpg", diam: 6779, frac: 1, z: 1.35,
+      story: "Марсоходом нельзя рулить вживую: сигнал идёт слишком долго. Маршрут прокладывают заранее и отправляют целиком.",
+      word: "что",
+      coupon: "Вечер фильмов, выбираешь ты"
+    },
+    {
+      key: "jupiter", type: "jupiter", name: "Юпитер", to: "на Юпитер", from: "с Юпитера", nth: "Четвёртая",
+      light: "43 световые минуты от Солнца", img: "moons.jpg", diam: 139820, z: 1.8, o: "62% 30%",
+      story: "В 1610 году Галилей увидел, что вокруг Юпитера кружат четыре луны. Их назвали в честь возлюбленных Зевса.",
+      // «Наши спутники»: шесть фото, вокруг которых вращаемся мы. Пусто — возьму снимки планет
+      // Пример: { img: "photos/us1.jpg", caption: "Наш первый вечер на крыше" }
+      ours: [],
       word: "со",
       coupon: "Массаж, 30 минут без телефона"
     },
     {
-      type: "cipher",
-      title: "Звёздный шифр",
-      story: "Звёзды в созвездиях называют греческими буквами: α Лиры, β Ориона. Я зашифровал так одно слово.",
-      secret: "обними", // слово, которое она расшифрует (видно в коде, но таблица на экране всё равно его выдаёт)
-      after: "Это тоже задание. Выполнить в течение дня.",
+      key: "saturn", type: "saturn", name: "Сатурн", to: "на Сатурн", from: "с Сатурна", nth: "Пятая",
+      light: "1 ч 19 мин света от Солнца", img: "saturn.jpg", diam: 116460, frac: 0.365, z: 1.5,
+      story: "Кольца Сатурна шириной около 280 тысяч километров, а толщиной местами всего метров десять. Сегодня кольца шифруют.",
+      warmup: "кольца",
+      secret: "обними меня крепко", // фраза, которую она расшифрует
+      after: "Это тоже задание. Выполнить сегодня.",
       word: "мной",
       coupon: "Поездка за город на выходных"
     },
     {
-      type: "melody",
-      title: "Мелодия",
-      story: "Звёзды умеют звучать. Послушай, какие из них поют, и повтори за ними.",
-      rounds: 6,
+      key: "neptune", type: "neptune", name: "Нептун", to: "на Нептун", from: "с Нептуна", nth: "Шестая",
+      light: "4 ч 10 мин света от Солнца", img: "neptune.jpg", diam: 49244, frac: 0.86, z: 1.3,
+      story: "«Вояджер-2» пролетел мимо Нептуна в 1989 году. На борту у него Золотая пластинка со звуками Земли.",
+      rounds: 8,
+      // Ссылка на вашу песню (Яндекс Музыка, VK, YouTube). Пусто — кнопки не будет
+      song: "",
+      songTitle: "нашу песню",
       word: "случалось",
       coupon: "Плейлист, который я соберу только для тебя"
     },
     {
-      type: "final",
-      title: "Созвездие",
-      story: "Все звёзды на месте. Осталось сложить слова, которые они тебе оставили.",
+      key: "sun", type: "sun", name: "Солнце", to: "к Солнцу", nth: "Седьмая",
+      light: "центр системы", img: "sun.jpg",
+      story: "Всё в этой системе вращается вокруг одного. Сложи шесть слов, собранных в пути.",
       letter: [
-        "Это небо я собирал для тебя неделю.",
-        "Каждая звезда здесь про то, как мне с тобой хорошо: по утрам, в дороге, за глупыми играми и под нашу музыку.",
-        "Спасибо, что ты есть. Я рядом, сегодня и дальше."
+        "Это путешествие я собирал для тебя по кусочку.",
+        "Каждая планета здесь про то, как мне с тобой хорошо: по утрам, в дороге, за глупыми играми и под нашу музыку.",
+        "Ты моё Солнце. Всё моё вращается вокруг тебя, и мне так нравится."
       ],
       signature: "Твой",
-      coupon: "Последняя звезда ждёт тебя в реальности: спроси меня о ней сегодня вечером"
+      coupon: "Последний подарок ждёт тебя в реальности: спроси меня о нём сегодня вечером"
     }
   ]
 };
 
 /* ===================================================================== */
 
+const P = CONFIG.planets;
+const PIC = f => `photos/planets/${f}`;
 const $ = (s, r = document) => r.querySelector(s);
-const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII"];
 const DEV = location.hash === "#dev";
-
-// gsap может не загрузиться — тогда просто без анимаций
-const G = window.gsap || {
-  to: (t, v) => { apply(t, v); v.onComplete && v.onComplete(); },
-  from: () => {}, fromTo: (t, a, b) => { apply(t, b); b.onComplete && b.onComplete(); },
-  set: (t, v) => apply(t, v), timeline: () => ({ to(){return this}, from(){return this}, add(){return this}, call(f){f();return this} })
-};
-function apply(t, v) { (typeof t === "string" ? document.querySelectorAll(t) : t.length != null ? t : [t]).forEach(n => { if (v.opacity != null) n.style.opacity = v.opacity; }); }
-if (window.gsap && REDUCED) gsap.globalTimeline.timeScale(20);
+const wait = ms => new Promise(r => setTimeout(r, REDUCED ? Math.min(ms, 300) : ms));
+document.documentElement.classList.add("js");
 
 /* ---------- хеши ---------- */
 const norm = s => String(s).toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9]/g, "");
@@ -401,1107 +648,791 @@ async function sha(s) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(norm(s)));
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
-window.sha = sha;
 
 /* ---------- прогресс ---------- */
-const KEY = "nebo-progress-v1";
-let state = { gate: false, done: [] };
+const KEY = "nebo-progress-v2";
+let state = { gate: false, done: [], scratched: [] };
 try { const raw = localStorage.getItem(KEY); if (raw) state = Object.assign(state, JSON.parse(raw)); } catch (e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
 const isDone = i => state.done.includes(i);
+const doneCount = () => [0, 1, 2, 3, 4, 5].filter(isDone).length;
+const nextIndex = () => { const k = [0, 1, 2, 3, 4, 5].find(i => !isDone(i)); return k == null ? 6 : k; };
+const plural = (n, a, b, c) => n % 10 === 1 && n % 100 !== 11 ? a : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? b : c;
+const shake = n => { n.classList.remove("shake"); void n.offsetWidth; n.classList.add("shake"); };
 
-function unlockTime(i) {
-  const [y, m, d] = CONFIG.startDate.split("-").map(Number);
-  return new Date(y, m - 1, d + i, CONFIG.unlockHour, 0, 0);
-}
-function status(i) {
-  if (isDone(i)) return "done";
-  if (i > 0 && !isDone(i - 1)) return DEV ? "open" : "blocked";
-  if (DEV || Date.now() >= unlockTime(i).getTime()) return "open";
-  return "locked";
-}
-function fmtLeft(ms) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
-  const p = n => String(n).padStart(2, "0");
-  return (d ? d + " д " : "") + p(h) + ":" + p(m) + ":" + p(sec);
-}
-
-/* ---------- звёздное небо ---------- */
-const sky = $("#sky"), sctx = sky.getContext("2d");
-const fxc = $("#fx"), fctx = fxc.getContext("2d");
-let W = 0, H = 0, DPR = 1, stars = [], ptr = { x: 0, y: 0, tx: 0, ty: 0 }, shoot = null;
-function resize() {
-  DPR = Math.min(2, devicePixelRatio || 1);
-  W = innerWidth; H = innerHeight;
-  [sky, fxc].forEach(c => { c.width = W * DPR; c.height = H * DPR; });
-  sctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  fctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  const n = Math.round(W * H / 3200);
-  stars = Array.from({ length: n }, () => ({ x: Math.random() * W, y: Math.random() * H, z: Math.random(), p: Math.random() * 6.28, s: .4 + Math.random() * 1.2 }));
-  if (REDUCED) drawSky(0);
-}
-addEventListener("resize", resize);
-addEventListener("pointermove", e => { ptr.tx = (e.clientX / W - .5); ptr.ty = (e.clientY / H - .5); }, { passive: true });
-
-function drawSky(t) {
-  ptr.x += (ptr.tx - ptr.x) * .04; ptr.y += (ptr.ty - ptr.y) * .04;
-  const g = sctx.createRadialGradient(W * .5, H * 1.1, 0, W * .5, H * 1.1, H * 1.2);
-  g.addColorStop(0, "#2a1f45"); g.addColorStop(.55, "#120f22"); g.addColorStop(1, "#0c0b17");
-  sctx.fillStyle = g; sctx.fillRect(0, 0, W, H);
-  for (const s of stars) {
-    const a = .35 + .65 * Math.abs(Math.sin(t * .0008 * (0.5 + s.z) + s.p));
-    const x = s.x - ptr.x * 18 * s.z, y = s.y - ptr.y * 18 * s.z;
-    sctx.globalAlpha = a * (.4 + s.z * .6);
-    sctx.fillStyle = s.z > .92 ? "#f2cf86" : s.z > .85 ? "#f3a6c4" : "#f4eeff";
-    sctx.beginPath(); sctx.arc(x, y, s.s * (.6 + s.z * .7), 0, 6.283); sctx.fill();
-  }
-  sctx.globalAlpha = 1;
-  if (!REDUCED) {
-    if (!shoot && Math.random() < .0025) shoot = { x: Math.random() * W * .8, y: Math.random() * H * .4, l: 0 };
-    if (shoot) {
-      shoot.l += 1;
-      const len = 90, k = shoot.l * 9;
-      const x1 = shoot.x + k, y1 = shoot.y + k * .45;
-      const gr = sctx.createLinearGradient(x1 - len, y1 - len * .45, x1, y1);
-      gr.addColorStop(0, "rgba(244,238,255,0)"); gr.addColorStop(1, "rgba(244,238,255,.9)");
-      sctx.strokeStyle = gr; sctx.lineWidth = 1.4;
-      sctx.beginPath(); sctx.moveTo(x1 - len, y1 - len * .45); sctx.lineTo(x1, y1); sctx.stroke();
-      if (shoot.l > 40) shoot = null;
-    }
-  }
-}
-
-/* ---------- частицы ---------- */
-let parts = [];
-const PCOL = ["#f2cf86", "#f3a6c4", "#f4eeff", "#b9a4ff"];
-function burst(x, y, n = 70) {
-  if (REDUCED) n = 16;
-  for (let i = 0; i < n; i++) {
-    const a = Math.random() * 6.283, v = 1.5 + Math.random() * 5;
-    parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5, life: 1, d: .012 + Math.random() * .015, s: 1 + Math.random() * 2.2, c: PCOL[i % 4], g: .06 });
-  }
-}
-function burstAt(node) { const r = node.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2); }
-function heartParticles(cx, cy, scale) {
-  const n = REDUCED ? 120 : 420;
-  for (let i = 0; i < n; i++) {
-    const t = Math.random() * 6.283;
-    const hx = 16 * Math.sin(t) ** 3, hy = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-    const f = .82 + Math.random() * .22;
-    parts.push({ x: Math.random() * W, y: Math.random() * H, tx: cx + hx * scale * f, ty: cy + hy * scale * f, life: 1, d: 0, s: .8 + Math.random() * 1.8, c: PCOL[i % 4], home: true, delay: Math.random() * 40, p: Math.random() * 6.28 });
-  }
-}
-function fadeHeart() { parts.forEach(p => { if (p.home) { p.home = false; p.vx = (Math.random() - .5) * 2; p.vy = -Math.random() * 2; p.d = .006 + Math.random() * .01; p.g = .01; } }); }
-function drawFx(t) {
-  fctx.clearRect(0, 0, W, H);
-  parts = parts.filter(p => p.life > 0);
-  for (const p of parts) {
-    if (p.home) {
-      if (p.delay > 0) { p.delay--; } else { p.x += (p.tx - p.x) * .06; p.y += (p.ty - p.y) * .06; }
-      fctx.globalAlpha = .55 + .45 * Math.sin(t * .004 + p.p);
-    } else {
-      p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= .985; p.life -= p.d;
-      fctx.globalAlpha = Math.max(0, p.life);
-    }
-    fctx.fillStyle = p.c;
-    fctx.beginPath(); fctx.arc(p.x, p.y, p.s, 0, 6.283); fctx.fill();
-  }
-  fctx.globalAlpha = 1;
-}
-function loop(t) {
-  if (GL) glFrame(t); else if (!REDUCED) drawSky(t);
-  drawFx(t);
-  requestAnimationFrame(loop);
-}
+/* ---------- диалоги ---------- */
+function show(n) { n.hidden = false; void n.offsetWidth; n.classList.add("is-open"); }
+function hide(n, ms) { n.classList.remove("is-open"); setTimeout(() => { if (!n.classList.contains("is-open")) n.hidden = true; }, REDUCED ? 0 : ms); }
 
 /* =====================================================================
-   3D-ГАЛАКТИКА (Three.js). Если WebGL недоступен — остаётся 2D-небо.
-   ===================================================================== */
-let GL = null, justLit = -1;
-const MOBILE = Math.min(innerWidth, innerHeight) < 640;
-const HOME = { x: 0, y: .4, z: 34 };
-const cam = { x: 0, y: 6, z: 70, lx: 0, ly: 0, lz: 0 };
-const tilt = { x: 0, y: 0, tx: 0, ty: 0, on: false };
-const drag = { yaw: 0, down: false, sx: 0, sy: 0, start: 0, moved: false };
-const C_GOLD = 0xf2cf86, C_ROSE = 0xf3a6c4, C_DIM = 0x6b6390;
-const wpos = p => new THREE.Vector3((p[0] - 50) * .19, (58 - p[1]) * .19, 0);
-
-const PT_VS = `
-  attribute vec3 aColor; attribute float aSize; attribute float aSeed;
-  uniform float uTime; uniform float uPR; uniform float uScale;
-  varying vec3 vColor; varying float vTw;
-  void main() {
-    vec4 mv = modelViewMatrix * vec4(position, 1.0);
-    gl_Position = projectionMatrix * mv;
-    gl_PointSize = aSize * uPR * (uScale / -mv.z);
-    vColor = aColor;
-    vTw = 0.55 + 0.45 * sin(uTime * 1.3 + aSeed * 43.0);
-  }`;
-const PT_FS = `
-  uniform float uOpacity;
-  varying vec3 vColor; varying float vTw;
-  void main() {
-    float d = length(gl_PointCoord - 0.5);
-    float a = pow(smoothstep(0.5, 0.0, d), 1.7);
-    gl_FragColor = vec4(vColor, a * vTw * uOpacity);
-  }`;
-
-function ptMat(scale, opacity = 1) {
-  return new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 }, uPR: { value: GL.renderer.getPixelRatio() }, uScale: { value: scale }, uOpacity: { value: opacity } },
-    vertexShader: PT_VS, fragmentShader: PT_FS,
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
-  });
-}
-function ptGeo(pos, col, size) {
-  const g = new THREE.BufferGeometry();
-  const seed = new Float32Array(size.length).map(() => Math.random());
-  g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(pos), 3));
-  g.setAttribute("aColor", new THREE.BufferAttribute(new Float32Array(col), 3));
-  g.setAttribute("aSize", new THREE.BufferAttribute(new Float32Array(size), 1));
-  g.setAttribute("aSeed", new THREE.BufferAttribute(seed, 1));
-  return g;
-}
-function canvasTex(draw, n = 128) {
-  const c = document.createElement("canvas"); c.width = c.height = n;
-  draw(c.getContext("2d"), n);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  return t;
-}
-const glowTex = () => canvasTex((x, n) => {
-  const h = n / 2, g = x.createRadialGradient(h, h, 0, h, h, h);
-  g.addColorStop(0, "rgba(255,255,255,1)"); g.addColorStop(.12, "rgba(255,255,255,.9)");
-  g.addColorStop(.35, "rgba(255,255,255,.22)"); g.addColorStop(1, "rgba(255,255,255,0)");
-  x.fillStyle = g; x.fillRect(0, 0, n, n);
-  x.globalCompositeOperation = "lighter";
-  [[0, h - 1, n, 2, 0, h, n, h], [h - 1, 0, 2, n, h, 0, h, n]].forEach(([rx, ry, rw, rh, x0, y0, x1, y1]) => {
-    const l = x.createLinearGradient(x0, y0, x1, y1);
-    l.addColorStop(0, "rgba(255,255,255,0)"); l.addColorStop(.5, "rgba(255,255,255,.7)"); l.addColorStop(1, "rgba(255,255,255,0)");
-    x.fillStyle = l; x.fillRect(rx, ry, rw, rh);
-  });
-});
-const nebulaTex = () => canvasTex((x, n) => {
-  for (let k = 0; k < 26; k++) {
-    const cx = n * (.25 + Math.random() * .5), cy = n * (.25 + Math.random() * .5), r = n * (.12 + Math.random() * .28);
-    const g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
-    g.addColorStop(0, `rgba(255,255,255,${.05 + Math.random() * .08})`); g.addColorStop(1, "rgba(255,255,255,0)");
-    x.fillStyle = g; x.fillRect(0, 0, n, n);
-  }
-}, 256);
-
-function initGL() {
-  if (!window.THREE || !window.gsap) return false;
-  const canvas = $("#gl");
-  let renderer;
-  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" }); }
-  catch (e) { return false; }
-  if (!renderer.getContext()) return false;
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, MOBILE ? 1.6 : 2));
-  renderer.setSize(innerWidth, innerHeight, false);
-  renderer.setClearColor(0x07060f, 1);
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, .1, 2000);
-  GL = { renderer, scene, camera, mode: "gate", speed: 1, nodes: [], trails: new THREE.Group(), mats: [] };
-
-  // --- спиральная галактика ---
-  const N = MOBILE ? 15000 : 28000, R = 26, ARMS = 2;
-  const inC = new THREE.Color("#ffd9a8"), outC = new THREE.Color("#7f5cff"), roseC = new THREE.Color("#f3a6c4");
-  const pos = [], col = [], size = [];
-  const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
-  for (let i = 0; i < N; i++) {
-    if (i % 5 === 0) {
-      // круглое ядро-балдж, чтобы центр не выглядел как вертушка
-      const r = Math.abs(gauss()) * 5;
-      const v = new THREE.Vector3().randomDirection().multiplyScalar(r);
-      pos.push(v.x, v.y * .5, v.z);
-      const c = inC.clone().lerp(new THREE.Color("#ffffff"), Math.random() * .4);
-      col.push(c.r, c.g, c.b); size.push(.6 + Math.random() * 1.4);
-      continue;
-    }
-    const r = 3 + Math.pow(Math.random(), 1.4) * (R - 3);
-    const ang = (i % ARMS) / ARMS * Math.PI * 2 + r * .26;
-    const spread = 1.2 + r * .16;
-    const sp = () => gauss() * spread;
-    pos.push(Math.cos(ang) * r + sp(), sp() * .3, Math.sin(ang) * r + sp());
-    const c = inC.clone().lerp(outC, Math.min(1, r / R * 1.15));
-    if (Math.random() < .12) c.lerp(roseC, .7);
-    col.push(c.r, c.g, c.b);
-    size.push(.5 + Math.random() * 1.6 + (r < 3 ? 1.2 : 0));
-  }
-  const gm = ptMat(140);
-  const galaxy = new THREE.Points(ptGeo(pos, col, size), gm);
-  galaxy.position.set(0, -7, -20);
-  galaxy.rotation.set(1.08, 0, .32);
-  scene.add(galaxy);
-  GL.galaxy = galaxy; GL.mats.push(gm);
-
-  // --- далёкие звёзды ---
-  const bp = [], bc = [], bs = [];
-  const white = new THREE.Color("#f4eeff"), gold = new THREE.Color("#f2cf86");
-  for (let i = 0; i < (MOBILE ? 1800 : 3200); i++) {
-    const v = new THREE.Vector3().randomDirection().multiplyScalar(220 + Math.random() * 320);
-    bp.push(v.x, v.y, v.z);
-    const c = Math.random() < .12 ? gold : white; bc.push(c.r, c.g, c.b);
-    bs.push(.8 + Math.random() * 2.2);
-  }
-  const bm = ptMat(700, .9);
-  const bg = new THREE.Points(ptGeo(bp, bc, bs), bm);
-  scene.add(bg); GL.bg = bg; GL.mats.push(bm);
-
-  // --- туманности ---
-  const nt = nebulaTex();
-  [["#6a3fd6", -26, 6, -70, 90, .32], ["#f3a6c4", 22, -10, -60, 70, .22], ["#3b2a95", 8, 18, -90, 110, .3], ["#b9a4ff", -10, -18, -50, 60, .16], ["#f2cf86", 0, -7, -22, 26, .12]]
-    .forEach(([c, x, y, z, s, o]) => {
-      const m = new THREE.SpriteMaterial({ map: nt, color: c, transparent: true, opacity: o, depthWrite: false, blending: THREE.AdditiveBlending });
-      const sp = new THREE.Sprite(m); sp.position.set(x, y, z); sp.scale.set(s, s, 1); scene.add(sp);
-    });
-
-  // --- созвездие глав ---
-  const gt = glowTex();
-  const group = new THREE.Group(); group.visible = false; scene.add(group);
-  group.add(GL.trails);
-  const hitGeo = new THREE.SphereGeometry(1.9, 8, 8);
-  const hitMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
-  POS.forEach((p, i) => {
-    const flare = new THREE.Sprite(new THREE.SpriteMaterial({ map: gt, color: C_DIM, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
-    const core = new THREE.Sprite(new THREE.SpriteMaterial({ map: gt, color: 0xffffff, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
-    const hit = new THREE.Mesh(hitGeo, hitMat); hit.userData.i = i;
-    const g = new THREE.Group(); g.position.copy(wpos(p)); g.add(flare, core, hit); group.add(g);
-    GL.nodes.push({ g, flare, core, hit, base: 2, boost: 1, state: "locked" });
-  });
-  GL.group = group;
-  GL.ray = new THREE.Raycaster();
-
-  // --- ввод: тап по звезде, перетаскивание ---
-  canvas.addEventListener("pointerdown", e => { drag.down = true; drag.moved = false; drag.sx = e.clientX; drag.sy = e.clientY; drag.start = drag.yaw; enableTilt(); });
-  canvas.addEventListener("pointermove", e => {
-    if (!drag.down) return;
-    const dx = e.clientX - drag.sx;
-    if (Math.abs(dx) > 8 || Math.abs(e.clientY - drag.sy) > 8) drag.moved = true;
-    drag.yaw = Math.max(-.6, Math.min(.6, drag.start + dx / innerWidth * 1.4));
-  });
-  canvas.addEventListener("pointerup", e => {
-    drag.down = false;
-    if (drag.moved || GL.mode !== "hub") return;
-    const ndc = new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
-    GL.ray.setFromCamera(ndc, camera);
-    const hit = GL.ray.intersectObjects(GL.nodes.map(n => n.hit))[0];
-    if (hit) tapNode(hit.object.userData.i);
-  });
-  canvas.addEventListener("pointercancel", () => { drag.down = false; });
-
-  canvas.hidden = false; sky.hidden = true;
-  glResize();
-  addEventListener("resize", glResize);
-  return true;
-}
-
-function glResize() {
-  if (!GL) return;
-  const a = innerWidth / innerHeight;
-  GL.renderer.setSize(innerWidth, innerHeight, false);
-  GL.camera.aspect = a; GL.camera.updateProjectionMatrix();
-  HOME.z = Math.max(30, 21.5 / (2 * Math.tan(Math.PI / 6) * a));
-  if (GL.mode === "hub") cam.z = HOME.z;
-}
-
-function enableTilt() {
-  if (tilt.on) return;
-  tilt.on = true;
-  const add = () => addEventListener("deviceorientation", e => {
-    if (e.gamma == null) return;
-    tilt.dev = true;
-    tilt.tx = Math.max(-1, Math.min(1, e.gamma / 30));
-    tilt.ty = Math.max(-1, Math.min(1, (e.beta - 50) / 30));
-  });
-  const D = window.DeviceOrientationEvent;
-  try {
-    if (D && typeof D.requestPermission === "function") D.requestPermission().then(r => { if (r === "granted") add(); }).catch(() => {});
-    else if (D) add();
-  } catch (e) {}
-}
-
-function trail(a, b, lit) {
-  const n = lit ? 22 : 8, p = [], c = [], s = [];
-  const col = new THREE.Color(lit ? C_GOLD : C_DIM);
-  for (let k = 1; k < n; k++) {
-    const v = a.clone().lerp(b, k / n);
-    p.push(v.x, v.y, v.z); c.push(col.r, col.g, col.b);
-    s.push(lit ? (k % 2 ? 2.4 : 1.5) : 1.1);
-  }
-  const m = ptMat(140, lit ? 1 : .55); GL.mats.push(m);
-  const pts = new THREE.Points(ptGeo(p, c, s), m);
-  GL.trails.add(pts);
-  return { pts, count: n - 1 };
-}
-function growTrail(t, delay = 0) {
-  const o = { v: 0 };
-  t.pts.geometry.setDrawRange(0, 0);
-  gsap.to(o, { v: t.count, duration: 1.2, delay, ease: "power2.inOut", onUpdate: () => t.pts.geometry.setDrawRange(0, Math.ceil(o.v)) });
-}
-
-function syncGL(lit = -1) {
-  GL.nodes.forEach((n, i) => {
-    const st = status(i); n.state = st;
-    const dim = st === "locked" || st === "blocked";
-    n.flare.material.color.set(st === "done" ? C_GOLD : st === "open" ? C_ROSE : C_DIM);
-    n.flare.material.opacity = dim ? .5 : 1;
-    n.core.material.opacity = dim ? .3 : 1;
-    n.base = st === "done" ? 4.4 : st === "open" ? 3.8 : 2;
-  });
-  GL.trails.children.slice().forEach(o => { GL.trails.remove(o); o.geometry.dispose(); GL.mats = GL.mats.filter(m => m !== o.material); o.material.dispose(); });
-  for (let i = 0; i < 6; i++) {
-    const t = trail(wpos(POS[i]), wpos(POS[i + 1]), isDone(i) && isDone(i + 1));
-    if (lit === i + 1 && isDone(i)) growTrail(t, .4);
-  }
-  const closed = isDone(6);
-  const c1 = trail(wpos(POS[6]), wpos(DIP), closed), c2 = trail(wpos(DIP), wpos(POS[0]), closed);
-  if (lit === 6 && closed) { growTrail(c1, 1.4); growTrail(c2, 2.4); }
-  if (lit >= 0) {
-    const n = GL.nodes[lit];
-    gsap.fromTo(n, { boost: 2.6 }, { boost: 1, duration: 1.6, delay: .3, ease: "power2.out" });
-    setTimeout(() => { const s = toScreen(n.g); burst(s.x, s.y, 80); }, 350);
-  }
-}
-
-function toScreen(obj) {
-  const v = new THREE.Vector3(); obj.getWorldPosition(v); v.project(GL.camera);
-  return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight, z: v.z };
-}
-
-function buildLabels() {
-  const box = $("#labels"); box.innerHTML = "";
-  CONFIG.chapters.forEach((c, i) => {
-    const st = status(i);
-    const b = el("button", "lbl " + st, `<span class="d">ДЕНЬ ${ROMAN[i]}</span><span class="t">${esc(st === "locked" || st === "blocked" ? "скоро" : c.title)}</span>`);
-    b.type = "button"; b.dataset.i = i;
-    b.setAttribute("aria-label", `Глава ${i + 1}: ${st === "locked" || st === "blocked" ? "ещё закрыта" : c.title}`);
-    b.onclick = () => tapNode(i);
-    box.appendChild(b);
-  });
-  box.hidden = false;
-  G.from(box.children, { opacity: 0, y: 8, duration: .6, stagger: .06, delay: .8 });
-}
-
-function flyTo(i, done) {
-  const p = wpos(POS[i]); p.y += 3;
-  gsap.to(cam, { x: p.x * .5, y: p.y * .5, z: 12, lx: p.x, ly: p.y, lz: 0, duration: REDUCED ? .01 : 1.3, ease: "power3.inOut", onComplete: done });
-}
-function flyHome(dur = 1.4) {
-  gsap.to(cam, { x: HOME.x, y: HOME.y, z: HOME.z, lx: 0, ly: 0, lz: 0, duration: REDUCED ? .01 : dur, ease: "power3.inOut" });
-}
-
-function glFrame(t) {
-  const sec = t / 1000;
-  GL.mats.forEach(m => m.uniforms.uTime.value = sec);
-  if (!REDUCED) {
-    GL.galaxy.rotation.y += .00045 * GL.speed;
-    GL.bg.rotation.y += .00004;
-  }
-  if (!tilt.dev) { tilt.tx = ptr.tx * 1.4; tilt.ty = ptr.ty * 1.4; }
-  tilt.x += (tilt.tx - tilt.x) * .05; tilt.y += (tilt.ty - tilt.y) * .05;
-  if (!drag.down) drag.yaw *= .965;
-  const ox = tilt.x * 2.6 + Math.sin(drag.yaw) * cam.z * .5, oy = -tilt.y * 1.8;
-  GL.camera.position.set(cam.x + ox, cam.y + oy, cam.z - Math.abs(Math.sin(drag.yaw)) * 4);
-  GL.camera.lookAt(cam.lx, cam.ly, cam.lz);
-  GL.group.position.y = 3 + (REDUCED ? 0 : Math.sin(sec * .5) * .25);
-  GL.nodes.forEach((n, i) => {
-    const pulse = n.state === "open" && !REDUCED ? 1 + .14 * Math.sin(sec * 2.6 + i) : 1;
-    const s = n.base * pulse * n.boost;
-    n.flare.scale.set(s, s, 1);
-    n.core.scale.set(s * .32, s * .32, 1);
-  });
-  GL.renderer.render(GL.scene, GL.camera);
-  if (GL.mode === "hub") {
-    const labels = $("#labels").children;
-    GL.nodes.forEach((n, i) => {
-      const l = labels[i]; if (!l) return;
-      const s = toScreen(n.g);
-      const below = i !== 0 && i !== 6;
-      l.style.transform = `translate(${s.x}px, ${s.y + (below ? 22 : -22)}px) translate(-50%, ${below ? "0" : "-100%"})`;
-    });
-  }
-}
-
-/* --- главный экран в 3D --- */
-function renderHub3D() {
-  const done = state.done.length, allDone = isDone(6);
-  const words = CONFIG.chapters.slice(0, 6).map((c, i) =>
-    isDone(i) ? `<span class="word-chip">${esc(c.word)}</span>` : `<span class="word-chip empty">·</span>`).join("");
-  $("#dim").classList.remove("on");
-  GL.mode = "hub";
-  if (!GL.group.visible) {
-    GL.group.visible = true;
-    GL.nodes.forEach((n, i) => gsap.from(n, { boost: 0, duration: 1.2, delay: .6 + i * .12, ease: "back.out(2)" }));
-  }
-  flyHome();
-  const s = el("section", "screen hub3d-screen");
-  s.innerHTML = `
-    <div class="hub-head">
-      <div class="row"><span class="eyebrow">Небо для ${esc(CONFIG.herName)}</span><span class="progress">${done} / 7 звёзд</span></div>
-      <h1>${allDone ? "Созвездие собрано" : "Каждый день загорается новая звезда"}</h1>
-    </div>
-    <div class="spacer"></div>
-    <div class="field" style="align-items:center">
-      <p class="tap-hint">${allDone ? "Нажми на любую звезду, чтобы вспомнить её" : "Нажми на розовую звезду. Наклони телефон или потяни небо пальцем"}</p>
-      <span class="eyebrow">Слова, которые оставили звёзды</span>
-      <div class="words">${words}</div>
-    </div>
-    ${DEV ? devPanel() : ""}`;
-  show(s);
-  buildLabels();
-  syncGL(justLit); justLit = -1;
-  if (DEV) bindDev();
-}
-
-/* --- 3D-финал: сердце замыкается --- */
-function finale3D(c, stage, i) {
-  const first = !isDone(i);
-  if (first) { state.done.push(i); save(); }
-  const phrase = CONFIG.chapters.slice(0, 6).map(x => x.word).join(" ");
-  $("#dim").classList.remove("on");
-  GL.mode = "finale";
-  gsap.to(app, { opacity: 0, duration: .8, onComplete: () => {
-    flyHome(2.4);
-    setTimeout(() => {
-      syncGL(6);
-      GL.nodes.forEach((n, k) => gsap.to(n, { boost: 2.4, duration: .45, delay: 1 + k * .16, yoyo: true, repeat: 1, ease: "sine.inOut" }));
-      gsap.to(GL, { speed: 14, duration: 1.8, yoyo: true, repeat: 1, ease: "sine.inOut" });
-    }, 1500);
-    const cap = el("div", "caption3d", esc(phrase));
-    document.body.appendChild(cap);
-    gsap.to(cap, { opacity: 1, duration: 1.4, delay: 5 });
-    setTimeout(() => {
-      gsap.to(cap, { opacity: 0, duration: .8, onComplete: () => cap.remove() });
-      GL.mode = "chapter";
-      $("#dim").classList.add("on");
-      stage.innerHTML = "";
-      const L = el("div", "letter"); stage.appendChild(L);
-      document.querySelector(".ch-head h2").textContent = "Письмо";
-      document.querySelector(".ch-head .story").textContent = "";
-      gsap.to(app, { opacity: 1, duration: .8 });
-      typeLetter(L, c.letter, c.signature).then(() => {
-        const r = el("div", "reward");
-        r.innerHTML = `<div class="coupon" id="coupon"></div><button class="btn ghost" type="button" id="toSky">Посмотреть на созвездие</button>`;
-        stage.appendChild(r);
-        gsap.from(r, { opacity: 0, y: 16, duration: .6 });
-        scratchCard($("#coupon"), c.coupon, "Главный подарок");
-        $("#toSky").onclick = renderHub;
-      });
-    }, REDUCED ? 3000 : 9000);
-  } });
-}
-
-/* ---------- переходы ---------- */
-const app = $("#app");
-function show(node) {
-  const hub = node.classList.contains("hub3d-screen");
-  app.classList.toggle("hub3d", hub);
-  if (!hub) $("#labels").hidden = true;
-  app.style.opacity = 1;
-  app.innerHTML = "";
-  app.appendChild(node);
-  scrollTo(0, 0);
-  G.from(node.children, { y: 18, opacity: 0, duration: .7, stagger: .08, ease: "power3.out" });
-}
-function shake(node) { node.classList.remove("shake"); void node.offsetWidth; node.classList.add("shake"); }
-
-let toastTimer = null;
-function toast(html, ms = 3500) {
-  const t = $("#toast");
-  clearInterval(toastTimer);
-  t.innerHTML = html; t.hidden = false;
-  G.fromTo(t, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: .35 });
-  clearTimeout(t._h);
-  t._h = setTimeout(() => { t.hidden = true; clearInterval(toastTimer); }, ms);
-  return t;
-}
-
-/* =====================================================================
-   ЭКРАН ВХОДА
+   ВХОД
    ===================================================================== */
 function renderGate() {
-  const s = el("section", "screen");
-  s.innerHTML = `
-    <div class="hub-head">
-      <span class="eyebrow">Только для одного человека</span>
-      <h1>Небо, которое я собрал для тебя</h1>
-    </div>
-    <form class="sheet" id="gateForm" novalidate>
-      <div class="field">
-        <label for="gateIn">${esc(CONFIG.gate.question)}</label>
-        <input type="text" id="gateIn" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+  $("#app").innerHTML = `
+  <header class="top"><span class="mark">Семь планет до Солнца</span></header>
+  <main class="hero hero--gate">
+    <section class="sheet" aria-labelledby="h1">
+      <div class="sheet__body">
+        <h1 id="h1" class="rise">Семь планет до&nbsp;Солнца</h1>
+        <p class="lead rise" style="--i:1">Путешествие только для одного человека. Перед вылетом один вопрос, чтобы убедиться, что это ты.</p>
+        <form class="gate-form rise" style="--i:2" id="gateForm" novalidate>
+          <label for="gateIn">${esc(CONFIG.gate.question)}</label>
+          <input class="input" type="text" id="gateIn" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+          <button class="link" type="button" id="gateHintBtn">Подсказка</button>
+          <p class="hint" id="gateHint" hidden>${esc(CONFIG.gate.hint)}</p>
+          <p class="msg" id="gateMsg" role="status"></p>
+          <button class="btn" type="submit">Взлетаем</button>
+        </form>
       </div>
-      <button class="link-btn" type="button" id="gateHintBtn">Подсказка</button>
-      <p class="hint-box" id="gateHint" hidden>${esc(CONFIG.gate.hint)}</p>
-      <button class="btn" type="submit">Открыть небо</button>
-      <p class="msg" id="gateMsg" role="status"></p>
-    </form>`;
-  show(s);
+      <p class="sheet__foot"><strong>Точка отправления: Земля</strong><span>Семь остановок, одна из них дома</span></p>
+    </section>
+    <div class="view">
+      <div class="view__pic">
+        <img src="${PIC("earth.jpg")}" width="1400" height="1401" alt="Земля, снимок экипажа «Аполлона-17»">
+        <p class="view__name display" aria-hidden="true">Земля</p>
+      </div>
+      <p class="view__bar"><span>Отсюда до Солнца 8 световых минут</span><span>Ждём только тебя</span></p>
+    </div>
+  </main>`;
+  setupRise();
   $("#gateHintBtn").onclick = () => { $("#gateHint").hidden = false; $("#gateHintBtn").hidden = true; };
+  $("#gateIn").oninput = () => { $("#gateIn").classList.remove("is-bad"); $("#gateMsg").textContent = ""; };
   $("#gateForm").onsubmit = async e => {
     e.preventDefault();
-    enableTilt();
     const inp = $("#gateIn");
     if (await sha(inp.value) === CONFIG.gate.answerHash) {
-      state.gate = true; save();
-      burstAt(inp);
-      setTimeout(renderHub, 500);
+      state.gate = true; save(); scrollTo(0, 0); renderHub();
     } else {
-      inp.classList.add("bad");
-      $("#gateMsg").textContent = "Не то слово. Попробуй ещё раз.";
-      shake($("#gateForm"));
+      inp.classList.add("is-bad"); $("#gateMsg").textContent = "Не то слово. Попробуй ещё раз."; shake($("#gateForm"));
     }
   };
-  $("#gateIn").oninput = () => { $("#gateIn").classList.remove("bad"); $("#gateMsg").textContent = ""; };
 }
 
 /* =====================================================================
-   СОЗВЕЗДИЕ (ГЛАВНЫЙ ЭКРАН)
+   МАРШРУТ (ГЛАВНЫЙ ЭКРАН)
    ===================================================================== */
-// точки складываются в сердце; DIP — ложбинка, закрывается после финала
-const POS = [[30, 24], [11, 46], [23, 77], [50, 106], [77, 77], [89, 46], [70, 24]];
-const DIP = [50, 40];
+const GROUPS = [["Внутренние планеты", [0, 1, 2]], ["Газовые гиганты", [3, 4]], ["Край системы", [5]], ["Возвращение", [6]]];
+const GROW = [5, 2, 3, 2, 3, 2];
 
-function renderHub() { GL ? renderHub3D() : renderHub2D(); }
+function renderHub() {
+  const n = doneCount(), nx = nextIndex(), s = P[nx], left = 6 - n;
+  const goText = nx === 6 ? "Лететь к Солнцу" : `Лететь ${s.to}`;
+  $("#app").innerHTML = `
+  <header class="top"><a class="mark" href="#top">Семь планет до Солнца</a><span class="count">${n} из 6</span></header>
+  <main id="top">
+    <section class="hero" aria-labelledby="h1">
+      <div class="sheet">
+        <div class="sheet__body">
+          <h1 id="h1" class="rise">Семь планет до&nbsp;Солнца</h1>
+          <p class="lead rise" style="--i:1">${esc(CONFIG.herName)}, это путешествие по&nbsp;Солнечной системе. На&nbsp;каждой планете своё задание и&nbsp;открытка, а&nbsp;в&nbsp;конце тебя ждёт Солнце.</p>
+          <button class="btn rise" style="--i:2" type="button" data-open="${nx}">${goText}</button>
+        </div>
+        <p class="sheet__foot rise" style="--i:3"><strong>${n ? `Пройдено ${n} из 6 планет` : "Все планеты уже открыты"}</strong><span>Порядок любой, но по маршруту интереснее</span></p>
+      </div>
+      <div class="view">
+        <div class="view__pic">
+          <img src="${PIC(s.img)}" width="1400" height="1400" alt="${esc(s.name)}">
+          <p class="view__name display" aria-hidden="true">${esc(s.name)}</p>
+        </div>
+        <p class="view__bar"><span>${esc(s.name)} · ${esc(s.light)}</span><span>${left ? `До Солнца <b>${left} ${plural(left, "планета", "планеты", "планет")}</b>` : "<b>Все слова собраны</b>"}</span></p>
+      </div>
+    </section>
 
-function renderHub2D() {
-  const done = state.done.length;
-  const s = el("section", "screen");
-  const words = CONFIG.chapters.slice(0, 6).map((c, i) =>
-    isDone(i) ? `<span class="word-chip">${esc(c.word)}</span>` : `<span class="word-chip empty">·</span>`).join("");
+    <section class="scale" id="scale" aria-labelledby="scaleTitle">
+      <div class="scale__pin">
+        <div class="scale__head">
+          <h2 id="scaleTitle" class="rise">Весь путь в&nbsp;масштабе</h2>
+          <div class="scale__notes">
+            <p class="rise" style="--i:1">Размеры настоящие: Юпитер в&nbsp;11 раз шире Земли, а&nbsp;Солнце не&nbsp;помещается в&nbsp;кадр.</p>
+            <p class="rise" style="--i:2">Прокручивай вниз, и&nbsp;мы пролетим мимо всех семи остановок. Любую можно нажать.</p>
+          </div>
+        </div>
+        <div class="scale__band" id="band"><div class="track" id="track">${trackHTML()}</div></div>
+      </div>
+    </section>
 
-  let lines = "";
-  for (let i = 0; i < 6; i++) {
-    const [x1, y1] = POS[i], [x2, y2] = POS[i + 1];
-    const lit = isDone(i) && isDone(i + 1);
-    lines += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${lit ? "#f2cf86" : "rgba(236,226,255,.14)"}" stroke-width="${lit ? .5 : .3}" ${lit ? "" : 'stroke-dasharray="1 1.4"'}/>`;
-  }
-  const allDone = isDone(6);
-  lines += `<polyline points="${POS[6].join(",")} ${DIP.join(",")} ${POS[0].join(",")}" fill="none" stroke="${allDone ? "#f2cf86" : "rgba(236,226,255,.08)"}" stroke-width="${allDone ? .5 : .3}" ${allDone ? "" : 'stroke-dasharray="1 1.4"'}/>`;
+    <section class="route" id="route" aria-labelledby="routeTitle">
+      <div class="route__bg"><img src="${PIC("moons.jpg")}" width="1400" height="1113" loading="lazy" alt="Юпитер и четыре его больших спутника: Ио, Европа, Ганимед и Каллисто"></div>
+      <div class="route__wrap">
+        <div class="paper rise">
+          <h2 id="routeTitle">Маршрутный лист</h2>
+          <p class="paper__note">Семь остановок, все открыты сразу. На каждой по два-три этапа, так что запасись временем и чаем.</p>
+          ${GROUPS.map(([t, ids]) => `<div class="group"><h3>${t}</h3>${ids.map(routeItem).join("")}</div>`).join("")}
+          <p class="paper__end">Отправление со&nbsp;Земли.<br>Обратный билет не&nbsp;нужен.</p>
+        </div>
+      </div>
+    </section>
 
-  let nodes = "";
-  CONFIG.chapters.forEach((c, i) => {
-    const st = status(i), [x, y] = POS[i];
-    const col = st === "done" ? "#f2cf86" : st === "open" ? "#f3a6c4" : "#5d567a";
-    const r = st === "done" ? 2.6 : st === "open" ? 2.3 : 1.5;
-    const below = y > 60 && i !== 3 ? 7.5 : i === 3 ? 8 : -6.5;
-    const ttl = st === "locked" || st === "blocked" ? "скоро" : c.title;
-    nodes += `
-      <g class="node ${st}" data-i="${i}" tabindex="0" role="button" aria-label="Глава ${i + 1}: ${st === "locked" ? "ещё закрыта" : esc(c.title)}">
-        <circle cx="${x}" cy="${y}" r="9" fill="transparent"/>
-        <circle class="halo" cx="${x}" cy="${y}" r="${r * 3.2}" fill="url(#halo-${st === "done" ? "g" : st === "open" ? "r" : "d"})"/>
-        <circle class="ring" cx="${x}" cy="${y}" r="${r + 1.6}" fill="none" stroke="${col}" stroke-width=".25" opacity="${st === "open" ? 1 : .5}"/>
-        <circle class="core" cx="${x}" cy="${y}" r="${r}" fill="${col}"/>
-        <text x="${x}" y="${y + below}">ДЕНЬ ${ROMAN[i]}</text>
-        <text class="ttl" x="${x}" y="${y + below + (below > 0 ? 5 : -4)}">${esc(ttl)}</text>
-      </g>`;
-  });
+    <section class="cards" id="cards" aria-labelledby="cardsTitle">
+      <div class="cards__head">
+        <h2 id="cardsTitle" class="rise">Открытки с&nbsp;дороги</h2>
+        <p class="rise" style="--i:1">С каждой планеты приходит открытка: одно слово для финала и&nbsp;купон, который я&nbsp;обязан выполнить.</p>
+      </div>
+      <div class="band">${P.slice(0, 6).map(cardHTML).join("")}</div>
+      <p class="cards__foot">${n ? `Собрано ${n} из 6. Нажми на открытку, чтобы перечитать её.` : "Пока ни одной: первая придёт с Венеры."}</p>
+    </section>
 
-  s.innerHTML = `
-    <div class="hub-head">
-      <div class="row"><span class="eyebrow">Небо для ${esc(CONFIG.herName)}</span><span class="progress">${done} / 7 звёзд</span></div>
-      <h1>${allDone ? "Созвездие собрано" : "Каждый день загорается новая звезда"}</h1>
+    <section class="final" id="final" aria-labelledby="finalTitle">
+      <p class="final__say rise">Всё в&nbsp;этой системе вращается вокруг одного. В&nbsp;конце узнаешь, вокруг кого.</p>
+      <div class="reply rise" style="--i:1">
+        <h2 id="finalTitle">Последняя остановка</h2>
+        <p>Солнце. Сложи шесть слов, собранных в&nbsp;пути, и&nbsp;я&nbsp;скажу главное.</p>
+        <div class="words" aria-label="Собранные слова">${P.slice(0, 6).map((p, i) => `<span class="${isDone(i) ? "is-got" : ""}">${isDone(i) ? esc(p.word) : "&nbsp;"}</span>`).join("")}</div>
+        <button class="btn" type="button" data-open="6" ${left ? 'aria-disabled="true"' : ""}>${left ? `Ещё ${left} ${plural(left, "планета", "планеты", "планет")}` : "Лететь к Солнцу"}</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot" aria-labelledby="footTitle">
+    <h2 id="footTitle" class="sr">О путешествии</h2>
+    <div class="foot__cols">
+      <ul><li>Как это устроено</li><li>Все планеты открыты сразу</li><li>Прогресс сохраняется сам</li><li>В каждом задании есть подсказка</li></ul>
+      <ul><li>Разделы</li><li><a href="#scale">Весь путь</a></li><li><a href="#route">Маршрутный лист</a></li><li><a href="#cards">Открытки</a></li></ul>
+      <ul><li>Снимки</li><li>NASA, JPL-Caltech, ESA</li><li>«Викинг», «Вояджер-2»,</li><li>«Кассини», «Юнона», SDO</li></ul>
+      <ul><li>От кого</li><li>От меня, с любовью</li><li>Вопросы задавать лично</li><li>Лучше вечером</li></ul>
     </div>
-    <div class="sky-map">
-      <svg viewBox="0 -2 100 122" aria-label="Созвездие из семи звёзд">
-        <defs>
-          <radialGradient id="halo-g"><stop offset="0" stop-color="#f2cf86" stop-opacity=".55"/><stop offset="1" stop-color="#f2cf86" stop-opacity="0"/></radialGradient>
-          <radialGradient id="halo-r"><stop offset="0" stop-color="#f3a6c4" stop-opacity=".5"/><stop offset="1" stop-color="#f3a6c4" stop-opacity="0"/></radialGradient>
-          <radialGradient id="halo-d"><stop offset="0" stop-color="#5d567a" stop-opacity=".25"/><stop offset="1" stop-color="#5d567a" stop-opacity="0"/></radialGradient>
-        </defs>
-        ${lines}${nodes}
-      </svg>
-    </div>
-    <div class="field" style="align-items:center">
-      <span class="eyebrow">Слова, которые оставили звёзды</span>
-      <div class="words">${words}</div>
-    </div>
-    ${DEV ? devPanel() : ""}`;
-  show(s);
+    ${DEV ? devHTML() : ""}
+    <svg class="foot__name" viewBox="0 0 1000 250" role="img" aria-label="${esc(CONFIG.herName)}">
+      <text x="0" y="214" textLength="1000" lengthAdjust="spacingAndGlyphs" font-size="290">${esc(CONFIG.herName)}</text>
+    </svg>
+    <p class="foot__legal">Снимки: NASA/JPL-Caltech, NASA/SDO, NASA/USGS, NASA/ESA, NASA/Apollo 17, NASA/JPL-Caltech/SwRI/MSSS/Kevin M. Gill. Общественное достояние, через Wikimedia Commons.</p>
+  </footer>`;
 
-  if (!REDUCED && window.gsap) {
-    s.querySelectorAll(".node.open .halo").forEach(h => gsap.to(h, { opacity: .35, duration: 1.4, yoyo: true, repeat: -1, ease: "sine.inOut" }));
-  }
-  s.querySelectorAll(".node").forEach(n => {
-    const go = () => tapNode(+n.dataset.i, n);
-    n.addEventListener("click", go);
-    n.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
-  });
+  $("#app").onclick = e => {
+    const b = e.target.closest("[data-open]");
+    if (!b || b.getAttribute("aria-disabled") === "true") return;
+    openChapter(+b.dataset.open);
+  };
+  $("#app").querySelectorAll("[data-post]").forEach(b => b.addEventListener("click", () => openPost(+b.dataset.post, false)));
   if (DEV) bindDev();
+  setupRise();
+  requestAnimationFrame(setupPin);
 }
 
-function tapNode(i, n) {
-  const st = status(i);
-  if (st === "open" || st === "done") {
-    if (GL) {
-      const s = toScreen(GL.nodes[i].g); burst(s.x, s.y, 50);
-      gsap.fromTo(GL.nodes[i], { boost: 1.9 }, { boost: 1, duration: .8 });
-      openChapter(i); return;
+function routeItem(i) {
+  const p = P[i], d = isDone(i);
+  const st = i === 6 ? (doneCount() === 6 ? "открыто" : "финал") : d ? "пройдено" : "открыто";
+  const desc = ["Роза Венеры и послание наоборот", "Загадка приведёт к записке у тебя дома", "Проведи марсоход по трём участкам", "Найди пары среди спутников, потом среди наших", "Поверни кольца и расшифруй послание", "Повтори мелодию с Золотой пластинки", "Сложи фразу и прочитай письмо"][i];
+  return `<button class="item ${d ? "is-done" : ""}" type="button" data-open="${i}" ${i === 6 && doneCount() < 6 ? 'aria-disabled="true"' : ""}>
+    <span class="item__name">${esc(p.name)}</span><span class="item__state">${st}</span><span class="item__desc">${desc}</span></button>`;
+}
+
+function cardHTML(p, i) {
+  const got = isDone(i);
+  return `<button class="panel ${got ? "" : "is-locked"}" type="button" ${got ? `data-post="${i}"` : `data-open="${i}"`} style="--g:${GROW[i]};--z:${p.z};--o:${p.o || "50% 50%"}" aria-label="Открытка ${esc(p.from)}${got ? "" : ", ещё не получена"}">
+    <img src="${PIC(p.img)}" alt="" loading="lazy">
+    <span class="panel__text"><b>Открытка ${esc(p.from)}</b><span>${got ? esc(p.coupon) : "Ещё не получена"}</span></span></button>`;
+}
+
+/* полоса в настоящем масштабе: Юпитер занимает 62% высоты */
+function trackHTML() {
+  const k = 0.62 / P[3].diam;
+  const stop = i => {
+    const p = P[i], d = isDone(i);
+    const cap = `<span class="stop__cap"><b>${esc(p.name)}</b><span>${i === 6 ? "финал" : d ? "пройдено" : p.nth.toLowerCase() + " остановка"}</span></span>`;
+    if (i === 6) return `<button type="button" class="stop stop--sun" data-open="6" ${doneCount() < 6 ? 'aria-disabled="true"' : ""} aria-label="Солнце, финал"><span class="sun-arc"></span>${cap}</button>`;
+    const disk = p.diam * k;
+    let orb;
+    if (p.key === "jupiter") {
+      // на снимке Хаббла диск занимает 740 из 1200 px, левый край на 45 px, верхний на 60 px
+      orb = `<span class="crop" style="--box:calc(var(--H)*${disk.toFixed(4)});background-image:url(${PIC("jupiter.jpg")});background-size:calc(var(--box)*1200/740) auto;background-position:calc(var(--box)*-45/740) calc(var(--box)*-60/740)"></span>`;
+    } else {
+      orb = `<img src="${PIC(p.img)}" alt="" loading="lazy" style="--box:calc(var(--H)*${(disk / p.frac).toFixed(4)})">`;
     }
-    burstAt(n.querySelector(".core")); setTimeout(() => openChapter(i), 250); return;
-  }
-  if (st === "blocked") { toast(`<span>Сначала зажги звезду дня ${ROMAN[i - 1]}</span>`); return; }
-  const t = toast(`<span>Эта звезда загорится через</span><b id="cd"></b>`, 6000);
-  const tick = () => { const b = $("#cd", t); if (b) b.textContent = fmtLeft(unlockTime(i) - Date.now()); };
-  tick(); toastTimer = setInterval(tick, 1000);
+    const box = p.key === "saturn" ? disk / p.frac : disk;
+    return `<button type="button" class="stop ${d ? "is-done" : ""}" data-open="${i}" aria-label="${esc(p.name)}"><span class="orb" style="--box:calc(var(--H)*${box.toFixed(4)})">${orb}</span>${cap}</button>`;
+  };
+  return [6, 0, 1, 2, 3, 4, 5].map(stop).join("");
+}
+
+let pinOn = false;
+function setupPin() {
+  const sec = $("#scale"); if (!sec) return;
+  const track = $("#track"), band = $("#band");
+  pinOn = !REDUCED;
+  document.body.classList.toggle("no-pin", !pinOn);
+  if (!pinOn) { sec.style.height = ""; track.style.transform = ""; return; }
+  const extra = Math.max(0, track.scrollWidth - band.clientWidth);
+  sec.style.height = `calc(100svh + ${extra}px)`;
+  sec.dataset.extra = extra;
+  onScroll();
+}
+function onScroll() {
+  const sec = $("#scale"); if (!pinOn || !sec) return;
+  const extra = +sec.dataset.extra || 0;
+  const p = Math.min(1, Math.max(0, -sec.getBoundingClientRect().top / Math.max(1, extra)));
+  $("#track").style.transform = `translate3d(${-p * extra}px,0,0)`;
+}
+
+let io = null;
+function setupRise() {
+  io?.disconnect();
+  io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -10% 0px" });
+  document.querySelectorAll("#app .rise").forEach(n => io.observe(n));
 }
 
 /* =====================================================================
    ГЛАВА
    ===================================================================== */
+let lastFocus = null, current = -1;
 function openChapter(i) {
-  if (GL && GL.mode === "hub") {
-    GL.mode = "fly";
-    $("#labels").hidden = true;
-    gsap.to(app, { opacity: 0, duration: .35 });
-    flyTo(i, () => { GL.mode = "chapter"; $("#dim").classList.add("on"); buildChapter(i); });
-    return;
-  }
-  buildChapter(i);
-}
-
-function buildChapter(i) {
-  const c = CONFIG.chapters[i];
-  const s = el("section", "screen");
-  s.innerHTML = `
-    <div class="ch-top">
-      <button class="back" id="back" type="button">← К небу</button>
-      <span class="eyebrow">День ${ROMAN[i]} из VII</span>
-    </div>
-    <div class="ch-head">
-      <span class="eyebrow">Глава ${ROMAN[i]}</span>
-      <h2>${esc(c.title)}</h2>
-      <p class="story">${esc(c.story)}</p>
-    </div>
-    <div class="sheet stage" id="stage"></div>`;
-  show(s);
-  $("#back").onclick = renderHub;
+  const p = P[i];
+  if (i === 6 && doneCount() < 6 && !DEV) return;
+  current = i;
+  lastFocus = document.activeElement;
+  $("#chPic").src = PIC(p.img);
+  $("#chTitle").textContent = p.name;
+  $("#chMeta").textContent = `${p.nth} остановка · ${p.light}`;
+  $("#chStory").textContent = p.story;
   const stage = $("#stage");
-  const win = () => winChapter(i, stage);
-  if (isDone(i) && c.type !== "final") { showReward(i, stage, false); return; }
-  ({ dots: gDots, slide: gSlide, note: gNote, memory: gMemory, cipher: gCipher, melody: gMelody, final: gFinal })[c.type](c, stage, win, i);
-}
-
-function winChapter(i, stage) {
-  const first = !isDone(i);
-  if (first) { state.done.push(i); save(); justLit = i; }
-  burstAt(stage);
-  setTimeout(() => {
-    G.to(stage.children, { opacity: 0, y: -10, duration: .35, onComplete: () => showReward(i, stage, first) });
-  }, 450);
-}
-
-function showReward(i, stage, fresh) {
-  const c = CONFIG.chapters[i];
   stage.innerHTML = "";
-  const r = el("div", "reward");
-  r.innerHTML = `
-    <span class="eyebrow">${fresh ? "Звезда зажглась" : "Эта звезда уже горит"}</span>
-    <p class="lede">Она оставила тебе слово:</p>
-    <div class="got-word">${[...c.word].map(ch => `<span>${esc(ch)}</span>`).join("")}</div>
-    ${c.after ? `<p class="hint-box">${esc(c.after)}</p>` : ""}
-    <div class="coupon" id="coupon"></div>
-    <button class="btn ghost" type="button" id="toSky">Вернуться к небу</button>`;
-  stage.appendChild(r);
-  G.set(stage.children, { opacity: 1, y: 0 });
-  G.from(r.querySelectorAll(".got-word span"), { y: 30, opacity: 0, rotate: -12, duration: .7, stagger: .07, ease: "back.out(2)" });
-  scratchCard($("#coupon"), c.coupon, i === 6 ? "Главный подарок" : "Подарок дня");
-  $("#toSky").onclick = renderHub;
+  if (isDone(i) && i < 6) {
+    stage.innerHTML = `<p class="task">Эту планету ты уже прошла. Можно перечитать открытку или пройти всё заново.</p>
+      <div class="row"><button class="btn btn--paper" type="button" id="again">Пройти ещё раз</button><button class="btn btn--dark" type="button" id="reread">Открытка ${esc(p.from)}</button></div>`;
+    $("#again").onclick = () => GAMES[p.type](p, stage, () => win(i));
+    $("#reread").onclick = () => openPost(i, false);
+  } else {
+    GAMES[p.type](p, stage, () => win(i));
+  }
+  const ch = $("#chapter");
+  ch.scrollTop = 0;
+  show(ch);
+  document.body.style.overflow = "hidden";
+  $("#chClose").focus({ preventScroll: true });
+}
+function closeChapter() {
+  stopAll();
+  hide($("#chapter"), 420);
+  document.body.style.overflow = "";
+  current = -1;
+  const y = scrollY;
+  renderHub();
+  scrollTo(0, y);
+  lastFocus = null;
+}
+function win(i) {
+  if (!isDone(i)) { state.done.push(i); save(); }
+  openPost(i, true);
 }
 
-/* ---------- купон-скретч ---------- */
-function scratchCard(box, text, label) {
-  box.innerHTML = `<div class="coupon-in"><span class="eyebrow">${esc(label)}</span><div class="coupon-text">${esc(text)}</div><span class="coupon-note">Действует бессрочно. Предъяви мне.</span></div><canvas class="foil" aria-label="Сотри, чтобы открыть подарок"></canvas>`;
-  const cv = box.querySelector("canvas"), cx = cv.getContext("2d");
+/* ---------- открытка ---------- */
+function openPost(i, fresh) {
+  const p = P[i];
+  $("#postTitle").textContent = `Открытка ${p.from}`;
+  $("#postPic").src = PIC(p.img);
+  $("#postWord").textContent = p.word;
+  $("#postNote").textContent = `${["Первое", "Второе", "Третье", "Четвёртое", "Пятое", "Шестое"][i]} слово из шести. ${fresh ? "Сохранено для финала." : ""}`;
+  $("#postAfter").hidden = !p.after;
+  $("#postAfter").textContent = p.after || "";
+  scratch($("#coupon"), p.coupon, i);
+  show($("#post"));
+  $("#postClose").focus({ preventScroll: true });
+}
+function closePost() {
+  hide($("#post"), 240);
+  if (!$("#chapter").hidden) closeChapter();
+}
+
+/* купон под слоем, который стирается пальцем */
+function scratch(box, text, i) {
+  box.innerHTML = `<div class="coupon__in"><span>Купон, действует бессрочно</span><b>${esc(text)}</b></div>`;
+  if (state.scratched.includes(i)) return;
+  const cv = document.createElement("canvas");
+  cv.setAttribute("aria-label", "Защитный слой: сотри пальцем, чтобы открыть купон");
+  cv.setAttribute("role", "img");
+  box.appendChild(cv);
   requestAnimationFrame(() => {
     const r = box.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1);
-    cv.width = r.width * d; cv.height = r.height * d; cx.scale(d, d);
-    const g = cx.createLinearGradient(0, 0, r.width, r.height);
-    g.addColorStop(0, "#c9b07a"); g.addColorStop(.35, "#f5e3b5"); g.addColorStop(.6, "#b89a5e"); g.addColorStop(1, "#ead7a5");
-    cx.fillStyle = g; cx.fillRect(0, 0, r.width, r.height);
-    for (let k = 0; k < 120; k++) { cx.fillStyle = `rgba(255,255,255,${Math.random() * .35})`; cx.fillRect(Math.random() * r.width, Math.random() * r.height, 1.5, 1.5); }
-    cx.fillStyle = "rgba(60,45,20,.75)"; cx.textAlign = "center";
-    cx.font = "italic 500 26px 'Cormorant Garamond', serif"; cx.fillText("сотри пальцем", r.width / 2, r.height / 2 + 4);
-    cx.font = "500 10px 'JetBrains Mono', monospace"; cx.fillText("ПОДАРОК", r.width / 2, r.height / 2 - 22);
+    cv.width = r.width * d; cv.height = r.height * d;
+    const cx = cv.getContext("2d"); cx.scale(d, d);
+    cx.fillStyle = "#c9a24a"; cx.fillRect(0, 0, r.width, r.height);
+    for (let k = 0; k < 160; k++) { cx.fillStyle = `rgba(255,240,200,${Math.random() * 0.5})`; cx.fillRect(Math.random() * r.width, Math.random() * r.height, 1.5, 1.5); }
+    cx.fillStyle = "#3d2c0f"; cx.textAlign = "center"; cx.font = "500 16px 'Golos Text', system-ui, sans-serif";
+    cx.fillText("Сотри пальцем", r.width / 2, r.height / 2 + 6);
     cx.globalCompositeOperation = "destination-out";
     let down = false, last = null, n = 0, gone = false;
     const pt = e => { const b = cv.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top]; };
-    const draw = p => {
-      cx.lineWidth = 44; cx.lineCap = "round"; cx.beginPath();
-      cx.moveTo(...(last || p)); cx.lineTo(...p); cx.stroke();
-      cx.beginPath(); cx.arc(p[0], p[1], 22, 0, 6.283); cx.fill(); last = p;
-      if (++n % 8 === 0) check();
+    const reveal = () => {
+      gone = true; cv.style.opacity = 0; setTimeout(() => cv.remove(), 500);
+      if (!state.scratched.includes(i)) { state.scratched.push(i); save(); }
     };
     const check = () => {
       if (gone) return;
       const data = cx.getImageData(0, 0, cv.width, cv.height).data;
       let clear = 0, tot = 0;
       for (let k = 3; k < data.length; k += 64) { tot++; if (data[k] < 40) clear++; }
-      if (clear / tot > .5) {
-        gone = true;
-        G.to(cv, { opacity: 0, duration: .6, onComplete: () => cv.remove() });
-        burstAt(box);
-      }
+      if (clear / tot > 0.5) reveal();
+    };
+    const draw = q => {
+      cx.lineWidth = 44; cx.lineCap = "round"; cx.beginPath(); cx.moveTo(...(last || q)); cx.lineTo(...q); cx.stroke();
+      cx.beginPath(); cx.arc(q[0], q[1], 22, 0, 6.283); cx.fill(); last = q;
+      if (++n % 8 === 0) check();
     };
     cv.addEventListener("pointerdown", e => { down = true; last = null; cv.setPointerCapture(e.pointerId); draw(pt(e)); });
     cv.addEventListener("pointermove", e => { if (down) draw(pt(e)); });
     const up = () => { down = false; last = null; };
     cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+    cv.tabIndex = 0;
+    cv.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); reveal(); } });
   });
 }
 
 /* =====================================================================
-   МЕХАНИКИ
+   ЗАДАНИЯ
    ===================================================================== */
+let timers = [];
+const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
+function stopAll() { timers.forEach(clearTimeout); timers = []; }
 
-/* 1. Соедини звёзды по порядку */
-function gDots(c, stage, win) {
-  const N = 10, pts = [];
-  for (let k = 0; k < N; k++) {
-    const t = Math.PI + k / N * 6.283; // начинаем от нижнего кончика сердца
-    const x = 16 * Math.sin(t) ** 3, y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-    pts.push([150 + x * 8.4, 128 + y * 8.4]);
-  }
-  stage.innerHTML = `
-    <p class="lede">Нажимай на звёзды от 1 до ${N}.</p>
-    <div class="dots-wrap"><svg viewBox="0 0 300 285" id="dotsSvg">
-      <polyline id="dLine" fill="none" stroke="#f2cf86" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" points=""/>
-      <path id="dFill" fill="#f3a6c4" opacity="0" d=""/>
-      ${pts.map(([x, y], k) => `
-        <g class="dot" data-k="${k}">
-          <circle cx="${x}" cy="${y}" r="5" fill="${k === 0 ? "#f3a6c4" : "#f4eeff"}" class="core"/>
-          <circle cx="${x}" cy="${y}" r="20" class="hit"/>
-          <text x="${x}" y="${y < 128 ? y - 12 : y + 20}">${k + 1}</text>
-        </g>`).join("")}
-    </svg></div>`;
-  let next = 0; const path = [];
-  stage.querySelectorAll(".dot").forEach(g => g.addEventListener("click", () => {
-    const k = +g.dataset.k;
-    if (k !== next) { shake(stage.querySelector(".dots-wrap")); return; }
-    path.push(pts[k].join(","));
-    g.querySelector(".core").setAttribute("fill", "#f2cf86");
-    G.fromTo(g.querySelector(".core"), { attr: { r: 9 } }, { attr: { r: 5 }, duration: .4 });
-    $("#dLine").setAttribute("points", path.join(" "));
-    next++;
-    const nx = stage.querySelector(`.dot[data-k="${next}"] .core`);
-    if (nx) nx.setAttribute("fill", "#f3a6c4");
-    if (next === N) {
-      path.push(pts[0].join(","));
-      $("#dLine").setAttribute("points", path.join(" "));
-      $("#dFill").setAttribute("d", "M" + pts.map(p => p.join(",")).join("L") + "Z");
-      G.to("#dFill", { opacity: .25, duration: .8 });
-      setTimeout(win, 900);
-    }
-  }));
-}
-
-/* 2. Пятнашки 3×3 */
-function puzzleImage(src) {
-  if (src) return Promise.resolve(src);
-  const cv = document.createElement("canvas"); cv.width = cv.height = 900;
-  const x = cv.getContext("2d");
-  const g = x.createLinearGradient(0, 0, 0, 900);
-  g.addColorStop(0, "#1b1636"); g.addColorStop(.6, "#4a2b5e"); g.addColorStop(1, "#f3a6c4");
-  x.fillStyle = g; x.fillRect(0, 0, 900, 900);
-  for (let k = 0; k < 260; k++) { x.globalAlpha = Math.random(); x.fillStyle = "#f4eeff"; x.beginPath(); x.arc(Math.random() * 900, Math.random() * 560, Math.random() * 2.2, 0, 6.283); x.fill(); }
-  x.globalAlpha = 1;
-  x.fillStyle = "#f2cf86"; x.beginPath(); x.arc(660, 220, 90, 0, 6.283); x.fill();
-  x.fillStyle = "#1b1636"; x.beginPath(); x.arc(700, 190, 82, 0, 6.283); x.fill();
-  x.fillStyle = "#120f22";
-  x.beginPath(); x.moveTo(0, 900); x.lineTo(0, 700); x.quadraticCurveTo(220, 600, 450, 690); x.quadraticCurveTo(680, 780, 900, 650); x.lineTo(900, 900); x.fill();
-  x.fillStyle = "#f4eeff"; x.textAlign = "center";
-  x.font = "italic 500 120px 'Cormorant Garamond', serif"; x.fillText("ты и я", 450, 470);
-  x.font = "500 26px 'JetBrains Mono', monospace"; x.fillStyle = "#f2cf86"; x.fillText("ПОД ОДНИМ НЕБОМ", 450, 530);
-  return Promise.resolve(cv.toDataURL("image/jpeg", .9));
-}
-function gSlide(c, stage, win) {
-  stage.innerHTML = `<p class="lede">Нажми на плитку рядом с пустой клеткой, чтобы сдвинуть её. Цифры в углу подскажут порядок.</p><div class="slide" id="slide"></div><button class="btn ghost small" id="peek" type="button" style="align-self:center">Подсмотреть картинку</button>`;
-  const box = $("#slide");
-  puzzleImage(c.photo).then(img => {
-    // pos[t] — клетка, где сейчас стоит плитка t; плитка 8 — пустая
-    let pos = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-    const nb = cell => [cell - 3, cell + 3, cell % 3 ? cell - 1 : -1, cell % 3 < 2 ? cell + 1 : -1].filter(v => v >= 0 && v < 9);
-    let prev = -1;
-    for (let k = 0; k < 120; k++) {
-      const empty = pos[8], opts = nb(empty).filter(v => v !== prev);
-      const target = opts[Math.floor(Math.random() * opts.length)];
-      const t = pos.indexOf(target);
-      prev = empty; pos[t] = empty; pos[8] = target;
-    }
-    if (pos.every((p, t) => p === t)) { const t = pos.indexOf(nb(8)[0]); [pos[t], pos[8]] = [pos[8], pos[t]]; }
-    const tiles = [];
-    for (let t = 0; t < 8; t++) {
-      const b = el("button", "tile", `<span class="tile-num">${t + 1}</span>`);
-      b.type = "button";
-      b.style.backgroundImage = `url("${img}")`;
-      b.style.backgroundPosition = `${(t % 3) * 50}% ${Math.floor(t / 3) * 50}%`;
-      b.setAttribute("aria-label", "Плитка " + (t + 1));
-      b.onclick = () => move(t);
-      box.appendChild(b); tiles.push(b);
-    }
-    const place = () => tiles.forEach((b, t) => b.style.transform = `translate(${(pos[t] % 3) * 100}%, ${Math.floor(pos[t] / 3) * 100}%)`);
-    place();
-    let solved = false;
-    function move(t) {
-      if (solved || !nb(pos[8]).includes(pos[t])) return;
-      [pos[t], pos[8]] = [pos[8], pos[t]];
-      place();
-      if (pos.every((p, k) => p === k)) {
-        solved = true;
-        const last = el("div", "tile");
-        last.style.cssText = `background-image:url("${img}");background-position:100% 100%;transform:translate(200%,200%);opacity:0`;
-        box.appendChild(last);
-        box.classList.add("solved");
-        G.to(last, { opacity: 1, duration: .6 });
-        setTimeout(win, 1100);
-      }
-    }
-    $("#peek").onclick = () => {
-      const ov = el("div", "tile");
-      ov.style.cssText = `width:100%;height:100%;background-image:url("${img}");background-size:cover;z-index:5`;
-      box.appendChild(ov);
-      setTimeout(() => G.to(ov, { opacity: 0, duration: .4, onComplete: () => ov.remove() }), 1400);
-    };
-  });
-}
-
-/* 3. Офлайн-записка */
-function gNote(c, stage, win) {
-  stage.innerHTML = `
-    <p class="story" style="font-size:19px">${esc(c.riddle)}</p>
-    <div class="field">
-      <label for="noteIn">Слово с записки</label>
-      <input type="text" id="noteIn" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
-    </div>
-    <p class="hint-box" id="noteHint" hidden>${esc(c.hint)}</p>
-    <button class="btn" type="button" id="noteGo">Проверить</button>
-    <p class="msg" id="noteMsg" role="status"></p>`;
-  let fails = 0;
-  const go = async () => {
-    const inp = $("#noteIn");
-    if (await sha(inp.value) === c.answerHash) { win(); return; }
-    fails++; inp.classList.add("bad"); shake(stage);
-    $("#noteMsg").textContent = fails >= 2 ? "Держи подсказку." : "Не то слово. Поищи ещё.";
-    if (fails >= 2) $("#noteHint").hidden = false;
+/* поле ввода с проверкой: check(value) → true/false */
+function answerField(stage, { label, hints = [], check, okText = "Проверить", onOk }) {
+  const box = document.createElement("div");
+  box.className = "field";
+  const id = "in" + Math.random().toString(36).slice(2, 7);
+  box.innerHTML = `<label for="${id}">${esc(label)}</label>
+    <input class="input" id="${id}" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <p class="msg" role="status"></p><p class="hint" hidden></p>
+    <div class="row"><button class="btn btn--paper" type="button">${esc(okText)}</button>${hints.length ? '<button class="link" type="button">Подсказка</button>' : ""}</div>`;
+  stage.appendChild(box);
+  const inp = $("input", box), msg = $(".msg", box), hint = $(".hint", box), [go, hb] = box.querySelectorAll(".row button");
+  let shown = 0, fails = 0;
+  const showHint = () => { if (shown < hints.length) { hint.hidden = false; hint.textContent = hints.slice(0, ++shown).join(" "); } if (shown >= hints.length && hb) hb.hidden = true; };
+  const run = async () => {
+    if (!inp.value.trim()) { inp.focus(); return; }
+    if (await check(inp.value)) { inp.disabled = true; go.disabled = true; msg.textContent = ""; onOk(); return; }
+    fails++; inp.classList.add("is-bad"); shake(box);
+    msg.textContent = fails >= 2 && shown < hints.length ? "Держи подсказку." : "Не то. Попробуй ещё раз.";
+    if (fails >= 2) showHint();
   };
-  $("#noteGo").onclick = go;
-  $("#noteIn").onkeydown = e => { if (e.key === "Enter") go(); };
-  $("#noteIn").oninput = () => { $("#noteIn").classList.remove("bad"); $("#noteMsg").textContent = ""; };
+  go.onclick = run;
+  if (hb) hb.onclick = showHint;
+  inp.onkeydown = e => { if (e.key === "Enter") run(); };
+  inp.oninput = () => { inp.classList.remove("is-bad"); msg.textContent = ""; };
+  return box;
+}
+function el(html) { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+function next(stage, label, fn) {
+  const b = el(`<button class="btn btn--sun" type="button">${esc(label)}</button>`);
+  b.onclick = () => { stage.innerHTML = ""; fn(); stage.scrollIntoView({ block: "start", behavior: REDUCED ? "auto" : "smooth" }); };
+  stage.appendChild(b);
+  b.focus({ preventScroll: true });
 }
 
-/* 4. Мемори */
-const isImg = v => /\.(jpe?g|png|webp|gif|avif)$/i.test(v) || /^(https?:|data:)/.test(v);
-function gMemory(c, stage, win) {
-  const deck = [...c.cards, ...c.cards].map((v, k) => ({ v, id: k % c.cards.length })).sort(() => Math.random() - .5);
-  stage.innerHTML = `<p class="lede">Открывай по две карточки. Совпали — остаются открытыми.</p><div class="mem" id="mem"></div><p class="round" id="memMoves">Ходов: 0</p>`;
-  const grid = $("#mem");
-  let open = [], got = 0, moves = 0, busy = false;
-  deck.forEach((d, k) => {
-    const b = el("button", "card", `<div class="card-in"><div class="face back-f"></div><div class="face front">${isImg(d.v) ? `<img src="${esc(d.v)}" alt="">` : esc(d.v)}</div></div>`);
-    b.type = "button"; b.setAttribute("aria-label", "Карточка " + (k + 1));
+/* ---------- 1. Венера: роза Венеры и послание наоборот ---------- */
+function gVenus(p, stage, done) {
+  // Венера относительно Земли за 8 лет: пятилепестковая «роза»
+  const T = 2922, S = 1200, N = 16, R = 74, C = 150;
+  const pos = t => { const a = 2 * Math.PI * t / 224.701, b = 2 * Math.PI * t / 365.256; return [C + R * (0.7233 * Math.cos(a) - Math.cos(b)), C + R * (0.7233 * Math.sin(a) - Math.sin(b))]; };
+  const curve = Array.from({ length: S + 1 }, (_, k) => pos(k * T / S));
+  const idx = Array.from({ length: N }, (_, k) => Math.round(k * S / N));
+  const d = (a, b) => "M" + curve.slice(a, b + 1).map(q => q.map(v => v.toFixed(1)).join(",")).join("L");
+
+  stage.innerHTML = `
+    <p class="step">Этап 1 из 2</p>
+    <p class="task">Если восемь лет отмечать, где Венера на нашем небе, получится цветок. Нажимай на звёзды по порядку, от 1 до ${N}, и он вырастет.</p>
+    <svg class="rose" viewBox="0 0 300 300" role="group" aria-label="Звёзды для розы Венеры">
+      <path class="ghost" d="${d(0, S)}"/>
+      <path class="line" id="roseLine" d=""/>
+      ${idx.map((ci, k) => {
+        const [x, y] = curve[ci], dx = x - C, dy = y - C, l = Math.hypot(dx, dy) || 1;
+        return `<g class="pt ${k === 0 ? "is-next" : ""}" data-k="${k}" tabindex="0" role="button" aria-label="Звезда ${k + 1}">
+          <circle class="hit" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="16"/>
+          <circle class="core" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.5"/>
+          <text x="${(x + dx / l * 13).toFixed(1)}" y="${(y + dy / l * 13).toFixed(1)}">${k + 1}</text></g>`;
+      }).join("")}
+    </svg>
+    <p class="msg" role="status"></p>`;
+  const line = $("#roseLine", stage), msg = $(".msg", stage);
+  let nextK = 0, drawn = 0;
+  const grow = to => {
+    line.setAttribute("d", d(0, to));
+    const L = line.getTotalLength(), from = drawn;
+    drawn = L;
+    if (REDUCED) return;
+    line.animate([{ strokeDasharray: L, strokeDashoffset: L - from }, { strokeDasharray: L, strokeDashoffset: 0 }], { duration: 520, easing: "cubic-bezier(0.23, 1, 0.32, 1)" });
+  };
+  const tap = g => {
+    const k = +g.dataset.k;
+    if (k !== nextK) { msg.textContent = `Сейчас нужна звезда ${nextK + 1}.`; shake($(".rose", stage)); return; }
+    msg.textContent = "";
+    g.classList.remove("is-next"); g.classList.add("is-hit");
+    nextK++;
+    grow(nextK === N ? S : idx[nextK - 1]);
+    if (nextK < N) stage.querySelector(`.pt[data-k="${nextK}"]`).classList.add("is-next");
+    else later(() => {
+      stage.appendChild(el(`<p class="fact">Это <b>роза Венеры</b>: за восемь земных лет Венера пять раз подходит к нам ближе всего и каждый раз рисует на небе лепесток. Цветы с другой планеты, для тебя.</p>`));
+      next(stage, "Дальше: послание с Венеры", mirrorStep);
+    }, 700);
+  };
+  stage.querySelectorAll(".pt").forEach(g => {
+    g.addEventListener("click", () => tap(g));
+    g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tap(g); } });
+  });
+
+  function mirrorStep() {
+    stage.innerHTML = `
+      <p class="step">Этап 2 из 2</p>
+      <p class="task">Венера вращается в обратную сторону, поэтому сутки там длиннее года. Даже послание оттуда пришло задом наперёд.</p>
+      <p class="mirror" id="mirror">${esc(p.mirror)}</p>`;
+    answerField(stage, {
+      label: "Ответ на послание",
+      hints: ["Попробуй поднести экран к зеркалу.", "Ответ — одно имя. Чьё солнце просыпается рядом со мной?"],
+      check: v => p.mirrorAnswers.some(a => norm(a) === norm(v)),
+      onOk: () => later(done, 400)
+    });
+    const flip = el(`<button class="link" type="button">Развернуть послание</button>`);
+    flip.onclick = () => { $("#mirror").style.transform = "none"; flip.remove(); };
+    later(() => stage.appendChild(flip), 60000);
+  }
+}
+
+/* ---------- 2. Земля: записки дома ---------- */
+function gEarth(p, stage, done) {
+  const notes = p.notes;
+  const step = k => {
+    const n = notes[k];
+    stage.innerHTML = `
+      ${notes.length > 1 ? `<p class="step">Записка ${k + 1} из ${notes.length}</p>` : ""}
+      <p class="task">Иди туда, куда ведёт загадка. Найди бумажку и впиши слово с неё.</p>
+      <p class="fact">${esc(n.riddle)}</p>`;
+    answerField(stage, {
+      label: "Слово с записки",
+      hints: [n.hint],
+      check: async v => (await sha(v)) === n.answerHash,
+      onOk: () => k + 1 < notes.length ? later(() => { stage.innerHTML = ""; step(k + 1); }, 400) : later(done, 400)
+    });
+  };
+  step(0);
+}
+
+/* ---------- 3. Марс: марсоход ---------- */
+const MARS = [
+  { map: ["S.X..", ".X...", "...X.", ".X...", "...XT"], max: 12, text: "Довези марсоход до флажка. Кратеры объезжай." },
+  { map: ["S..X..", ".X..*.", ".X.X..", "...X.X", "X.....", ".XX.XT"], max: 16, text: "Теперь по пути подбери образец грунта: светлый ромб." },
+  { map: ["S...X..", ".XX...*", "...X.X.", "*X...X.", "...X...", ".X..XX.", "..X...T"], max: 26, text: "Последний участок: два образца, потом к флажку." }
+];
+const DIRS = { "↑": [-1, 0], "→": [0, 1], "↓": [1, 0], "←": [0, -1] };
+const ROVER = `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="8" y="10" width="24" height="16" fill="#ebe7e0"/><rect x="17" y="4" width="6" height="7" fill="#ebe7e0"/><circle cx="20" cy="5" r="3" fill="#f2b544"/><circle cx="11" cy="31" r="5" fill="#17130e" stroke="#ebe7e0" stroke-width="2"/><circle cx="29" cy="31" r="5" fill="#17130e" stroke="#ebe7e0" stroke-width="2"/></svg>`;
+let marsWarm = false;
+function gMars(p, stage, done) {
+  const level = L => {
+    const lv = MARS[L], R = lv.map.length, Cc = lv.map[0].length;
+    let start, samples = [];
+    lv.map.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === "S") start = [y, x]; if (ch === "*") samples.push(y + "," + x); }));
+    stage.innerHTML = `
+      <p class="step">Участок ${L + 1} из ${MARS.length}</p>
+      <p class="task">${lv.text} Сначала собери программу стрелками, потом отправь её целиком.</p>
+      <div class="mars-grid" style="--c:${Cc}" aria-label="Карта участка">
+        ${lv.map.map((row, y) => [...row].map((ch, x) => `<div class="cell" data-c="${y},${x}">${ch === "X" ? '<span class="crater"></span>' : ch === "T" ? '<span class="flag"></span>' : ch === "*" ? '<span class="sample"></span>' : ""}</div>`).join("")).join("")}
+        <div class="rover" id="rover">${ROVER}</div>
+      </div>
+      <div class="program" id="prog" aria-live="polite"></div>
+      <div class="pad-row">${Object.keys(DIRS).map(k => `<button class="btn btn--dark" type="button" data-d="${k}" aria-label="${{ "↑": "Вверх", "→": "Вправо", "↓": "Вниз", "←": "Влево" }[k]}">${k}</button>`).join("")}</div>
+      <div class="row"><button class="btn btn--sun" type="button" id="send">Отправить на Марс</button><button class="btn btn--dark" type="button" id="clear">Стереть</button></div>
+      <p class="msg" role="status" id="mmsg"></p>`;
+    const rover = $("#rover", stage), prog = $("#prog", stage), msg = $("#mmsg", stage), send = $("#send", stage);
+    let cmds = [], busy = false;
+    const place = ([y, x]) => { rover.style.transform = `translate(${x * 100}%, ${y * 100}%)`; };
+    const drawProg = () => {
+      prog.innerHTML = cmds.length ? cmds.map((c, k) => `<button type="button" data-k="${k}" aria-label="Убрать шаг ${k + 1}">${c}</button>`).join("") : `<span class="empty">Программа пуста. Шагов можно до ${lv.max}.</span>`;
+    };
+    const reset = () => { place(start); stage.querySelectorAll(".sample").forEach(s => s.classList.remove("is-got")); };
+    reset(); drawProg();
+    stage.querySelectorAll("[data-d]").forEach(b => b.onclick = () => {
+      if (busy) return;
+      if (cmds.length >= lv.max) { msg.textContent = `Больше ${lv.max} шагов марсоход не запомнит.`; return; }
+      msg.textContent = ""; cmds.push(b.dataset.d); drawProg();
+    });
+    prog.onclick = e => { const b = e.target.closest("[data-k]"); if (!b || busy) return; cmds.splice(+b.dataset.k, 1); drawProg(); };
+    $("#clear", stage).onclick = () => { if (!busy) { cmds = []; drawProg(); msg.textContent = ""; } };
+    send.onclick = async () => {
+      if (busy || !cmds.length) return;
+      busy = true; send.disabled = true; reset();
+      const delay = marsWarm ? 3 : 13;
+      const sig = el(`<p class="task">${marsWarm ? "Связь уже прогрета." : "В жизни сигнал до Марса идёт от 3 до 22 минут. У нас 13 секунд."} <span class="signal" id="sig">${delay}</span></p>`);
+      stage.insertBefore(sig, prog);
+      for (let s = delay; s > 0; s--) { $("#sig", stage).textContent = s; await wait(1000); if (current !== 2) return; }
+      sig.remove(); marsWarm = true;
+      let at = [...start], got = new Set(), fail = "";
+      for (const c of cmds) {
+        const [dy, dx] = DIRS[c], ny = at[0] + dy, nx = at[1] + dx;
+        if (ny < 0 || nx < 0 || ny >= R || nx >= Cc) { fail = "Марсоход упёрся в край карты."; break; }
+        at = [ny, nx]; place(at);
+        await wait(340); if (current !== 2) return;
+        const ch = lv.map[ny][nx];
+        if (ch === "X") { fail = "Марсоход съехал в кратер."; break; }
+        if (ch === "*") { got.add(ny + "," + nx); stage.querySelector(`[data-c="${ny},${nx}"] .sample`).classList.add("is-got"); }
+      }
+      const ok = !fail && lv.map[at[0]][at[1]] === "T" && got.size === samples.length;
+      if (!fail && !ok) fail = lv.map[at[0]][at[1]] === "T" ? "Доехал, но собрал не все образцы." : "Программа кончилась, а флажок ещё впереди.";
+      if (!ok) {
+        rover.classList.remove("is-crash"); void rover.offsetWidth; rover.classList.add("is-crash");
+        msg.textContent = fail + " Поправь программу и отправь снова.";
+        busy = false; send.disabled = false; return;
+      }
+      msg.textContent = "";
+      stage.querySelectorAll(".pad-row, #send, #clear").forEach(n => n.hidden = true);
+      if (L + 1 < MARS.length) next(stage, `Участок ${L + 2}`, () => level(L + 1));
+      else {
+        stage.innerHTML = `
+          <svg class="sunset" viewBox="0 0 400 300" role="img" aria-label="Закат на Марсе">
+            <rect width="400" height="300" fill="#8a6a4c"/><rect width="400" height="150" fill="#a9876a"/><rect y="150" width="400" height="60" fill="#b8977a"/>
+            <circle cx="200" cy="196" r="70" fill="#7f9fbf"/><circle cx="200" cy="196" r="44" fill="#a9c2da"/><circle cx="200" cy="196" r="14" fill="#eef4f8"/>
+            <path d="M0 210 L90 186 L170 204 L260 180 L340 200 L400 188 L400 300 L0 300 Z" fill="#4a3424"/>
+          </svg>
+          <p class="fact">Марсоход на месте. А вот что он видит вечером: <b>на Марсе закаты голубые</b>. Пыль в воздухе рассеивает свет наоборот, не так, как у нас.</p>`;
+        next(stage, "Забрать открытку", done);
+      }
+    };
+  };
+  level(0);
+}
+
+/* ---------- 4. Юпитер: спутники Галилея, потом наши ---------- */
+// координаты и радиусы лун на снимке moons.jpg (1400×1113)
+const MOONS = [
+  { name: "Ио", note: "вся в вулканах", cx: 303, cy: 365, r: 24 },
+  { name: "Европа", note: "под льдом океан", cx: 651, cy: 580, r: 72 },
+  { name: "Ганимед", note: "больше Меркурия", cx: 523, cy: 864, r: 111 },
+  { name: "Каллисто", note: "вся в кратерах", cx: 1196, cy: 860, r: 277 }
+];
+function moonCrop(m) {
+  const k = 0.84 / (2 * m.r), w = 1400 * k, h = 1113 * k, ox = 0.5 - m.cx * k, oy = 0.5 - m.cy * k;
+  return `background-image:url(${PIC("moons.jpg")});background-size:${(w * 100).toFixed(1)}% auto;background-position:${(ox / (1 - w) * 100).toFixed(2)}% ${(oy / (1 - h) * 100).toFixed(2)}%`;
+}
+function memory(stage, cards, cols, onWin, onPair) {
+  const deck = cards.map((c, k) => ({ ...c, k })).sort(() => Math.random() - 0.5);
+  const grid = el(`<div class="mem" style="--cols:${cols}"></div>`);
+  const moves = el(`<p class="hint">Ходов: 0</p>`);
+  stage.append(grid, moves);
+  let open = [], got = 0, n = 0, busy = false;
+  deck.forEach((c, k) => {
+    const b = el(`<button class="card" type="button" aria-label="Карточка ${k + 1}"><span class="card__in"><span class="card__f card__back"></span><span class="card__f card__front ${c.name ? "is-name" : ""}" style="${c.style || ""}">${c.img ? `<img src="${esc(c.img)}" alt="">` : c.name ? esc(c.name) : ""}</span></span></button>`);
     b.onclick = () => {
-      if (busy || b.classList.contains("open") || b.classList.contains("got")) return;
-      b.classList.add("open"); open.push([b, d]);
+      if (busy || b.classList.contains("is-open") || b.classList.contains("is-got")) return;
+      b.classList.add("is-open"); open.push([b, c]);
       if (open.length < 2) return;
-      moves++; $("#memMoves").textContent = "Ходов: " + moves;
-      const [[b1, d1], [b2, d2]] = open; open = [];
-      if (d1.id === d2.id) {
-        setTimeout(() => { b1.classList.add("got"); b2.classList.add("got"); burstAt(b2); }, 350);
-        if (++got === c.cards.length) setTimeout(win, 1100);
+      moves.textContent = "Ходов: " + ++n;
+      const [[b1, c1], [b2, c2]] = open; open = [];
+      if (c1.pair === c2.pair) {
+        b1.classList.add("is-got"); b2.classList.add("is-got");
+        b1.setAttribute("aria-label", "Найдено"); b2.setAttribute("aria-label", "Найдено");
+        onPair?.(c1.pair);
+        if (++got === cards.length / 2) later(onWin, 700);
       } else {
         busy = true;
-        setTimeout(() => { b1.classList.remove("open"); b2.classList.remove("open"); busy = false; }, 850);
+        later(() => { b1.classList.remove("is-open"); b2.classList.remove("is-open"); busy = false; }, 900);
       }
     };
     grid.appendChild(b);
   });
-  G.from(grid.children, { scale: .6, opacity: 0, duration: .5, stagger: .04, ease: "back.out(2)" });
 }
-
-/* 5. Шифр Полибия с греческими буквами */
-function gCipher(c, stage, win) {
-  const AB = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ", GR = ["α", "β", "γ", "δ", "ε", "ζ"];
-  const word = c.secret.toUpperCase();
-  const code = [...word].map(ch => { const k = AB.indexOf(ch); return k < 0 ? ch : GR[Math.floor(k / 6)] + (k % 6 + 1); });
-  let table = `<tr><th></th>${[1, 2, 3, 4, 5, 6].map(n => `<th>${n}</th>`).join("")}</tr>`;
-  for (let r = 0; r < 6; r++) {
-    table += `<tr><th class="greek">${GR[r]}</th>`;
-    for (let col = 0; col < 6; col++) table += `<td>${AB[r * 6 + col] || ""}</td>`;
-    table += "</tr>";
-  }
+function gJupiter(p, stage, done) {
   stage.innerHTML = `
-    <span class="eyebrow">Зашифрованное слово</span>
-    <div class="cipher-line">${code.map(x => `<span class="cchip">${esc(x)}</span>`).join("")}</div>
-    <button class="link-btn" type="button" id="cHintBtn">Как это читать?</button>
-    <p class="hint-box" id="cHint" hidden>Каждая пара — это буква. Греческая буква указывает строку таблицы, цифра указывает столбец. Например, β3 — это Ж.</p>
-    <div class="grid-wrap"><table class="poly">${table}</table></div>
-    <div class="field">
-      <label for="cIn">Расшифрованное слово</label>
-      <input type="text" id="cIn" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
-    </div>
-    <button class="btn" type="button" id="cGo">Проверить</button>
-    <p class="msg" id="cMsg" role="status"></p>`;
-  $("#cHintBtn").onclick = () => { $("#cHint").hidden = false; $("#cHintBtn").hidden = true; };
-  const go = () => {
-    if (norm($("#cIn").value) === norm(c.secret)) { win(); return; }
-    $("#cIn").classList.add("bad"); $("#cMsg").textContent = "Почти. Проверь каждую пару по таблице."; shake(stage);
-  };
-  $("#cGo").onclick = go;
-  $("#cIn").onkeydown = e => { if (e.key === "Enter") go(); };
-  $("#cIn").oninput = () => { $("#cIn").classList.remove("bad"); $("#cMsg").textContent = ""; };
+    <p class="step">Этап 1 из 2</p>
+    <p class="task">Найди пару каждой луне: снимок и её имя.</p>`;
+  const log = el(`<p class="fact" hidden></p>`);
+  memory(stage, MOONS.flatMap((m, k) => [{ pair: k, style: moonCrop(m) }, { pair: k, name: m.name }]), 4, () => {
+    stage.appendChild(el(`<p class="fact">Все четыре на месте. А теперь про <b>наши спутники</b>: то, вокруг чего вращаемся мы.</p>`));
+    next(stage, "Этап 2: наши спутники", ours);
+  }, k => { log.hidden = false; log.innerHTML = `<b>${MOONS[k].name}</b>: ${MOONS[k].note}.`; });
+  stage.appendChild(log);
+
+  function ours() {
+    const list = p.ours.length ? p.ours : ["venus", "earth", "mars", "saturn", "neptune", "sun"].map(k => ({ img: PIC(`${k}.jpg`), caption: P.find(x => x.key === k).name }));
+    stage.innerHTML = `
+      <p class="step">Этап 2 из 2</p>
+      <p class="task">Шесть пар. Каждая найденная пара что-нибудь вспомнит.</p>`;
+    const cap = el(`<p class="fact" hidden></p>`);
+    memory(stage, list.flatMap((c, k) => [{ pair: k, img: c.img }, { pair: k, img: c.img }]), 4, () => later(done, 300), k => { cap.hidden = false; cap.textContent = list[k].caption; });
+    stage.appendChild(cap);
+  }
 }
 
-/* 6. Мелодия звёзд (повтори последовательность) */
+/* ---------- 5. Сатурн: шифровальные кольца ---------- */
+const AB = "АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
+const encode = (s, k) => [...s.toUpperCase().replace(/Ё/g, "Е")].map(ch => { const i = AB.indexOf(ch); return i < 0 ? ch : AB[(i + k) % 32]; }).join("");
+function gSaturn(p, stage, done) {
+  const round = (shift, plain, n, intro, hints, after) => {
+    stage.innerHTML = `
+      <p class="step">Этап ${n} из 2</p>
+      <p class="task">${intro}</p>
+      <p class="cipher" aria-label="Шифр">${esc(encode(plain, shift))}</p>
+      <svg class="disk" viewBox="0 0 320 320" role="slider" tabindex="0" aria-label="Внутреннее кольцо" aria-valuemin="0" aria-valuemax="31" aria-valuenow="0">
+        <circle cx="160" cy="160" r="156" fill="#1c1a17"/><circle cx="160" cy="160" r="118" fill="#11100e"/><circle cx="160" cy="160" r="80" fill="#000"/>
+        <rect x="150" y="2" width="20" height="78" fill="#2a2723"/>
+        <g class="outer">${[...AB].map((ch, k) => { const a = k / 32 * 2 * Math.PI; return `<text x="${(160 + 137 * Math.sin(a)).toFixed(1)}" y="${(160 - 137 * Math.cos(a)).toFixed(1)}">${ch}</text>`; }).join("")}</g>
+        <g class="inner" style="transform-origin:160px 160px">${[...AB].map((ch, k) => { const a = k / 32 * 2 * Math.PI; return `<text x="${(160 + 99 * Math.sin(a)).toFixed(1)}" y="${(160 - 99 * Math.cos(a)).toFixed(1)}" transform="rotate(${(k / 32 * 360).toFixed(2)} ${(160 + 99 * Math.sin(a)).toFixed(1)} ${(160 - 99 * Math.cos(a)).toFixed(1)})">${ch}</text>`; }).join("")}</g>
+        <text x="160" y="160" fill="#a59d8f" style="font-size:12px">тяни кольцо</text>
+      </svg>
+      <div class="row"><button class="btn btn--dark btn--small" type="button" id="rl" aria-label="Повернуть влево">← Повернуть</button><button class="btn btn--dark btn--small" type="button" id="rr" aria-label="Повернуть вправо">Повернуть →</button></div>
+      <p class="hint" id="pair">Сейчас под А стоит А</p>`;
+    const disk = $(".disk", stage), inner = $(".inner", stage), pair = $("#pair", stage);
+    let rot = 0; // на сколько букв повернули внутреннее кольцо
+    const setRot = r => {
+      rot = ((Math.round(r) % 32) + 32) % 32;
+      inner.style.transform = `rotate(${-rot * 360 / 32}deg)`;
+      disk.setAttribute("aria-valuenow", rot);
+      pair.textContent = `Сейчас под А стоит ${AB[rot]}`;
+    };
+    $("#rl", stage).onclick = () => setRot(rot - 1);
+    $("#rr", stage).onclick = () => setRot(rot + 1);
+    disk.addEventListener("keydown", e => { if (e.key === "ArrowLeft" || e.key === "ArrowDown") setRot(rot - 1); if (e.key === "ArrowRight" || e.key === "ArrowUp") setRot(rot + 1); });
+    let drag = null;
+    const ang = e => { const b = disk.getBoundingClientRect(); return Math.atan2(e.clientX - b.left - b.width / 2, -(e.clientY - b.top - b.height / 2)); };
+    disk.addEventListener("pointerdown", e => { drag = { a: ang(e), r: rot }; disk.setPointerCapture(e.pointerId); disk.classList.add("is-drag"); });
+    disk.addEventListener("pointermove", e => {
+      if (!drag) return;
+      let da = ang(e) - drag.a; if (da > Math.PI) da -= 2 * Math.PI; if (da < -Math.PI) da += 2 * Math.PI;
+      setRot(drag.r - da / (2 * Math.PI) * 32);
+    });
+    const end = () => { drag = null; disk.classList.remove("is-drag"); };
+    disk.addEventListener("pointerup", end); disk.addEventListener("pointercancel", end);
+    answerField(stage, { label: "Расшифровка", hints, check: v => norm(v) === norm(plain), onOk: after });
+  };
+  round(1, p.warmup, 1,
+    "Разминка. Каждая буква сдвинута на одну вперёд. Поверни внутреннее кольцо так, чтобы под А стояла Б. Потом ищи буквы шифра на внутреннем кольце и читай букву над ними.",
+    ["Под каждой буквой внешнего кольца должна стоять следующая буква алфавита.", "Первая буква шифра Л, над ней стоит К."],
+    () => later(() => round(6, p.secret, 2,
+      "Теперь по-настоящему. Ключ: Сатурн по счёту от Солнца. Столько букв сдвиг, и столько же надо повернуть кольцо.",
+      ["Сатурн шестая планета. Поверни так, чтобы под А стояла Ж.", `Первое слово начинается на ${p.secret[0].toUpperCase()}.`],
+      () => later(done, 400)), 500));
+}
+
+/* ---------- 6. Нептун: Золотая пластинка ---------- */
 let AC = null;
-function tone(freq, dur = .42, type = "sine", vol = .22) {
+function tone(freq, dur = 0.42, type = "sine", vol = 0.22) {
   try {
     AC = AC || new (window.AudioContext || window.webkitAudioContext)();
     const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
     o.type = type; o.frequency.value = freq;
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .02); g.gain.exponentialRampToValueAtTime(.001, t + dur);
-    o.connect(g).connect(AC.destination); o.start(t); o.stop(t + dur + .05);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g).connect(AC.destination); o.start(t); o.stop(t + dur + 0.05);
   } catch (e) {}
 }
-function gMelody(c, stage, win) {
-  const PADS = [{ c: "#f3a6c4", f: 523.25 }, { c: "#f2cf86", f: 659.25 }, { c: "#b9a4ff", f: 783.99 }, { c: "#9fe0c9", f: 880.0 }];
+function gNeptune(p, stage, done) {
+  const PADS = [{ c: "#c8962e", f: 523.25 }, { c: "#e0b04a", f: 659.25 }, { c: "#b07f22", f: 783.99 }, { c: "#d4a23c", f: 880 }];
   stage.innerHTML = `
-    <p class="lede">Звёзды споют короткую мелодию. Повтори её, нажимая в том же порядке. С каждым раундом она становится длиннее. Включи звук.</p>
-    <div class="pads wait" id="pads">${PADS.map((p, k) => `<button class="pad" type="button" style="--c:${p.c}" data-k="${k}" aria-label="Звезда ${k + 1}"></button>`).join("")}</div>
-    <p class="round" id="round">Раунд 0 из ${c.rounds}</p>
-    <button class="btn" type="button" id="mStart">Послушать звёзды</button>`;
-  const padsEl = $("#pads"), pads = [...padsEl.children];
-  const seq = Array.from({ length: c.rounds }, () => Math.floor(Math.random() * 4));
+    <p class="step">Включи звук</p>
+    <p class="task">Пластинка сыграет короткую мелодию. Повтори её, нажимая на те же части. С каждым раундом она длиннее, всего раундов ${p.rounds}.</p>
+    <div class="record is-wait" id="rec">${PADS.map((q, k) => `<button class="sector" type="button" style="--c:${q.c}" data-k="${k}" aria-label="Часть пластинки ${k + 1}"></button>`).join("")}<span class="record__hole"></span></div>
+    <p class="hint" id="round">Раунд 0 из ${p.rounds}</p>
+    <button class="btn btn--sun" type="button" id="mStart">Поставить пластинку</button>`;
+  const rec = $("#rec", stage), pads = [...rec.querySelectorAll(".sector")], roundEl = $("#round", stage);
+  const seq = Array.from({ length: p.rounds }, () => Math.floor(Math.random() * 4));
   let round = 0, step = 0;
-  const flash = (k, ms = 380) => { pads[k].classList.add("lit"); tone(PADS[k].f); setTimeout(() => pads[k].classList.remove("lit"), ms); };
+  const flash = (k, ms = 380) => { pads[k].classList.add("is-lit"); tone(PADS[k].f); later(() => pads[k].classList.remove("is-lit"), ms); };
   const play = () => {
-    padsEl.classList.add("wait"); step = 0;
-    $("#round").textContent = `Раунд ${round + 1} из ${c.rounds}`;
-    seq.slice(0, round + 1).forEach((k, n) => setTimeout(() => flash(k), 600 + n * 620));
-    setTimeout(() => padsEl.classList.remove("wait"), 600 + (round + 1) * 620);
+    rec.classList.add("is-wait"); step = 0;
+    roundEl.textContent = `Раунд ${round + 1} из ${p.rounds}. Слушай.`;
+    const gap = Math.max(420, 640 - round * 25);
+    seq.slice(0, round + 1).forEach((k, n) => later(() => flash(k), 600 + n * gap));
+    later(() => { rec.classList.remove("is-wait"); roundEl.textContent = `Раунд ${round + 1} из ${p.rounds}. Повторяй.`; }, 600 + (round + 1) * gap);
   };
-  $("#mStart").onclick = () => { $("#mStart").hidden = true; play(); };
-  pads.forEach((p, k) => p.addEventListener("click", () => {
+  $("#mStart", stage).onclick = e => { e.currentTarget.hidden = true; play(); };
+  pads.forEach((pad, k) => pad.addEventListener("click", () => {
+    if (rec.classList.contains("is-wait")) return;
     flash(k, 220);
     if (k !== seq[step]) {
-      padsEl.classList.add("wait"); tone(160, .5, "triangle", .18); shake(padsEl);
-      $("#round").textContent = "Мимо. Слушай ещё раз.";
-      setTimeout(play, 1200); return;
+      rec.classList.add("is-wait"); tone(160, 0.5, "triangle", 0.18); shake(rec);
+      roundEl.textContent = "Мимо. Слушай ещё раз.";
+      later(play, 1300); return;
     }
-    step++;
-    if (step > round) {
+    if (++step > round) {
       round++;
-      if (round === c.rounds) { padsEl.classList.add("wait"); [0, 1, 2, 3].forEach((q, n) => setTimeout(() => flash(q, 300), 300 + n * 140)); setTimeout(win, 1200); return; }
-      burstAt(padsEl); setTimeout(play, 700);
+      if (round === p.rounds) {
+        rec.classList.add("is-wait");
+        [0, 1, 3, 2, 0].forEach((q, n) => later(() => flash(q, 300), 300 + n * 150));
+        later(finish, 1400); return;
+      }
+      later(play, 800);
     }
   }));
+  function finish() {
+    stage.innerHTML = `
+      <p class="fact">На Золотой пластинке «Вояджеров» есть музыка, шум дождя, смех и <b>поцелуй</b>. А ещё сигналы мозга Энн Друян: перед записью она думала о том, каково это, влюбиться. Через пару дней после того, как они с Карлом Саганом признались друг другу. Эта запись сейчас летит за пределами Солнечной системы.</p>
+      <p class="task">Если когда-нибудь нашу запись тоже отправят к звёздам, пусть там будет ${esc(p.songTitle)}.</p>
+      <div class="row">${p.song ? `<a class="btn btn--paper" href="${esc(p.song)}" target="_blank" rel="noopener">Включить ${esc(p.songTitle)}</a>` : ""}<button class="btn btn--sun" type="button" id="toPost">Забрать открытку</button></div>`;
+    $("#toPost", stage).onclick = done;
+  }
 }
 
-/* 7. Финал: сложи фразу */
-function gFinal(c, stage, win, i) {
-  const words = CONFIG.chapters.slice(0, 6).map(x => x.word);
-  const pool = words.map((w, k) => ({ w, k })).sort(() => Math.random() - .5);
+/* ---------- 7. Солнце: фраза и письмо ---------- */
+function gSun(p, stage) {
+  const words = P.slice(0, 6).map(x => x.word);
+  const pool = words.map((w, k) => ({ w, k })).sort(() => Math.random() - 0.5);
+  const picked = [];
   stage.innerHTML = `
-    <p class="lede">Нажимай на слова в правильном порядке. Ошибся — нажми на слово в строке, и оно вернётся.</p>
+    <p class="task">Нажимай на слова в правильном порядке. Ошиблась — нажми на слово в строке, и оно вернётся.</p>
     <div class="answer-line" id="ans" aria-live="polite"></div>
     <div class="pool" id="pool"></div>`;
-  const ans = $("#ans"), poolEl = $("#pool");
-  const picked = [];
+  const ans = $("#ans", stage), poolEl = $("#pool", stage);
   const render = () => {
     ans.innerHTML = ""; poolEl.innerHTML = "";
-    picked.forEach((p, n) => { const b = el("button", "wtile", esc(p.w)); b.type = "button"; b.onclick = () => { picked.splice(n, 1); render(); }; ans.appendChild(b); });
-    pool.filter(p => !picked.includes(p)).forEach(p => { const b = el("button", "wtile", esc(p.w)); b.type = "button"; b.onclick = () => { picked.push(p); render(); check(); }; poolEl.appendChild(b); });
+    picked.forEach((q, n) => { const b = el(`<button class="wtile" type="button">${esc(q.w)}</button>`); b.onclick = () => { picked.splice(n, 1); render(); }; ans.appendChild(b); });
+    pool.filter(q => !picked.includes(q)).forEach(q => { const b = el(`<button class="wtile" type="button">${esc(q.w)}</button>`); b.onclick = () => { picked.push(q); render(); check(); }; poolEl.appendChild(b); });
   };
   const check = () => {
     if (picked.length < words.length) return;
-    if (picked.every((p, n) => p.k === n)) finale(c, stage, i);
-    else { shake(ans); setTimeout(() => { picked.length = 0; render(); }, 600); }
+    if (picked.every((q, n) => q.k === n)) later(letter, 300);
+    else { shake(ans); later(() => { picked.length = 0; render(); }, 700); }
   };
   render();
+
+  async function letter() {
+    if (!isDone(6)) { state.done.push(6); save(); }
+    stage.innerHTML = `<p class="phrase">${esc(words.join(" "))}</p><div class="letter" id="letter"></div>`;
+    await wait(1800);
+    const box = $("#letter", stage);
+    for (const [t, sig] of [...p.letter.map(t => [t, false]), [p.signature, true]]) {
+      const para = document.createElement("p"); if (sig) para.className = "sig"; box.appendChild(para);
+      if (REDUCED) { para.textContent = t; continue; }
+      for (let k = 1; k <= t.length; k++) { para.textContent = t.slice(0, k); await new Promise(r => setTimeout(r, ".,".includes(t[k - 1]) ? 180 : 30)); if (current !== 6) return; }
+      await wait(400);
+    }
+    const c = el(`<div class="coupon" style="width:100%"></div>`);
+    stage.appendChild(c);
+    scratch(c, p.coupon, 6);
+  }
 }
 
-function finale(c, stage, i) {
-  if (GL) return finale3D(c, stage, i);
-  const first = !isDone(i);
-  if (first) { state.done.push(i); save(); }
-  const phrase = CONFIG.chapters.slice(0, 6).map(x => x.word).join(" ");
-  G.to(".app", { opacity: 0, duration: .8, onComplete: () => {
-    const s = Math.min(W, H) / 46;
-    heartParticles(W / 2, H * .42, s);
-    const cap = el("div", "", `<p class="story" style="text-align:center;font-size:28px;font-style:italic">${esc(phrase)}</p>`);
-    cap.style.cssText = "position:fixed;left:16px;right:16px;bottom:calc(16% + env(safe-area-inset-bottom,0px));z-index:61;opacity:0";
-    document.body.appendChild(cap);
-    G.to(cap, { opacity: 1, duration: 1.2, delay: 1.6 });
-    setTimeout(() => {
-      fadeHeart();
-      G.to(cap, { opacity: 0, duration: .8, onComplete: () => cap.remove() });
-      stage.innerHTML = "";
-      const L = el("div", "letter");
-      stage.appendChild(L);
-      document.querySelector(".ch-head h2").textContent = "Письмо";
-      document.querySelector(".ch-head .story").textContent = "";
-      G.to(".app", { opacity: 1, duration: .8 });
-      typeLetter(L, c.letter, c.signature).then(() => {
-        const r = el("div", "reward");
-        r.innerHTML = `<div class="coupon" id="coupon"></div><button class="btn ghost" type="button" id="toSky">Посмотреть на созвездие</button>`;
-        stage.appendChild(r);
-        G.from(r, { opacity: 0, y: 16, duration: .6 });
-        scratchCard($("#coupon"), c.coupon, "Главный подарок");
-        $("#toSky").onclick = renderHub;
-      });
-    }, REDUCED ? 2500 : 5200);
-  } });
-}
-
-function typeLetter(box, paras, sig) {
-  return new Promise(done => {
-    const all = [...paras.map(p => ({ t: p, sig: false })), { t: sig, sig: true }];
-    let pi = 0;
-    const nextP = () => {
-      if (pi >= all.length) { done(); return; }
-      const { t, sig } = all[pi++];
-      const p = el("p", sig ? "sig" : ""); box.appendChild(p);
-      if (REDUCED) { p.textContent = t; nextP(); return; }
-      let k = 0;
-      const tick = () => { p.textContent = t.slice(0, ++k); if (k < t.length) setTimeout(tick, t[k - 1] === "." || t[k - 1] === "," ? 180 : 32); else setTimeout(nextP, 500); };
-      tick();
-    };
-    nextP();
-  });
-}
+const GAMES = { venus: gVenus, earth: gEarth, mars: gMars, jupiter: gJupiter, saturn: gSaturn, neptune: gNeptune, sun: gSun };
 
 /* =====================================================================
-   РЕЖИМ РАЗРАБОТЧИКА (index.html#dev)
+   РЕЖИМ РАЗРАБОТЧИКА (index.html#dev): все главы открыты, генератор хешей
    ===================================================================== */
-function devPanel() {
-  const sched = CONFIG.chapters.map((c, i) => `${ROMAN[i]}: ${unlockTime(i).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}`).join(" · ");
-  return `
-    <div class="dev">
-      <span class="eyebrow">Режим разработчика · все главы открыты</span>
-      <p>Расписание: ${esc(sched)}</p>
-      <div class="field"><label for="hashIn">Хеш для нового ответа</label><input type="text" id="hashIn" autocomplete="off" spellcheck="false"></div>
-      <code id="hashOut">введи слово</code>
-      <div class="row">
-        <button class="btn small" type="button" id="hashCopy">Скопировать хеш</button>
-        <button class="btn small ghost" type="button" id="devReset">Сбросить прогресс</button>
-      </div>
-    </div>`;
+function devHTML() {
+  return `<section class="dev" aria-labelledby="devTitle">
+    <h2 id="devTitle">Режим разработчика</h2>
+    <div class="field"><label for="hashIn">Хеш для нового ответа</label><input class="input" type="text" id="hashIn" autocomplete="off" spellcheck="false"></div>
+    <code id="hashOut">введи слово</code>
+    <div class="row">
+      <button class="btn btn--small" type="button" id="hashCopy">Скопировать хеш</button>
+      <button class="btn btn--small" type="button" id="devAll">Отметить всё пройденным</button>
+      <button class="btn btn--small" type="button" id="devReset">Сбросить прогресс</button>
+    </div></section>`;
 }
 function bindDev() {
   $("#hashIn").oninput = async () => { $("#hashOut").textContent = $("#hashIn").value ? await sha($("#hashIn").value) : "введи слово"; };
-  $("#hashCopy").onclick = () => {
-    const t = $("#hashOut").textContent;
-    navigator.clipboard?.writeText(t).then(() => toast("<span>Хеш скопирован</span>", 1500)).catch(() => { const r = document.createRange(); r.selectNodeContents($("#hashOut")); getSelection().removeAllRanges(); getSelection().addRange(r); });
-  };
-  $("#devReset").onclick = () => { state = { gate: true, done: [] }; save(); renderHub(); };
+  $("#hashCopy").onclick = () => navigator.clipboard?.writeText($("#hashOut").textContent);
+  $("#devAll").onclick = () => { state.done = [0, 1, 2, 3, 4, 5]; save(); renderHub(); };
+  $("#devReset").onclick = () => { state = { gate: true, done: [], scratched: [] }; save(); renderHub(); };
 }
 
 /* ---------- старт ---------- */
-resize();
-initGL();
-if (GL) gsap.to(cam, { x: HOME.x, y: HOME.y, z: HOME.z * 1.25, duration: REDUCED ? .01 : 3.2, ease: "power2.out" });
-requestAnimationFrame(loop);
+$("#chClose").onclick = closeChapter;
+$("#postClose").onclick = closePost;
+$("#post").addEventListener("click", e => { if (e.target.id === "post") closePost(); });
+addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  if (!$("#post").hidden) closePost();
+  else if (!$("#chapter").hidden) closeChapter();
+});
+addEventListener("scroll", onScroll, { passive: true });
+addEventListener("resize", () => requestAnimationFrame(setupPin));
+document.fonts?.ready.then(setupPin);
+addEventListener("load", setupPin);
 (state.gate || DEV ? renderHub : renderGate)();
 </script>
+</body>
+</html>
