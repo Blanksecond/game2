@@ -5,6 +5,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400;1,500&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <style>
   /* layout: одна колонка ночного неба; главный экран — созвездие из 7 звёзд, главы открываются листами поверх неба */
   :root {
@@ -28,6 +29,7 @@
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
   html, body { height: 100%; }
   body {
     margin: 0;
@@ -244,6 +246,35 @@
   .dev code { font-family: var(--mono); font-size: 11px; word-break: break-all; color: var(--gold); }
   .dev .row { display: flex; gap: 8px; flex-wrap: wrap; }
 
+  /* ---------- 3D-галактика ---------- */
+  #gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; touch-action: none; }
+  .app { z-index: 3; }
+  .dim {
+    position: fixed; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .9s;
+    background: radial-gradient(120% 80% at 50% 30%, rgba(7, 6, 15, .35), rgba(7, 6, 15, .88));
+  }
+  .dim.on { opacity: 1; }
+  .labels { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+  .lbl {
+    position: absolute; left: 0; top: 0; background: none; border: 0; padding: 6px 10px; cursor: pointer;
+    text-align: center; white-space: nowrap; pointer-events: auto; will-change: transform;
+  }
+  .lbl .d { display: block; font: 500 10px var(--mono); letter-spacing: .16em; color: var(--muted); }
+  .lbl .t { display: block; font: italic 500 19px var(--display); color: var(--star); text-shadow: 0 0 14px rgba(7, 6, 15, .95), 0 0 2px rgba(7, 6, 15, .9); }
+  .lbl.done .t { color: var(--gold); }
+  .lbl.locked .t, .lbl.blocked .t { color: var(--muted); }
+  .app.hub3d { pointer-events: none; }
+  .app.hub3d .screen > *:not(.spacer) { pointer-events: auto; }
+  .hub3d-screen { min-height: calc(100vh - 68px); min-height: calc(100dvh - 68px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
+  .hub3d-screen .spacer { flex: 1; min-height: 46vh; pointer-events: none; }
+  .hub3d-screen h1 { font-size: 38px; text-shadow: 0 0 24px rgba(7, 6, 15, .9); }
+  .tap-hint { font-size: 12px; color: var(--muted); text-align: center; }
+  .caption3d {
+    position: fixed; left: 16px; right: 16px; z-index: 61; text-align: center; opacity: 0;
+    bottom: calc(14% + env(safe-area-inset-bottom, 0px));
+    font: italic 500 30px/1.25 var(--display); color: var(--gold); text-shadow: 0 0 30px rgba(242, 207, 134, .45);
+  }
+
   .shake { animation: shake .4s; }
   @keyframes shake { 20%, 60% { transform: translateX(-7px); } 40%, 80% { transform: translateX(7px); } }
 
@@ -253,6 +284,9 @@
 </style>
 
 <canvas id="sky" aria-hidden="true"></canvas>
+<canvas id="gl" aria-hidden="true" hidden></canvas>
+<div class="dim" id="dim" aria-hidden="true"></div>
+<div class="labels" id="labels" hidden></div>
 <canvas id="fx" aria-hidden="true"></canvas>
 <main class="app" id="app"></main>
 <div class="toast" id="toast" hidden></div>
@@ -475,11 +509,398 @@ function drawFx(t) {
   }
   fctx.globalAlpha = 1;
 }
-function loop(t) { if (!REDUCED) drawSky(t); drawFx(t); requestAnimationFrame(loop); }
+function loop(t) {
+  if (GL) glFrame(t); else if (!REDUCED) drawSky(t);
+  drawFx(t);
+  requestAnimationFrame(loop);
+}
+
+/* =====================================================================
+   3D-ГАЛАКТИКА (Three.js). Если WebGL недоступен — остаётся 2D-небо.
+   ===================================================================== */
+let GL = null, justLit = -1;
+const MOBILE = Math.min(innerWidth, innerHeight) < 640;
+const HOME = { x: 0, y: .4, z: 34 };
+const cam = { x: 0, y: 6, z: 70, lx: 0, ly: 0, lz: 0 };
+const tilt = { x: 0, y: 0, tx: 0, ty: 0, on: false };
+const drag = { yaw: 0, down: false, sx: 0, sy: 0, start: 0, moved: false };
+const C_GOLD = 0xf2cf86, C_ROSE = 0xf3a6c4, C_DIM = 0x6b6390;
+const wpos = p => new THREE.Vector3((p[0] - 50) * .19, (58 - p[1]) * .19, 0);
+
+const PT_VS = `
+  attribute vec3 aColor; attribute float aSize; attribute float aSeed;
+  uniform float uTime; uniform float uPR; uniform float uScale;
+  varying vec3 vColor; varying float vTw;
+  void main() {
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mv;
+    gl_PointSize = aSize * uPR * (uScale / -mv.z);
+    vColor = aColor;
+    vTw = 0.55 + 0.45 * sin(uTime * 1.3 + aSeed * 43.0);
+  }`;
+const PT_FS = `
+  uniform float uOpacity;
+  varying vec3 vColor; varying float vTw;
+  void main() {
+    float d = length(gl_PointCoord - 0.5);
+    float a = pow(smoothstep(0.5, 0.0, d), 1.7);
+    gl_FragColor = vec4(vColor, a * vTw * uOpacity);
+  }`;
+
+function ptMat(scale, opacity = 1) {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 }, uPR: { value: GL.renderer.getPixelRatio() }, uScale: { value: scale }, uOpacity: { value: opacity } },
+    vertexShader: PT_VS, fragmentShader: PT_FS,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+  });
+}
+function ptGeo(pos, col, size) {
+  const g = new THREE.BufferGeometry();
+  const seed = new Float32Array(size.length).map(() => Math.random());
+  g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(pos), 3));
+  g.setAttribute("aColor", new THREE.BufferAttribute(new Float32Array(col), 3));
+  g.setAttribute("aSize", new THREE.BufferAttribute(new Float32Array(size), 1));
+  g.setAttribute("aSeed", new THREE.BufferAttribute(seed, 1));
+  return g;
+}
+function canvasTex(draw, n = 128) {
+  const c = document.createElement("canvas"); c.width = c.height = n;
+  draw(c.getContext("2d"), n);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const glowTex = () => canvasTex((x, n) => {
+  const h = n / 2, g = x.createRadialGradient(h, h, 0, h, h, h);
+  g.addColorStop(0, "rgba(255,255,255,1)"); g.addColorStop(.12, "rgba(255,255,255,.9)");
+  g.addColorStop(.35, "rgba(255,255,255,.22)"); g.addColorStop(1, "rgba(255,255,255,0)");
+  x.fillStyle = g; x.fillRect(0, 0, n, n);
+  x.globalCompositeOperation = "lighter";
+  [[0, h - 1, n, 2, 0, h, n, h], [h - 1, 0, 2, n, h, 0, h, n]].forEach(([rx, ry, rw, rh, x0, y0, x1, y1]) => {
+    const l = x.createLinearGradient(x0, y0, x1, y1);
+    l.addColorStop(0, "rgba(255,255,255,0)"); l.addColorStop(.5, "rgba(255,255,255,.7)"); l.addColorStop(1, "rgba(255,255,255,0)");
+    x.fillStyle = l; x.fillRect(rx, ry, rw, rh);
+  });
+});
+const nebulaTex = () => canvasTex((x, n) => {
+  for (let k = 0; k < 26; k++) {
+    const cx = n * (.25 + Math.random() * .5), cy = n * (.25 + Math.random() * .5), r = n * (.12 + Math.random() * .28);
+    const g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0, `rgba(255,255,255,${.05 + Math.random() * .08})`); g.addColorStop(1, "rgba(255,255,255,0)");
+    x.fillStyle = g; x.fillRect(0, 0, n, n);
+  }
+}, 256);
+
+function initGL() {
+  if (!window.THREE || !window.gsap) return false;
+  const canvas = $("#gl");
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" }); }
+  catch (e) { return false; }
+  if (!renderer.getContext()) return false;
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, MOBILE ? 1.6 : 2));
+  renderer.setSize(innerWidth, innerHeight, false);
+  renderer.setClearColor(0x07060f, 1);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, .1, 2000);
+  GL = { renderer, scene, camera, mode: "gate", speed: 1, nodes: [], trails: new THREE.Group(), mats: [] };
+
+  // --- спиральная галактика ---
+  const N = MOBILE ? 15000 : 28000, R = 26, ARMS = 2;
+  const inC = new THREE.Color("#ffd9a8"), outC = new THREE.Color("#7f5cff"), roseC = new THREE.Color("#f3a6c4");
+  const pos = [], col = [], size = [];
+  const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+  for (let i = 0; i < N; i++) {
+    if (i % 5 === 0) {
+      // круглое ядро-балдж, чтобы центр не выглядел как вертушка
+      const r = Math.abs(gauss()) * 5;
+      const v = new THREE.Vector3().randomDirection().multiplyScalar(r);
+      pos.push(v.x, v.y * .5, v.z);
+      const c = inC.clone().lerp(new THREE.Color("#ffffff"), Math.random() * .4);
+      col.push(c.r, c.g, c.b); size.push(.6 + Math.random() * 1.4);
+      continue;
+    }
+    const r = 3 + Math.pow(Math.random(), 1.4) * (R - 3);
+    const ang = (i % ARMS) / ARMS * Math.PI * 2 + r * .26;
+    const spread = 1.2 + r * .16;
+    const sp = () => gauss() * spread;
+    pos.push(Math.cos(ang) * r + sp(), sp() * .3, Math.sin(ang) * r + sp());
+    const c = inC.clone().lerp(outC, Math.min(1, r / R * 1.15));
+    if (Math.random() < .12) c.lerp(roseC, .7);
+    col.push(c.r, c.g, c.b);
+    size.push(.5 + Math.random() * 1.6 + (r < 3 ? 1.2 : 0));
+  }
+  const gm = ptMat(140);
+  const galaxy = new THREE.Points(ptGeo(pos, col, size), gm);
+  galaxy.position.set(0, -7, -20);
+  galaxy.rotation.set(1.08, 0, .32);
+  scene.add(galaxy);
+  GL.galaxy = galaxy; GL.mats.push(gm);
+
+  // --- далёкие звёзды ---
+  const bp = [], bc = [], bs = [];
+  const white = new THREE.Color("#f4eeff"), gold = new THREE.Color("#f2cf86");
+  for (let i = 0; i < (MOBILE ? 1800 : 3200); i++) {
+    const v = new THREE.Vector3().randomDirection().multiplyScalar(220 + Math.random() * 320);
+    bp.push(v.x, v.y, v.z);
+    const c = Math.random() < .12 ? gold : white; bc.push(c.r, c.g, c.b);
+    bs.push(.8 + Math.random() * 2.2);
+  }
+  const bm = ptMat(700, .9);
+  const bg = new THREE.Points(ptGeo(bp, bc, bs), bm);
+  scene.add(bg); GL.bg = bg; GL.mats.push(bm);
+
+  // --- туманности ---
+  const nt = nebulaTex();
+  [["#6a3fd6", -26, 6, -70, 90, .32], ["#f3a6c4", 22, -10, -60, 70, .22], ["#3b2a95", 8, 18, -90, 110, .3], ["#b9a4ff", -10, -18, -50, 60, .16], ["#f2cf86", 0, -7, -22, 26, .12]]
+    .forEach(([c, x, y, z, s, o]) => {
+      const m = new THREE.SpriteMaterial({ map: nt, color: c, transparent: true, opacity: o, depthWrite: false, blending: THREE.AdditiveBlending });
+      const sp = new THREE.Sprite(m); sp.position.set(x, y, z); sp.scale.set(s, s, 1); scene.add(sp);
+    });
+
+  // --- созвездие глав ---
+  const gt = glowTex();
+  const group = new THREE.Group(); group.visible = false; scene.add(group);
+  group.add(GL.trails);
+  const hitGeo = new THREE.SphereGeometry(1.9, 8, 8);
+  const hitMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
+  POS.forEach((p, i) => {
+    const flare = new THREE.Sprite(new THREE.SpriteMaterial({ map: gt, color: C_DIM, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    const core = new THREE.Sprite(new THREE.SpriteMaterial({ map: gt, color: 0xffffff, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    const hit = new THREE.Mesh(hitGeo, hitMat); hit.userData.i = i;
+    const g = new THREE.Group(); g.position.copy(wpos(p)); g.add(flare, core, hit); group.add(g);
+    GL.nodes.push({ g, flare, core, hit, base: 2, boost: 1, state: "locked" });
+  });
+  GL.group = group;
+  GL.ray = new THREE.Raycaster();
+
+  // --- ввод: тап по звезде, перетаскивание ---
+  canvas.addEventListener("pointerdown", e => { drag.down = true; drag.moved = false; drag.sx = e.clientX; drag.sy = e.clientY; drag.start = drag.yaw; enableTilt(); });
+  canvas.addEventListener("pointermove", e => {
+    if (!drag.down) return;
+    const dx = e.clientX - drag.sx;
+    if (Math.abs(dx) > 8 || Math.abs(e.clientY - drag.sy) > 8) drag.moved = true;
+    drag.yaw = Math.max(-.6, Math.min(.6, drag.start + dx / innerWidth * 1.4));
+  });
+  canvas.addEventListener("pointerup", e => {
+    drag.down = false;
+    if (drag.moved || GL.mode !== "hub") return;
+    const ndc = new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+    GL.ray.setFromCamera(ndc, camera);
+    const hit = GL.ray.intersectObjects(GL.nodes.map(n => n.hit))[0];
+    if (hit) tapNode(hit.object.userData.i);
+  });
+  canvas.addEventListener("pointercancel", () => { drag.down = false; });
+
+  canvas.hidden = false; sky.hidden = true;
+  glResize();
+  addEventListener("resize", glResize);
+  return true;
+}
+
+function glResize() {
+  if (!GL) return;
+  const a = innerWidth / innerHeight;
+  GL.renderer.setSize(innerWidth, innerHeight, false);
+  GL.camera.aspect = a; GL.camera.updateProjectionMatrix();
+  HOME.z = Math.max(30, 21.5 / (2 * Math.tan(Math.PI / 6) * a));
+  if (GL.mode === "hub") cam.z = HOME.z;
+}
+
+function enableTilt() {
+  if (tilt.on) return;
+  tilt.on = true;
+  const add = () => addEventListener("deviceorientation", e => {
+    if (e.gamma == null) return;
+    tilt.dev = true;
+    tilt.tx = Math.max(-1, Math.min(1, e.gamma / 30));
+    tilt.ty = Math.max(-1, Math.min(1, (e.beta - 50) / 30));
+  });
+  const D = window.DeviceOrientationEvent;
+  try {
+    if (D && typeof D.requestPermission === "function") D.requestPermission().then(r => { if (r === "granted") add(); }).catch(() => {});
+    else if (D) add();
+  } catch (e) {}
+}
+
+function trail(a, b, lit) {
+  const n = lit ? 22 : 8, p = [], c = [], s = [];
+  const col = new THREE.Color(lit ? C_GOLD : C_DIM);
+  for (let k = 1; k < n; k++) {
+    const v = a.clone().lerp(b, k / n);
+    p.push(v.x, v.y, v.z); c.push(col.r, col.g, col.b);
+    s.push(lit ? (k % 2 ? 2.4 : 1.5) : 1.1);
+  }
+  const m = ptMat(140, lit ? 1 : .55); GL.mats.push(m);
+  const pts = new THREE.Points(ptGeo(p, c, s), m);
+  GL.trails.add(pts);
+  return { pts, count: n - 1 };
+}
+function growTrail(t, delay = 0) {
+  const o = { v: 0 };
+  t.pts.geometry.setDrawRange(0, 0);
+  gsap.to(o, { v: t.count, duration: 1.2, delay, ease: "power2.inOut", onUpdate: () => t.pts.geometry.setDrawRange(0, Math.ceil(o.v)) });
+}
+
+function syncGL(lit = -1) {
+  GL.nodes.forEach((n, i) => {
+    const st = status(i); n.state = st;
+    const dim = st === "locked" || st === "blocked";
+    n.flare.material.color.set(st === "done" ? C_GOLD : st === "open" ? C_ROSE : C_DIM);
+    n.flare.material.opacity = dim ? .5 : 1;
+    n.core.material.opacity = dim ? .3 : 1;
+    n.base = st === "done" ? 4.4 : st === "open" ? 3.8 : 2;
+  });
+  GL.trails.children.slice().forEach(o => { GL.trails.remove(o); o.geometry.dispose(); GL.mats = GL.mats.filter(m => m !== o.material); o.material.dispose(); });
+  for (let i = 0; i < 6; i++) {
+    const t = trail(wpos(POS[i]), wpos(POS[i + 1]), isDone(i) && isDone(i + 1));
+    if (lit === i + 1 && isDone(i)) growTrail(t, .4);
+  }
+  const closed = isDone(6);
+  const c1 = trail(wpos(POS[6]), wpos(DIP), closed), c2 = trail(wpos(DIP), wpos(POS[0]), closed);
+  if (lit === 6 && closed) { growTrail(c1, 1.4); growTrail(c2, 2.4); }
+  if (lit >= 0) {
+    const n = GL.nodes[lit];
+    gsap.fromTo(n, { boost: 2.6 }, { boost: 1, duration: 1.6, delay: .3, ease: "power2.out" });
+    setTimeout(() => { const s = toScreen(n.g); burst(s.x, s.y, 80); }, 350);
+  }
+}
+
+function toScreen(obj) {
+  const v = new THREE.Vector3(); obj.getWorldPosition(v); v.project(GL.camera);
+  return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight, z: v.z };
+}
+
+function buildLabels() {
+  const box = $("#labels"); box.innerHTML = "";
+  CONFIG.chapters.forEach((c, i) => {
+    const st = status(i);
+    const b = el("button", "lbl " + st, `<span class="d">ДЕНЬ ${ROMAN[i]}</span><span class="t">${esc(st === "locked" || st === "blocked" ? "скоро" : c.title)}</span>`);
+    b.type = "button"; b.dataset.i = i;
+    b.setAttribute("aria-label", `Глава ${i + 1}: ${st === "locked" || st === "blocked" ? "ещё закрыта" : c.title}`);
+    b.onclick = () => tapNode(i);
+    box.appendChild(b);
+  });
+  box.hidden = false;
+  G.from(box.children, { opacity: 0, y: 8, duration: .6, stagger: .06, delay: .8 });
+}
+
+function flyTo(i, done) {
+  const p = wpos(POS[i]); p.y += 3;
+  gsap.to(cam, { x: p.x * .5, y: p.y * .5, z: 12, lx: p.x, ly: p.y, lz: 0, duration: REDUCED ? .01 : 1.3, ease: "power3.inOut", onComplete: done });
+}
+function flyHome(dur = 1.4) {
+  gsap.to(cam, { x: HOME.x, y: HOME.y, z: HOME.z, lx: 0, ly: 0, lz: 0, duration: REDUCED ? .01 : dur, ease: "power3.inOut" });
+}
+
+function glFrame(t) {
+  const sec = t / 1000;
+  GL.mats.forEach(m => m.uniforms.uTime.value = sec);
+  if (!REDUCED) {
+    GL.galaxy.rotation.y += .00045 * GL.speed;
+    GL.bg.rotation.y += .00004;
+  }
+  if (!tilt.dev) { tilt.tx = ptr.tx * 1.4; tilt.ty = ptr.ty * 1.4; }
+  tilt.x += (tilt.tx - tilt.x) * .05; tilt.y += (tilt.ty - tilt.y) * .05;
+  if (!drag.down) drag.yaw *= .965;
+  const ox = tilt.x * 2.6 + Math.sin(drag.yaw) * cam.z * .5, oy = -tilt.y * 1.8;
+  GL.camera.position.set(cam.x + ox, cam.y + oy, cam.z - Math.abs(Math.sin(drag.yaw)) * 4);
+  GL.camera.lookAt(cam.lx, cam.ly, cam.lz);
+  GL.group.position.y = 3 + (REDUCED ? 0 : Math.sin(sec * .5) * .25);
+  GL.nodes.forEach((n, i) => {
+    const pulse = n.state === "open" && !REDUCED ? 1 + .14 * Math.sin(sec * 2.6 + i) : 1;
+    const s = n.base * pulse * n.boost;
+    n.flare.scale.set(s, s, 1);
+    n.core.scale.set(s * .32, s * .32, 1);
+  });
+  GL.renderer.render(GL.scene, GL.camera);
+  if (GL.mode === "hub") {
+    const labels = $("#labels").children;
+    GL.nodes.forEach((n, i) => {
+      const l = labels[i]; if (!l) return;
+      const s = toScreen(n.g);
+      const below = i !== 0 && i !== 6;
+      l.style.transform = `translate(${s.x}px, ${s.y + (below ? 22 : -22)}px) translate(-50%, ${below ? "0" : "-100%"})`;
+    });
+  }
+}
+
+/* --- главный экран в 3D --- */
+function renderHub3D() {
+  const done = state.done.length, allDone = isDone(6);
+  const words = CONFIG.chapters.slice(0, 6).map((c, i) =>
+    isDone(i) ? `<span class="word-chip">${esc(c.word)}</span>` : `<span class="word-chip empty">·</span>`).join("");
+  $("#dim").classList.remove("on");
+  GL.mode = "hub";
+  if (!GL.group.visible) {
+    GL.group.visible = true;
+    GL.nodes.forEach((n, i) => gsap.from(n, { boost: 0, duration: 1.2, delay: .6 + i * .12, ease: "back.out(2)" }));
+  }
+  flyHome();
+  const s = el("section", "screen hub3d-screen");
+  s.innerHTML = `
+    <div class="hub-head">
+      <div class="row"><span class="eyebrow">Небо для ${esc(CONFIG.herName)}</span><span class="progress">${done} / 7 звёзд</span></div>
+      <h1>${allDone ? "Созвездие собрано" : "Каждый день загорается новая звезда"}</h1>
+    </div>
+    <div class="spacer"></div>
+    <div class="field" style="align-items:center">
+      <p class="tap-hint">${allDone ? "Нажми на любую звезду, чтобы вспомнить её" : "Нажми на розовую звезду. Наклони телефон или потяни небо пальцем"}</p>
+      <span class="eyebrow">Слова, которые оставили звёзды</span>
+      <div class="words">${words}</div>
+    </div>
+    ${DEV ? devPanel() : ""}`;
+  show(s);
+  buildLabels();
+  syncGL(justLit); justLit = -1;
+  if (DEV) bindDev();
+}
+
+/* --- 3D-финал: сердце замыкается --- */
+function finale3D(c, stage, i) {
+  const first = !isDone(i);
+  if (first) { state.done.push(i); save(); }
+  const phrase = CONFIG.chapters.slice(0, 6).map(x => x.word).join(" ");
+  $("#dim").classList.remove("on");
+  GL.mode = "finale";
+  gsap.to(app, { opacity: 0, duration: .8, onComplete: () => {
+    flyHome(2.4);
+    setTimeout(() => {
+      syncGL(6);
+      GL.nodes.forEach((n, k) => gsap.to(n, { boost: 2.4, duration: .45, delay: 1 + k * .16, yoyo: true, repeat: 1, ease: "sine.inOut" }));
+      gsap.to(GL, { speed: 14, duration: 1.8, yoyo: true, repeat: 1, ease: "sine.inOut" });
+    }, 1500);
+    const cap = el("div", "caption3d", esc(phrase));
+    document.body.appendChild(cap);
+    gsap.to(cap, { opacity: 1, duration: 1.4, delay: 5 });
+    setTimeout(() => {
+      gsap.to(cap, { opacity: 0, duration: .8, onComplete: () => cap.remove() });
+      GL.mode = "chapter";
+      $("#dim").classList.add("on");
+      stage.innerHTML = "";
+      const L = el("div", "letter"); stage.appendChild(L);
+      document.querySelector(".ch-head h2").textContent = "Письмо";
+      document.querySelector(".ch-head .story").textContent = "";
+      gsap.to(app, { opacity: 1, duration: .8 });
+      typeLetter(L, c.letter, c.signature).then(() => {
+        const r = el("div", "reward");
+        r.innerHTML = `<div class="coupon" id="coupon"></div><button class="btn ghost" type="button" id="toSky">Посмотреть на созвездие</button>`;
+        stage.appendChild(r);
+        gsap.from(r, { opacity: 0, y: 16, duration: .6 });
+        scratchCard($("#coupon"), c.coupon, "Главный подарок");
+        $("#toSky").onclick = renderHub;
+      });
+    }, REDUCED ? 3000 : 9000);
+  } });
+}
 
 /* ---------- переходы ---------- */
 const app = $("#app");
 function show(node) {
+  const hub = node.classList.contains("hub3d-screen");
+  app.classList.toggle("hub3d", hub);
+  if (!hub) $("#labels").hidden = true;
+  app.style.opacity = 1;
   app.innerHTML = "";
   app.appendChild(node);
   scrollTo(0, 0);
@@ -522,6 +943,7 @@ function renderGate() {
   $("#gateHintBtn").onclick = () => { $("#gateHint").hidden = false; $("#gateHintBtn").hidden = true; };
   $("#gateForm").onsubmit = async e => {
     e.preventDefault();
+    enableTilt();
     const inp = $("#gateIn");
     if (await sha(inp.value) === CONFIG.gate.answerHash) {
       state.gate = true; save();
@@ -543,7 +965,9 @@ function renderGate() {
 const POS = [[30, 24], [11, 46], [23, 77], [50, 106], [77, 77], [89, 46], [70, 24]];
 const DIP = [50, 40];
 
-function renderHub() {
+function renderHub() { GL ? renderHub3D() : renderHub2D(); }
+
+function renderHub2D() {
   const done = state.done.length;
   const s = el("section", "screen");
   const words = CONFIG.chapters.slice(0, 6).map((c, i) =>
@@ -611,7 +1035,14 @@ function renderHub() {
 
 function tapNode(i, n) {
   const st = status(i);
-  if (st === "open" || st === "done") { burstAt(n.querySelector(".core")); setTimeout(() => openChapter(i), 250); return; }
+  if (st === "open" || st === "done") {
+    if (GL) {
+      const s = toScreen(GL.nodes[i].g); burst(s.x, s.y, 50);
+      gsap.fromTo(GL.nodes[i], { boost: 1.9 }, { boost: 1, duration: .8 });
+      openChapter(i); return;
+    }
+    burstAt(n.querySelector(".core")); setTimeout(() => openChapter(i), 250); return;
+  }
   if (st === "blocked") { toast(`<span>Сначала зажги звезду дня ${ROMAN[i - 1]}</span>`); return; }
   const t = toast(`<span>Эта звезда загорится через</span><b id="cd"></b>`, 6000);
   const tick = () => { const b = $("#cd", t); if (b) b.textContent = fmtLeft(unlockTime(i) - Date.now()); };
@@ -622,6 +1053,17 @@ function tapNode(i, n) {
    ГЛАВА
    ===================================================================== */
 function openChapter(i) {
+  if (GL && GL.mode === "hub") {
+    GL.mode = "fly";
+    $("#labels").hidden = true;
+    gsap.to(app, { opacity: 0, duration: .35 });
+    flyTo(i, () => { GL.mode = "chapter"; $("#dim").classList.add("on"); buildChapter(i); });
+    return;
+  }
+  buildChapter(i);
+}
+
+function buildChapter(i) {
   const c = CONFIG.chapters[i];
   const s = el("section", "screen");
   s.innerHTML = `
@@ -645,7 +1087,7 @@ function openChapter(i) {
 
 function winChapter(i, stage) {
   const first = !isDone(i);
-  if (first) { state.done.push(i); save(); }
+  if (first) { state.done.push(i); save(); justLit = i; }
   burstAt(stage);
   setTimeout(() => {
     G.to(stage.children, { opacity: 0, y: -10, duration: .35, onComplete: () => showReward(i, stage, first) });
@@ -981,6 +1423,7 @@ function gFinal(c, stage, win, i) {
 }
 
 function finale(c, stage, i) {
+  if (GL) return finale3D(c, stage, i);
   const first = !isDone(i);
   if (first) { state.done.push(i); save(); }
   const phrase = CONFIG.chapters.slice(0, 6).map(x => x.word).join(" ");
@@ -1057,6 +1500,8 @@ function bindDev() {
 
 /* ---------- старт ---------- */
 resize();
+initGL();
+if (GL) gsap.to(cam, { x: HOME.x, y: HOME.y, z: HOME.z * 1.25, duration: REDUCED ? .01 : 3.2, ease: "power2.out" });
 requestAnimationFrame(loop);
 (state.gate || DEV ? renderHub : renderGate)();
 </script>
