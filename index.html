@@ -205,18 +205,6 @@ a { color: inherit; }
 .morse b { font: 500 14px var(--text); }
 .tape { font: 500 16px var(--mono); color: var(--sun); letter-spacing: 0.08em; }
 .tape:empty { display: none; }
-/* Земля: Telegram */
-.tg { width: 100%; max-width: 420px; border-radius: 20px; overflow: hidden; background: #0e1621; box-shadow: inset 0 0 0 1px var(--edge); }
-.tg__head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #17212b; }
-.tg__ava { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: #e8954a; color: #1a1206; font-weight: 500; }
-.tg__head b { display: block; font-weight: 500; }
-.tg__head small { color: #7f91a4; font-size: 13px; }
-.tg__body { padding: 18px 14px 22px; display: grid; gap: 10px; justify-items: start; min-height: 150px; }
-.tg__date { justify-self: center; font-size: 13px; color: #c9d4df; background: rgba(0, 0, 0, 0.3); padding: 3px 10px; border-radius: 999px; }
-.tg__msg { max-width: 80%; padding: 8px 12px 6px; border-radius: 14px 14px 14px 4px; background: #182533; display: flex; align-items: flex-end; gap: 10px; font-size: 18px; }
-.tg__msg small { color: #6d8299; font-size: 12px; }
-.tg__noise { color: #6d8299; letter-spacing: 0.1em; animation: noise 0.18s steps(2) infinite; }
-@keyframes noise { 50% { opacity: 0.3; } }
 /* Венера */
 .vmap { width: 100%; }
 .vmap canvas { width: 100%; aspect-ratio: 2; border-radius: 16px; display: block; cursor: crosshair; touch-action: none; background: #000; }
@@ -371,24 +359,19 @@ a { color: inherit; }
 <script>
 /* =====================================================================
    НАСТРОЙКИ — всё, что нужно поменять под себя, находится здесь.
-   Кодовое слово для Сатурна хранится как SHA-256, чтобы его нельзя
-   было подсмотреть в коде. Хеш нового слова: открой сайт с #dev
-   в конце адреса (index.html#dev) и введи слово в генератор в «Маршруте».
+   Режим разработчика: index.html#dev (всё открыто, сброс прогресса).
    ===================================================================== */
 const CONFIG = {
   her: "Кисуня",
   him: "Муся",
-  firstMessage: { text: "ЙО", date: "25 марта 2023", hiddenFor: "Кисуни" },
+  firstMessage: { date: "25 марта 2023" },
   // Куда в финале показывают собранные координаты, и откуда она
   home: { name: "Москва", lat: 55.7558, lon: 37.6 },
   hers: { name: "Крымск", lat: 44.93, lon: 37.98 },
-  saturn: {
-    phrase: "Напиши Мусе Хьюстон у нас проблема", // это она расшифрует на кольцах
-    codeHash: "86b43943b2c974c95eb45729f7f8ca5d74f857f547fad7b05722a83255a26784" // кодовое слово «орбита»: его отвечает Муся
-  },
+  saturnPhrase: "Ты мой центр притяжения", // это она расшифрует на кольцах
   letter: [
     "Кисуня,",
-    "помнишь моё «ЙО»? 25 марта 2023 года я написал тебе две буквы и даже не догадывался, что пишу человеку, вокруг которого закрутится вся моя жизнь.",
+    "25 марта 2023 года я написал тебе первое сообщение и даже не догадывался, что пишу человеку, вокруг которого закрутится вся моя жизнь.",
     "Между Москвой и Крымском 1200 километров. Свет пролетает их за четыре тысячных секунды. Мне пока дольше, но я всё равно лечу к тебе, как ты сейчас летела от Плутона к Солнцу.",
     "Ты моё Солнце. Чем ближе к тебе, тем теплее."
   ],
@@ -408,7 +391,7 @@ const STOPS = [
     steps: ["Прочитай стихи с Урана", "Найди имя, которое в них спрятано"] },
   { id: 4, key: "saturn", name: "Сатурн", from: "с Сатурна", temp: "−140 °C", light: "1 ч 19 мин света от Солнца", tex: "2k_saturn.jpg", digit: 5,
     fact: "Сатурн легче воды: в огромной ванне он бы плавал. А его кольца не вечные, когда-нибудь они осыплются дождём на планету. Вечного мало, поэтому важное лучше говорить сразу.",
-    steps: ["Расшифруй послание на кольцах", "Выйди на связь с ЦУПом и получи код"] },
+    steps: ["Найди ключ: номер Сатурна от Солнца", "Поверни кольца и расшифруй послание"] },
   { id: 3, key: "jupiter", name: "Юпитер", from: "с Юпитера", temp: "−110 °C", light: "43 минуты света от Солнца", tex: "2k_jupiter.jpg", digit: 5,
     fact: "По мифу Юпитер прятал свои похождения за облаками, но его жена Юнона видела сквозь них. Поэтому зонд NASA, который смотрит сквозь облака Юпитера, назвали «Юнона».",
     steps: ["Посмотри на облака глазами Юноны", "Прочитай, что за ними спрятано"] },
@@ -416,8 +399,8 @@ const STOPS = [
     fact: "Каждый День святого Валентина учёные публикуют снимки сердец, найденных на поверхности Марса: кратеров и холмов такой формы там хватает. А закаты на Марсе голубые.",
     steps: ["Прими сигнал марсохода", "Расшифруй морзянку"] },
   { id: 1, key: "earth", name: "Земля", from: "с Земли", temp: "+15 °C", light: "8 минут света от Солнца", tex: "2k_earth_daymap.jpg", digit: 3,
-    fact: "Луна каждый год отдаляется от Земли примерно на 3,8 сантиметра. С нами всё наоборот. Здесь, на Земле, 25 марта 2023 года всё и началось.",
-    steps: ["Восстанови первое сообщение", "Посчитай, сколько ему лет"] },
+    fact: "Луна каждый год отдаляется от Земли примерно на 3,8 сантиметра. С нами всё наоборот. А над Землёй круглые сутки летает МКС: её видно и из Москвы, и из Крымска.",
+    steps: ["Узнай, как быстро летит МКС", "Посчитай, за сколько она долетела бы от меня до тебя"] },
   { id: 0, key: "venus", name: "Венера", from: "с Венеры", temp: "+464 °C", light: "6 минут света от Солнца", tex: "2k_venus_atmosphere.jpg", digit: 7,
     fact: "Почти всё на Венере названо в честь женщин: горы, равнины, кратеры. Маленьким кратерам дают женские имена. И среди них есть один, который назвали так же, как тебя.",
     steps: ["Научись читать координаты Венеры", "Найди кратер 49° ю. ш., 276° в. д."] },
@@ -442,12 +425,8 @@ const G = window.gsap || null;
 const wait = ms => new Promise(r => setTimeout(r, REDUCED ? Math.min(ms, 300) : ms));
 const num = n => String(n + 1).padStart(2, "0"); // номер остановки: 01…09
 
-/* ---------- хеши ---------- */
+/* ---------- сравнение ответов: нижний регистр, ё→е, только буквы и цифры ---------- */
 const norm = s => String(s).toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9]/g, "");
-async function sha(s) {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(norm(s)));
-  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
-}
 
 /* ---------- прогресс ---------- */
 const KEY = "nebo-progress-v3";
@@ -876,13 +855,13 @@ function gUranus(p, stage, done) {
   });
 }
 
-/* ---------- 4. Сатурн: шифровальные кольца и связь с ЦУПом ---------- */
+/* ---------- 4. Сатурн: шифровальные кольца ---------- */
 const AB = "АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
 const encode = (s, k) => [...s.toUpperCase().replace(/Ё/g, "Е")].map(ch => { const i = AB.indexOf(ch); return i < 0 ? ch : AB[(i + k) % 32]; }).join("");
 function gSaturn(p, stage, done) {
-  const plain = CONFIG.saturn.phrase;
+  const plain = CONFIG.saturnPhrase;
   stage.innerHTML = `
-    <p class="mono step">Этап 01 / 02</p>
+    <p class="mono step">Этап 01 / 01</p>
     <p class="task">На кольцах зашифровано послание. Каждая буква сдвинута по алфавиту на столько шагов, какая по счёту планета Сатурн от Солнца. Поверни внутреннее кольцо так, чтобы под каждой буквой стояла её шифровка, найди буквы шифра на внутреннем кольце и читай букву над ними.</p>
     <p class="cipher" aria-label="Шифр">${esc(encode(plain, 6))}</p>
     <svg class="disk" viewBox="0 0 320 320" role="slider" tabindex="0" aria-label="Внутреннее кольцо" aria-valuemin="0" aria-valuemax="31" aria-valuenow="0">
@@ -918,22 +897,11 @@ function gSaturn(p, stage, done) {
   answerField(stage, {
     label: "Расшифровка", hints: ["Сатурн шестой от Солнца. Поверни кольцо так, чтобы под А стояла Ж.", `Первое слово: ${plain.split(" ")[0].toUpperCase()}.`],
     check: v => norm(v) === norm(plain),
-    onOk: () => later(() => nextStep(stage, "Связь с ЦУПом", step2), 300)
+    onOk: () => {
+      const f = el(`<p class="fact">Сатурн держит свои кольца одним притяжением, без всяких креплений. <b>Вот и меня держит к тебе так же.</b></p>`);
+      stage.appendChild(f); appear(f); finishBtn(stage, done);
+    }
   });
-  function step2() {
-    const tail = plain.split(" ").slice(2).join(" ");
-    stage.innerHTML = `
-      <p class="mono step">Этап 02 / 02</p>
-      <p class="task">Сделай, что сказано: напиши ${esc(CONFIG.him)} в Telegram «${esc(tail)}». ЦУП ответит кодовым словом, без него сигнал с Сатурна не принять.</p>`;
-    answerField(stage, {
-      label: "Кодовое слово от ЦУПа", hints: [`Если ЦУП молчит, ${CONFIG.him} просто занят. Он ответит, проверь Telegram чуть позже.`],
-      check: async v => (await sha(v)) === CONFIG.saturn.codeHash,
-      onOk: () => {
-        const f = el(`<p class="fact">Связь установлена. Кольца Сатурна когда-нибудь осыплются, <b>а этот разговор останется.</b></p>`);
-        stage.appendChild(f); appear(f); finishBtn(stage, done);
-      }
-    });
-  }
 }
 
 /* ---------- 5. Юпитер: глаза Юноны (стеганография) ---------- */
@@ -1034,38 +1002,20 @@ function gMars(p, stage, done) {
   });
 }
 
-/* ---------- 7. Земля: первое сообщение ---------- */
+/* ---------- 7. Земля: долететь на МКС ---------- */
 function gEarth(p, stage, done) {
+  const km = Math.round(distKm());
   stage.innerHTML = `
-    <p class="mono step">Этап 01 / 02</p>
-    <div class="tg" aria-label="Переписка в Telegram">
-      <div class="tg__head"><span class="tg__ava">${esc(CONFIG.him[0])}</span><span><b>${esc(CONFIG.him)}</b><small>был(а) недавно</small></span></div>
-      <div class="tg__body"><span class="tg__date">${esc(CONFIG.firstMessage.date)}</span><div class="tg__msg" id="tgMsg"><span class="tg__noise">▓▒</span><small>сигнал повреждён</small></div></div>
-    </div>
-    <p class="task">С этого сообщения всё и началось, но сигнал повреждён помехами. Восстанови его.</p>`;
+    <p class="mono step">Этап 01 / 01</p>
+    <p class="task">МКС облетает всю Землю примерно за полтора часа, скорость у неё <b>7,66 км в секунду</b>. Между Москвой и Крымском по прямой <b>${km} км</b>. За сколько секунд космонавты долетели бы от меня до тебя?</p>`;
   answerField(stage, {
-    label: "Первое сообщение", hints: ["Две буквы.", "Так здороваются, когда очень хочется написать, но не знаешь, с чего начать."],
-    check: v => norm(v) === norm(CONFIG.firstMessage.text),
+    label: "Секунд", hints: ["Раздели расстояние на скорость.", `${km} ÷ 7,66`],
+    check: v => { const n = parseFloat(String(v).replace(",", ".")); return n >= 150 && n <= 165; },
     onOk: () => {
-      const m = $("#tgMsg", stage);
-      m.innerHTML = `<span>${esc(CONFIG.firstMessage.text)}</span><small>✓✓</small>`;
-      if (G && !REDUCED) G.from(m, { scale: 0.8, opacity: 0, duration: 0.7, ease: "back.out(2)" });
-      later(() => nextStep(stage, "Дальше", step2), 500);
+      const f = el(`<p class="fact">Около 157 секунд. <b>Две с половиной минуты, и я у тебя.</b> Жаль, на МКС не продают билеты до Крымска.</p>`);
+      stage.appendChild(f); appear(f); finishBtn(stage, done);
     }
   });
-  function step2() {
-    stage.innerHTML = `
-      <p class="mono step">Этап 02 / 02</p>
-      <p class="task">Сколько полных лет исполнилось этому «${esc(CONFIG.firstMessage.text)}» 25 марта 2026 года?</p>`;
-    answerField(stage, {
-      label: "Лет", hints: ["Отсчитай от 2023 года."],
-      check: v => ["3", "три"].includes(norm(v)),
-      onOk: () => {
-        const f = el(`<p class="fact">Три года. Луна за это время отодвинулась от Земли сантиметров на одиннадцать. <b>А мы стали только ближе.</b></p>`);
-        stage.appendChild(f); appear(f); finishBtn(stage, done);
-      }
-    });
-  }
 }
 
 /* ---------- 8. Венера: кратер с её именем ---------- */
@@ -1204,17 +1154,12 @@ const GAMES = { pluto: gPluto, neptune: gNeptune, uranus: gUranus, saturn: gSatu
 function devHTML() {
   return `<div class="fact" style="margin-top:16px;display:grid;gap:10px">
     <b>Режим разработчика</b>
-    <div class="field"><label for="hashIn">Хеш для кодового слова Сатурна</label><input class="input" type="text" id="hashIn" autocomplete="off" spellcheck="false"></div>
-    <code id="hashOut" style="word-break:break-all;font-size:12px">введи слово</code>
     <div class="row">
-      <button class="btn btn--small" type="button" id="hashCopy">Скопировать хеш</button>
       <button class="btn btn--glass btn--small" type="button" id="devAll">Всё пройдено</button>
       <button class="btn btn--glass btn--small" type="button" id="devReset">Сбросить</button>
     </div></div>`;
 }
 function bindDev() {
-  $("#hashIn").oninput = async () => { $("#hashOut").textContent = $("#hashIn").value ? await sha($("#hashIn").value) : "введи слово"; };
-  $("#hashCopy").onclick = () => navigator.clipboard?.writeText($("#hashOut").textContent);
   $("#devAll").onclick = () => { state.done = [...ROUTE]; save(); refresh(); };
   $("#devReset").onclick = () => { state = { done: [] }; save(); refresh(); };
 }
