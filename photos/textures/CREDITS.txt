@@ -1,3 +1,4 @@
 Текстуры планет: Solar System Scope, https://www.solarsystemscope.com/textures/
 Лицензия: Creative Commons Attribution 4.0 International (CC BY 4.0).
 Файлы уменьшены и пересжаты для сайта.
+Карта Плутона (pluto-map.jpg): NASA/JHUAPL/SwRI, New Horizons, общественное достояние, через Wikimedia Commons. Источник в credits.json.

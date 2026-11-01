@@ -55,7 +55,7 @@ a { color: inherit; }
 
 /* split-текст: каждая буква выезжает из-под маски */
 .split .w { display: inline-block; white-space: nowrap; }
-.split .c { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.1em; margin-bottom: -0.1em; }
+.split .c { display: inline-block; overflow: hidden; vertical-align: top; padding: 0.16em 0 0.1em; margin: -0.16em 0 -0.1em; }
 .split .c > span { display: inline-block; will-change: transform; }
 
 /* ---------- кнопки ---------- */
@@ -127,6 +127,8 @@ a { color: inherit; }
 .tag.is-locked { opacity: 0.5; }
 .tag.is-hover .tag__txt, .tag:focus-visible .tag__txt { background: var(--glass); }
 .labels.is-off .tag { opacity: 0; pointer-events: none; }
+.tag.is-extra { opacity: 0.6; }
+.tag.is-extra .tag__line::after { background: var(--muted); }
 .tag[data-i="6"] .tag__line { display: none; }
 .tag[data-i="6"] .tag__txt { transform: none; text-align: center; justify-items: center; }
 
@@ -141,7 +143,8 @@ a { color: inherit; }
 .panel__scroll { height: 100%; overflow-y: auto; overscroll-behavior: contain; padding: 0 28px 48px; display: grid; align-content: start; }
 .panel__head { display: flex; justify-content: space-between; align-items: center; gap: 12px; position: sticky; top: 0; margin: 0 -28px; padding: 22px 28px 14px; z-index: 2; background: linear-gradient(rgba(12, 14, 26, 0.92) 60%, rgba(12, 14, 26, 0)); }
 .panel__idx { color: var(--muted); }
-.pname { margin-top: 7vh; font: 300 clamp(44px, 6vw, 100px)/0.92 var(--display); letter-spacing: -0.04em; text-transform: uppercase; overflow-wrap: anywhere; }
+.panel { --pw: calc(min(580px, 46vw) - 56px); }
+.pname { margin-top: 7vh; font: 300 min(clamp(44px, 6vw, 100px), calc(var(--pw) / var(--n, 6) * 1.12))/0.92 var(--display); letter-spacing: -0.04em; text-transform: uppercase; overflow-wrap: anywhere; }
 .pmeta { margin-top: 18px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .pmeta span::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--sun); margin-right: 8px; vertical-align: 1px; }
 .pstory { margin-top: 24px; font-size: 19px; line-height: 1.45; max-width: 40ch; }
@@ -318,7 +321,8 @@ a { color: inherit; }
   .panel.is-play { height: calc(100svh - 16px); }
   .panel__scroll { padding: 0 18px 48px; }
   .panel__head { margin: 0 -18px; padding: 16px 18px 10px; }
-  .pname { margin-top: 6px; font-size: clamp(38px, 12.5vw, 64px); }
+  .panel { --pw: calc(100vw - 52px); }
+  .pname { margin-top: 6px; font-size: min(clamp(38px, 12.5vw, 64px), calc(var(--pw) / var(--n, 6) * 1.12)); }
   .pstory { font-size: 17px; margin-top: 14px; }
   .postcard { grid-template-columns: 1fr; gap: 16px; padding: 16px; }
   .postcard__stamp { aspect-ratio: 16 / 9; }
@@ -507,6 +511,14 @@ const CONFIG = {
 /* ===================================================================== */
 
 const P = CONFIG.planets;
+// Остальные тела системы: заданий нет, можно подлететь и посмотреть
+const EXTRA = {
+  7: { name: "Меркурий", nth: "Без задания", light: "3 световые минуты от Солнца", story: "Ближе всех к Солнцу. Год здесь длится 88 земных дней, а днём поверхность нагревается больше чем до 400 градусов. Слишком жарко для заданий, так что просто полюбуйся." },
+  8: { name: "Уран", nth: "Без задания", light: "2 ч 40 мин света от Солнца", story: "Уран вращается лёжа на боку: его ось наклонена почти на 98 градусов. Поэтому на каждом полюсе по 42 года длится день, а потом 42 года ночь." },
+  9: { name: "Плутон", nth: "Карликовая планета", light: "5 ч 30 мин света от Солнца", story: "С 2006 года Плутон считается карликовой планетой, поэтому его нет в маршруте. Но на нём есть огромное светлое сердце: равнина Томбо, которую в 2015 году сфотографировал аппарат New Horizons." }
+};
+const BODY = i => P[i] || EXTRA[i];
+const LABELS = [7, 0, 1, 2, 3, 4, 8, 5, 9, 6]; // все подписи на сцене
 const PIC = f => `photos/planets/${f}`;
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -643,13 +655,14 @@ function refresh() {
     const i = +t.dataset.i, sun = i === 6;
     t.classList.toggle("is-done", isDone(i));
     t.classList.toggle("is-locked", sun && n < 6 && !DEV);
+    if (i >= 7) { $(".tag__txt span", t).textContent = i === 9 ? "карликовая" : "без задания"; return; }
     $(".tag__txt span", t).textContent = sun ? (n < 6 ? `финал · ещё ${6 - n}` : "финал открыт") : isDone(i) ? `${num(i)} · пройдено` : `${num(i)} · этапов: ${P[i].steps.length}`;
   });
   APP.gl?.setDone(state.done);
   renderDrawer();
 }
 function buildLabels() {
-  $("#labels").innerHTML = P.map((p, i) => `<button class="tag" type="button" data-i="${i}" aria-label="${esc(p.name)}"><span class="tag__line"></span><span class="tag__txt"><b>${esc(p.name)}</b><span></span></span></button>`).join("");
+  $("#labels").innerHTML = LABELS.map(i => `<button class="tag ${i >= 7 ? "is-extra" : ""}" type="button" data-i="${i}" aria-label="${esc(BODY(i).name)}"><span class="tag__line"></span><span class="tag__txt"><b>${esc(BODY(i).name)}</b><span></span></span></button>`).join("");
   $("#labels").onclick = e => { const t = e.target.closest(".tag"); if (t) openPlanet(+t.dataset.i); };
   $("#labels").onmouseover = e => { const t = e.target.closest(".tag"); if (t) APP.hover(+t.dataset.i); };
   $("#labels").onmouseout = e => { if (e.target.closest(".tag")) APP.hover(-1); };
@@ -683,29 +696,32 @@ function openPlanet(i) {
   stopAll();
   APP.focused = i; APP.playing = -1;
   APP.hover(-1);
-  const p = P[i];
+  const p = BODY(i);
   closeDrawer();
   $("#labels").classList.add("is-off");
   if (G) G.to("#hudBottom", { opacity: 0, duration: 0.4 });
   APP.gl?.focus(i);
-  $("#pIdx").textContent = i === 6 ? "Финал" : `${num(i)} / 06`;
-  $("#pMeta").innerHTML = `<span>${esc(p.nth)} остановка</span><span>${esc(p.light)}</span>`;
+  $("#pIdx").textContent = i >= 7 ? "Без задания" : i === 6 ? "Финал" : `${num(i)} / 06`;
+  $("#pMeta").innerHTML = `<span>${esc(p.nth)}${i < 7 ? " остановка" : ""}</span><span>${esc(p.light)}</span>`;
   $("#pStory").textContent = p.story;
   $("#stage").innerHTML = "";
   $("#panel").classList.remove("is-play");
   const d = isDone(i) && i < 6;
   $("#pIntro").style.cssText = "";
-  $("#pIntro").innerHTML = `
+  if (i >= 7) $("#pIntro").innerHTML = `<p class="note">Задания здесь нет. Маршрут — это шесть планет и Солнце.</p><div class="row"><button class="btn btn--glass" type="button" id="pHome">Вернуться к системе</button></div>`;
+  else $("#pIntro").innerHTML = `
     <ul class="steps">${p.steps.map((s, k) => `<li><i>${num(k)}</i><span>${esc(s)}</span></li>`).join("")}</ul>
     <div class="row">
       <button class="btn" type="button" id="pStart">${d ? "Пройти ещё раз" : i === 6 ? "Собрать фразу" : "Начать задание"}</button>
       ${d ? `<button class="btn btn--glass" type="button" id="pPost">Открытка ${esc(p.from)}</button>` : ""}
     </div>`;
-  $("#pStart").onclick = () => startPlanet(i);
+  if (i >= 7) $("#pHome").onclick = closePlanet;
+  else $("#pStart").onclick = () => startPlanet(i);
   if (d) $("#pPost").onclick = () => openPost(i, false);
   const panel = $("#panel");
   panel.classList.add("is-open"); panel.setAttribute("aria-hidden", "false");
   $("#pScroll").scrollTop = 0;
+  $("#pName").style.setProperty("--n", [...p.name].length);
   reveal($("#pName"), p.name, 0.45);
   if (G && !REDUCED) G.fromTo(["#pMeta", "#pStory", "#pIntro"], { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: "expo.out", stagger: 0.08, delay: 0.65 });
   $("#pBack").focus({ preventScroll: true });
@@ -1332,12 +1348,6 @@ const sprite = (tex, size, opacity = 1) => {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, opacity }));
   s.scale.set(size, size, 1); return s;
 };
-const atmoMat = color => new THREE.ShaderMaterial({
-  uniforms: { c: { value: new THREE.Color(color) }, k: { value: 0.9 } },
-  vertexShader: `varying vec3 vN; varying vec3 vV; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
-  fragmentShader: `uniform vec3 c; uniform float k; varying vec3 vN; varying vec3 vV; void main(){ float f = pow(1.0 - max(dot(vN, vV), 0.0), 3.2) * k; gl_FragColor = vec4(c * f, f); }`,
-  blending: THREE.AdditiveBlending, transparent: true, depthWrite: false
-});
 
 /* ---------- Солнце ---------- */
 const SUN_R = 5.2;
@@ -1362,23 +1372,27 @@ scene.add(new THREE.AmbientLight(0x6b7290, 0.22));
 
 /* ---------- планеты (размеры и расстояния условные, чтобы всё было видно) ---------- */
 const DEF = [
-  { tex: "2k_venus_atmosphere.jpg", r: 1.05, d: 12, sp: 0.16, a0: 0.4, rot: 0.05, atmo: 0xffd9a0, view: 1 },
-  { tex: "2k_earth_daymap.jpg", r: 1.12, d: 16.5, sp: 0.12, a0: 2.3, rot: 0.35, atmo: 0x6fa8ff, view: 1.1, clouds: "2k_earth_clouds.jpg", moon: true },
-  { tex: "2k_mars.jpg", r: 0.78, d: 21, sp: 0.095, a0: 4.1, rot: 0.33, atmo: 0xff9a6a, view: 1 },
-  { tex: "2k_jupiter.jpg", r: 2.7, d: 30, sp: 0.05, a0: 1.0, rot: 0.6, atmo: 0xffdcb0, view: 1.25, moons: true },
-  { tex: "2k_saturn.jpg", r: 2.25, d: 40, sp: 0.036, a0: 3.2, rot: 0.55, atmo: 0xffe6b0, view: 1.6, ring: true },
-  { tex: "2k_neptune.jpg", r: 1.6, d: 49, sp: 0.024, a0: 5.3, rot: 0.45, atmo: 0x5f8bff, view: 1 }
+  { id: 7, tex: "2k_mercury.jpg", r: 0.62, d: 8.6, sp: 0.22, a0: 5.6, rot: 0.03, view: 1 },
+  { id: 0, tex: "2k_venus_atmosphere.jpg", r: 1.05, d: 12, sp: 0.16, a0: 0.4, rot: 0.05, view: 1 },
+  { id: 1, tex: "2k_earth_daymap.jpg", r: 1.12, d: 16, sp: 0.12, a0: 2.3, rot: 0.35, view: 1.1, clouds: "2k_earth_clouds.jpg", moon: true },
+  { id: 2, tex: "2k_mars.jpg", r: 0.78, d: 20.5, sp: 0.095, a0: 4.1, rot: 0.33, view: 1 },
+  { id: 3, tex: "2k_jupiter.jpg", r: 2.7, d: 30, sp: 0.05, a0: 1.0, rot: 0.6, view: 1.25, moons: true },
+  { id: 4, tex: "2k_saturn.jpg", r: 2.25, d: 39, sp: 0.036, a0: 3.2, rot: 0.55, view: 1.6, ring: true },
+  { id: 8, tex: "2k_uranus.jpg", r: 1.7, d: 47, sp: 0.028, a0: 0.2, rot: 0.4, view: 1, tilt: 1.71 },
+  { id: 5, tex: "2k_neptune.jpg", r: 1.6, d: 54, sp: 0.024, a0: 5.3, rot: 0.45, view: 1 },
+  { id: 9, tex: "pluto-map.jpg", r: 0.55, d: 60, sp: 0.017, a0: 2.5, rot: 0.1, view: 1, inc: 0.3 }
 ];
-const DM = [9, 11.8, 14.6, 22, 28, 33.5];
-if (MOBILE()) DEF.forEach((d, i) => { d.d = DM[i]; });
+const DM = { 7: 7.4, 0: 9.4, 1: 12, 2: 14.8, 3: 22, 4: 28, 8: 32.6, 5: 37, 9: 41 };
+if (MOBILE()) DEF.forEach(d => { d.d = DM[d.id]; });
+// положение на орбите; у Плутона орбита наклонена
+const orbitPos = (d, a, out) => { const z = Math.sin(a) * d.d, inc = d.inc || 0; return out.set(Math.cos(a) * d.d, z * Math.sin(inc), z * Math.cos(inc)); };
 const planets = [], hits = [], orbits = [];
-DEF.forEach((d, i) => {
+DEF.forEach(d => {
   const holder = new THREE.Group();
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(d.r, 64, 64), new THREE.MeshStandardMaterial({ map: T(d.tex), roughness: 1, metalness: 0 }));
-  mesh.rotation.z = 0.25;
+  mesh.rotation.order = "ZYX"; // сначала вращение вокруг своей оси, потом наклон
+  mesh.rotation.z = d.tilt ?? 0.25;
   holder.add(mesh);
-  const atmo = new THREE.Mesh(new THREE.SphereGeometry(d.r * 1.035, 48, 48), atmoMat(d.atmo));
-  holder.add(atmo);
   let clouds = null;
   if (d.clouds) {
     clouds = new THREE.Mesh(new THREE.SphereGeometry(d.r * 1.015, 64, 64), new THREE.MeshStandardMaterial({ alphaMap: T(d.clouds), transparent: true, opacity: 0.85, depthWrite: false, color: 0xffffff }));
@@ -1403,13 +1417,13 @@ DEF.forEach((d, i) => {
   if (d.moons) [[0.22, 4.1, 1.4, 0xe8c66a], [0.2, 5.0, 1.0, 0xcfc2ae], [0.3, 6.1, 0.7, 0xa99c8a], [0.27, 7.3, 0.5, 0x7d7468]].forEach(m => addMoon(...m));
   scene.add(holder);
   const hit = new THREE.Mesh(new THREE.SphereGeometry(Math.max(d.r * 1.8, 2.6), 12, 12), new THREE.MeshBasicMaterial({ visible: false }));
-  hit.userData.i = i; holder.add(hit); hits.push(hit);
-  planets.push({ ...d, holder, mesh, atmo, clouds, sats, angle: d.a0, glow: 0 });
+  hit.userData.i = d.id; holder.add(hit); hits.push(hit);
+  planets.push({ ...d, holder, mesh, clouds, sats, angle: d.a0, glow: 0 });
 
-  const pts = []; for (let k = 0; k <= 256; k++) { const a = k / 256 * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * d.d, 0, Math.sin(a) * d.d)); }
+  const pts = []; for (let k = 0; k <= 256; k++) pts.push(orbitPos(d, k / 256 * Math.PI * 2, new THREE.Vector3()));
   const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.12, depthWrite: false }));
   line.userData.base = 0.12;
-  scene.add(line); orbits.push(line);
+  scene.add(line); orbits.push(line); planets[planets.length - 1].orbit = line;
 });
 const sunHit = new THREE.Mesh(new THREE.SphereGeometry(SUN_R * 1.3, 16, 16), new THREE.MeshBasicMaterial({ visible: false }));
 sunHit.userData.i = 6; scene.add(sunHit); hits.push(sunHit);
@@ -1425,7 +1439,7 @@ const belt = (() => {
 
 /* ---------- камера ---------- */
 const rig = { theta: 0.6, thetaV: 0, phi: MOBILE() ? 0.95 : 1.08, dist: 0, px: 0, py: 0 };
-const homeDist = () => MOBILE() ? 84 : 92;
+const homeDist = () => MOBILE() ? 102 : 110;
 rig.dist = homeDist();
 const look = new THREE.Vector3(), ORIGIN = new THREE.Vector3();
 const cam = { mode: "rig", from: new THREE.Vector3(), to: new THREE.Vector3(), lookFrom: new THREE.Vector3(), lookTo: new THREE.Vector3(), t: 1 };
@@ -1436,8 +1450,9 @@ const rigPos = (out = new THREE.Vector3()) => {
   const r = rig.dist, ph = rig.phi + rig.py * 0.05, th = rig.theta + rig.px * 0.08;
   return out.set(r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph), r * Math.sin(ph) * Math.sin(th));
 };
-const worldOf = i => i === 6 ? ORIGIN.clone() : planets[i].holder.position.clone();
-const radiusOf = i => i === 6 ? SUN_R : planets[i].r;
+const byId = i => planets.find(p => p.id === i);
+const worldOf = i => i === 6 ? ORIGIN.clone() : byId(i).holder.position.clone();
+const radiusOf = i => i === 6 ? SUN_R : byId(i).r;
 
 function focusView(i) {
   const P0 = worldOf(i), r = radiusOf(i);
@@ -1448,15 +1463,15 @@ function focusView(i) {
   } else {
     // камера между Солнцем и планетой, чуть сбоку и сверху: видна освещённая сторона
     const out = P0.clone().normalize(), side = new THREE.Vector3(-out.z, 0, out.x);
-    const dist = r * planets[i].view * (MOBILE() ? 5.6 : 4.6);
+    const dist = r * byId(i).view * (MOBILE() ? 5.6 : 4.6);
     pos = P0.clone().addScaledVector(out, -dist * 0.82).addScaledVector(side, dist * 0.55);
-    pos.y += r * 1.1 * planets[i].view;
+    pos.y += r * 1.1 * byId(i).view;
   }
   // смещаем точку взгляда, чтобы планета встала в свободную от панели часть экрана
   const fwd = P0.clone().sub(pos).normalize();
   const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
   const up = new THREE.Vector3().crossVectors(right, fwd).normalize();
-  const k = r * (i === 6 ? 1 : planets[i].view);
+  const k = r * (i === 6 ? 1 : byId(i).view);
   const lookAt = P0.clone();
   if (MOBILE()) lookAt.addScaledVector(up, -k * 1.3); else lookAt.addScaledVector(right, k * 1.25);
   return { pos, lookAt };
@@ -1484,7 +1499,7 @@ const api = {
   },
   focus(i) {
     focusI = i;
-    planets.forEach((p, k) => { if (k !== i) fade(p, 0); });
+    planets.forEach(p => { if (p.id !== i) fade(p, 0); });
     speed(0, 1.2, "power2.out");
     const v = focusView(i);
     fly(v.pos, v.lookAt, 2.2, () => { cam.mode = "hold"; });
@@ -1496,15 +1511,15 @@ const api = {
     speed(1, 2, "power2.in");
   },
   setDone(done) {
-    orbits.forEach((o, i) => {
-      const d = done.includes(i);
+    planets.forEach(p => {
+      const d = done.includes(p.id), o = p.orbit;
       o.material.color.set(d ? 0xffb547 : 0xffffff);
-      o.userData.base = d ? 0.5 : 0.12;
+      o.userData.base = d ? 0.5 : p.id >= 7 ? 0.07 : 0.12;
     });
   },
   setHover(i) { hover = i; },
   celebrate(i) {
-    const pl = planets[i]; if (!pl || !G) return;
+    const pl = byId(i); if (!pl || !G) return;
     G.fromTo(pl, { glow: 1 }, { glow: 0, duration: 2.4, ease: "power2.out" });
   },
   finale() {
@@ -1589,16 +1604,17 @@ function frame() {
   const pulse = 1 + Math.sin(t * 1.3) * 0.025;
   glowA.scale.set(SUN_R * 7.5 * pulse, SUN_R * 7.5 * pulse, 1);
   belt.rotation.y += dt * 0.012 * ts.v;
-  planets.forEach((p, i) => {
+  planets.forEach(p => {
+    const i = p.id;
     p.angle = p.a0 + simT * p.sp;
-    p.holder.position.set(Math.cos(p.angle) * p.d, 0, Math.sin(p.angle) * p.d);
+    orbitPos(p, p.angle, p.holder.position);
     p.mesh.rotation.y += dt * p.rot * (focusI === i ? 0.4 : 1);
     if (p.clouds) p.clouds.rotation.y += dt * p.rot * 1.15;
     p.sats.forEach(s => { s.a += dt * s.sp * Math.max(ts.v, 0.25); s.m.position.set(Math.cos(s.a) * s.dist, Math.sin(s.a * 0.7) * 0.2, Math.sin(s.a) * s.dist); });
     const target = (1 + p.glow * 0.25 + (hover === i ? 0.1 : 0)) * Math.max(p.vis ?? 1, 0.001);
     p.holder.scale.lerp(one.set(target, target, target), 0.12);
-    p.atmo.material.uniforms.k.value = 0.9 + p.glow * 3 + (hover === i ? 0.9 : 0);
-    const o = orbits[i].material, want = hover === i ? Math.max(o.opacity, 0.6) : orbits[i].userData.base;
+    // при приближении к планете орбиты гаснут, чтобы не резать кадр
+    const o = p.orbit.material, want = focusI >= 0 ? 0 : hover === i ? Math.max(o.opacity, 0.6) : p.orbit.userData.base;
     o.opacity += (want - o.opacity) * 0.08;
   });
   sun.scale.setScalar(1 + (hover === 6 ? 0.04 : 0));
