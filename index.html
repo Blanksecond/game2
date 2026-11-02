@@ -171,49 +171,35 @@ a { color: inherit; }
 .shake { animation: shake 360ms var(--ease-out); }
 @keyframes shake { 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
 
-/* Плутон: фонарик */
-.torch { width: 100%; aspect-ratio: 1.6; border-radius: 18px; background: #000; touch-action: none; box-shadow: inset 0 0 0 1px var(--edge); }
-/* стихи и шифры */
-.poem { width: 100%; font: 400 17px/1.65 var(--text); padding: 18px 20px; border-radius: 18px; background: var(--glass-2); box-shadow: inset 0 0 0 1px var(--edge); }
-.poem p { margin: 0; }
-.poem .acro { color: var(--sun); font-weight: 500; display: inline-block; }
-.poem--num p:nth-child(4n) { margin-bottom: 10px; }
-.poem .n { display: inline-block; width: 2.4em; color: var(--dim); font: 400 12px var(--mono); }
-.codes { display: flex; flex-wrap: wrap; gap: 6px; }
-.codes span { font: 500 15px var(--mono); padding: 8px 12px; border-radius: 10px; background: rgba(255, 181, 71, 0.12); color: var(--sun); }
-/* Сатурн */
-.disk { width: min(100%, 400px); aspect-ratio: 1; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
-.disk text { font: 500 13px var(--text); text-anchor: middle; dominant-baseline: middle; }
-.disk .outer text { fill: var(--ink); }
-.disk .inner text { fill: var(--sun); }
-.disk .inner { transition: transform 220ms var(--ease-out); }
-.disk.is-drag .inner { transition: none; }
-.cipher { font: 300 20px/1.5 var(--display); letter-spacing: 0.1em; color: var(--sun); word-spacing: 0.4em; }
-/* Юпитер */
-.stego { width: 100%; height: auto; aspect-ratio: 2; border-radius: 18px; background: #000; image-rendering: pixelated; }
-.seg { display: flex; flex-wrap: wrap; gap: 6px; }
-.seg button { min-height: 40px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--glass-2); box-shadow: inset 0 0 0 1px var(--edge); color: var(--ink); cursor: pointer; font-size: 14px; transition: background-color 200ms ease, transform 160ms var(--ease-out); }
-.seg button:active { transform: scale(0.97); }
-.seg button[aria-pressed="true"] { background: var(--sun); color: var(--sun-ink); box-shadow: none; }
-.range { width: 100%; accent-color: var(--sun); }
+/* общие холсты заданий */
+.cv { width: 100%; display: block; border-radius: 18px; background: #000; touch-action: none; user-select: none; -webkit-user-select: none; }
+/* Плутон: пульс */
+.pulse { position: relative; width: 100%; aspect-ratio: 2; border-radius: 18px; overflow: hidden; background: #000; box-shadow: inset 0 0 0 1px var(--edge); }
+.pulse canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pulse__heart { position: absolute; left: 50%; top: 50%; width: 92px; height: 92px; margin: -46px 0 0 -46px; padding: 0; border: 0; background: none; color: rgba(255, 181, 71, 0.35); cursor: default; filter: drop-shadow(0 0 18px rgba(255, 181, 71, 0.4)); }
+.pulse__heart svg { width: 100%; height: 100%; fill: currentColor; }
+.pulse__heart.is-tap { cursor: pointer; color: rgba(255, 181, 71, 0.75); }
+.pulse__heart.is-hit { animation: hit 260ms var(--ease-out); }
+.pulse__heart.is-beating { color: var(--sun); animation: beat var(--beat, 0.8s) ease-in-out infinite; }
+@keyframes hit { 40% { transform: scale(1.2); } }
+@keyframes beat { 0%, 100% { transform: scale(1); } 14% { transform: scale(1.2); } 28% { transform: scale(1); } 42% { transform: scale(1.1); } 56% { transform: scale(1); } }
 /* Марс */
-.beacon { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
-.lamp { width: 72px; height: 72px; flex: none; border-radius: 50%; background: #2a1810; box-shadow: inset 0 0 0 2px rgba(255, 140, 90, 0.25); }
-.lamp.is-on { background: #ff9a5a; box-shadow: 0 0 40px 10px rgba(255, 140, 80, 0.55), inset 0 0 0 2px #ffd0a8; }
-.morse { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; width: 100%; }
-.morse span { display: flex; justify-content: space-between; gap: 8px; padding: 6px 10px; border-radius: 10px; background: var(--glass-2); font: 400 13px var(--mono); }
-.morse b { font: 500 14px var(--text); }
-.tape { font: 500 16px var(--mono); color: var(--sun); letter-spacing: 0.08em; }
-.tape:empty { display: none; }
-/* Венера */
-.vmap { width: 100%; }
-.vmap canvas { width: 100%; aspect-ratio: 2; border-radius: 16px; display: block; cursor: crosshair; touch-action: none; background: #000; }
-.vread { font: 500 13px var(--mono); color: var(--sun); min-height: 1.4em; }
-/* Солнце и координаты */
+.logbox { display: grid; gap: 6px; font: 400 14px/1.5 var(--mono); color: var(--muted); width: 100%; }
+.logbox b { color: var(--ink); font-weight: 500; }
+.night { position: fixed; inset: 0; z-index: 90; background: #000; display: grid; place-items: center; align-content: center; gap: 20px; padding: 24px; text-align: center; color: #3a3d4a; }
+/* Земля */
+.pbd { position: relative; width: 100%; aspect-ratio: 1; border-radius: 18px; overflow: hidden; cursor: crosshair; background: #0b0f1c; }
+.pbd img { width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-drag: none; }
+.pbd__ring { position: absolute; left: 59.5%; top: 52%; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5); opacity: 0; pointer-events: none; }
+.pbd__ring.is-hint { animation: ring 1.6s ease-out infinite; }
+@keyframes ring { 0% { opacity: 0.9; transform: scale(0.4); } 100% { opacity: 0; transform: scale(1.6); } }
+.pbd__miss { position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255, 138, 107, 0.7); pointer-events: none; animation: ring 0.7s ease-out forwards; }
+.pbd.is-found { cursor: default; }
+/* Солнце */
+.km-big { font: 300 clamp(80px, 22vw, 150px)/0.9 var(--display); color: var(--sun); font-variant-numeric: tabular-nums; }
+.light { color: var(--sun); }
 .coords { font: 400 13px var(--mono); letter-spacing: 0.06em; color: var(--muted); display: flex; flex-wrap: wrap; justify-content: center; }
 .coords i { font-style: normal; color: var(--ink); display: inline-block; }
-.coords i.is-empty { color: var(--dim); }
-.coords--big { font: 300 clamp(24px, 4.6vw, 38px)/1.25 var(--display); color: var(--ink); justify-content: flex-start; letter-spacing: 0; }
 .letter { padding: 28px 24px; border-radius: 22px; background: var(--ink); color: #14151c; display: grid; gap: 16px; width: 100%; font-size: 18px; line-height: 1.5; }
 .letter .sig { font-family: var(--display); text-align: right; }
 .caption { position: fixed; left: 50%; bottom: 14vh; transform: translateX(-50%); z-index: 15; width: min(92vw, 1000px); text-align: center; pointer-events: none; font: 300 clamp(22px, 4.2vw, 56px)/1.1 var(--display); text-transform: uppercase; letter-spacing: -0.02em; text-shadow: 0 0 30px rgba(0, 0, 0, 0.85), 0 0 4px rgba(0, 0, 0, 0.6); }
@@ -298,14 +284,14 @@ a { color: inherit; }
 <div class="vignette" aria-hidden="true"></div>
 <div class="labels" id="labels" aria-label="Планеты"></div>
 
-<header class="hud hud--tl"><b>Девять миров до Солнца</b><span class="mono">От Плутона к Солнцу · 9 сигналов</span></header>
+<header class="hud hud--tl"><b>Девять миров до Солнца</b><span class="mono">От Плутона к Солнцу · бортовой журнал</span></header>
 <div class="hud hud--tr">
   <span class="count" id="count"><b>0</b>/6</span>
   <button class="btn btn--glass btn--small" type="button" id="routeBtn">Маршрут</button>
 </div>
 <div class="hud hud--bottom" id="hudBottom">
   <p class="hint mono" id="hint">Нажми на планету · тяни, чтобы повернуть</p>
-  <div class="coords" id="coords" aria-label="Собранные координаты"></div>
+  <div class="coords" id="coords" aria-label="Сколько осталось до Солнца"></div>
 </div>
 
 <div class="caption" id="caption" hidden aria-live="polite"></div>
@@ -342,7 +328,7 @@ a { color: inherit; }
 <section class="gate" id="gate" hidden aria-labelledby="gateTitle">
   <div class="gate__in">
     <h1 id="gateTitle">Девять миров до Солнца</h1>
-    <p class="gate__lead" id="gateLead">Путешествие от холодного Плутона к Солнцу. На каждом мире задание и одна цифра координат. Куда они ведут, узнаешь в самом конце.</p>
+    <p class="gate__lead" id="gateLead">Путешествие от холодного Плутона к Солнцу. Девять миров, и на каждом нужно сделать что-то своими руками. Лучше с телефона, со звуком, и не торопясь.</p>
     <button class="btn" type="button" id="startBtn">Начать путешествие</button>
   </div>
 </section>
@@ -364,53 +350,51 @@ a { color: inherit; }
 const CONFIG = {
   her: "Кисуня",
   him: "Муся",
-  firstMessage: { date: "25 марта 2023" },
-  // Куда в финале показывают собранные координаты, и откуда она
   home: { name: "Москва", lat: 55.7558, lon: 37.6 },
   hers: { name: "Крымск", lat: 44.93, lon: 37.98 },
-  saturnPhrase: "Ты мой центр притяжения", // это она расшифрует на кольцах
   letter: [
     "Кисуня,",
     "25 марта 2023 года я написал тебе первое сообщение и даже не догадывался, что пишу человеку, вокруг которого закрутится вся моя жизнь.",
-    "Между Москвой и Крымском 1200 километров. Свет пролетает их за четыре тысячных секунды. Мне пока дольше, но я всё равно лечу к тебе, как ты сейчас летела от Плутона к Солнцу.",
+    "Ты сейчас пролетела 5,9 миллиарда километров. На самом деле между нами 1204. Свет пролетает их за четыре тысячных секунды. Мне пока дольше, но я всё равно лечу к тебе.",
     "Ты моё Солнце. Чем ближе к тебе, тем теплее."
   ],
   signature: "Твой Муся"
 };
 
-// Маршрут: от холодного края к Солнцу. id — номер тела в 3D-сцене, digit — цифра координат
+// Маршрут от холодного края к Солнцу. Он же дорога Крымск → Москва в масштабе:
+// 39,5 а. е. до Плутона = 1204 км, поэтому km — сколько осталось до Солнца с этой планеты
 const STOPS = [
-  { id: 9, key: "pluto", name: "Плутон", from: "с Плутона", temp: "−230 °C", light: "5 ч 30 мин света от Солнца", tex: "pluto-map.jpg", digit: 5,
-    fact: "Плутон и его луна Харон всегда смотрят друг на друга одной стороной: так и кружат, не отводя глаз. А на самом Плутоне есть огромное светлое сердце, равнина Томбо, шириной около полутора тысяч километров. Даже на самом холодном краю системы.",
-    steps: ["Включи фонарик и обыщи Плутон", "Найди четыре светящиеся надписи"] },
-  { id: 5, key: "neptune", name: "Нептун", from: "с Нептуна", temp: "−214 °C", light: "4 ч 10 мин света от Солнца", tex: "2k_neptune.jpg", digit: 5,
-    fact: "Нептун открыли в 1846 году, не увидев: Урбен Леверье вычислил его на бумаге по тому, как что-то невидимое тянет соседний Уран. Так и бывает: сначала чувствуешь притяжение, а потом видишь.",
-    steps: ["Вычисли день недели первого сообщения", "Посчитай, сколько дней прошло до 2026 года"] },
-  { id: 8, key: "uranus", name: "Уран", from: "с Урана", temp: "−224 °C", light: "2 ч 40 мин света от Солнца", tex: "2k_uranus.jpg", digit: 7,
-    fact: "Уран лежит на боку и кружит так уже миллиарды лет. Его луны названы в честь героинь Шекспира: среди них есть Джульетта, Офелия и Миранда.",
-    steps: ["Прочитай стихи с Урана", "Найди имя, которое в них спрятано"] },
-  { id: 4, key: "saturn", name: "Сатурн", from: "с Сатурна", temp: "−140 °C", light: "1 ч 19 мин света от Солнца", tex: "2k_saturn.jpg", digit: 5,
-    fact: "Сатурн легче воды: в огромной ванне он бы плавал. А его кольца не вечные, когда-нибудь они осыплются дождём на планету. Вечного мало, поэтому важное лучше говорить сразу.",
-    steps: ["Найди ключ: номер Сатурна от Солнца", "Поверни кольца и расшифруй послание"] },
-  { id: 3, key: "jupiter", name: "Юпитер", from: "с Юпитера", temp: "−110 °C", light: "43 минуты света от Солнца", tex: "2k_jupiter.jpg", digit: 5,
+  { id: 9, key: "pluto", name: "Плутон", from: "с Плутона", temp: "−230 °C", light: "5 ч 30 мин света от Солнца", tex: "pluto-map.jpg", km: 1204,
+    fact: "Плутон и его луна Харон всегда повёрнуты друг к другу одной стороной. Сердце Плутона, светлая равнина Томбо, лежит на обратной стороне. Харон миллиарды лет рядом и ни разу его не видел.",
+    steps: ["Покажи Плутону своё сердце", "Через камеру или кончиком пальца"] },
+  { id: 5, key: "neptune", name: "Нептун", from: "с Нептуна", temp: "−214 °C", light: "4 ч 10 мин света от Солнца", tex: "2k_neptune.jpg", km: 916,
+    fact: "Нептун нашли в 1846 году, ни разу не увидев: Урбен Леверье вычислил его по тому, как что-то невидимое тянет соседний Уран. Иоганн Галле навёл телескоп в первую же ночь и нашёл его в градусе от расчёта.",
+    steps: ["Найди то, что не видно", "Повернись туда, куда тянет"] },
+  { id: 8, key: "uranus", name: "Уран", from: "с Урана", temp: "−224 °C", light: "2 ч 40 мин света от Солнца", tex: "2k_uranus.jpg", km: 585,
+    fact: "Уран лежит на боку: его ось наклонена почти на 98°. Его луны носят имена героинь Шекспира, есть Офелия, Миранда, Дездемона и Джульетта. А Ромео среди них нет.",
+    steps: ["Посмотри на Уран так, как он смотрит на мир"] },
+  { id: 4, key: "saturn", name: "Сатурн", from: "с Сатурна", temp: "−140 °C", light: "1 ч 19 мин света от Солнца", tex: "2k_saturn.jpg", km: 291,
+    fact: "Кольца Сатурна держатся одним притяжением и не вечные: лёд из них дождём падает на планету. Иногда на кольцах появляются призрачные «спицы», и кольца отбрасывают на планету тени.",
+    steps: ["Двигай Солнце и смотри на тени"] },
+  { id: 3, key: "jupiter", name: "Юпитер", from: "с Юпитера", temp: "−110 °C", light: "43 минуты света от Солнца", tex: "2k_jupiter.jpg", km: 159,
     fact: "По мифу Юпитер прятал свои похождения за облаками, но его жена Юнона видела сквозь них. Поэтому зонд NASA, который смотрит сквозь облака Юпитера, назвали «Юнона».",
-    steps: ["Посмотри на облака глазами Юноны", "Прочитай, что за ними спрятано"] },
-  { id: 2, key: "mars", name: "Марс", from: "с Марса", temp: "−60 °C", light: "13 минут света от Солнца", tex: "2k_mars.jpg", digit: 8,
-    fact: "Каждый День святого Валентина учёные публикуют снимки сердец, найденных на поверхности Марса: кратеров и холмов такой формы там хватает. А закаты на Марсе голубые.",
-    steps: ["Прими сигнал марсохода", "Расшифруй морзянку"] },
-  { id: 1, key: "earth", name: "Земля", from: "с Земли", temp: "+15 °C", light: "8 минут света от Солнца", tex: "2k_earth_daymap.jpg", digit: 3,
-    fact: "Луна каждый год отдаляется от Земли примерно на 3,8 сантиметра. С нами всё наоборот. А над Землёй круглые сутки летает МКС: её видно и из Москвы, и из Крымска.",
-    steps: ["Узнай, как быстро летит МКС", "Посчитай, за сколько она долетела бы от меня до тебя"] },
-  { id: 0, key: "venus", name: "Венера", from: "с Венеры", temp: "+464 °C", light: "6 минут света от Солнца", tex: "2k_venus_atmosphere.jpg", digit: 7,
-    fact: "Почти всё на Венере названо в честь женщин: горы, равнины, кратеры. Маленьким кратерам дают женские имена. И среди них есть один, который назвали так же, как тебя.",
-    steps: ["Научись читать координаты Венеры", "Найди кратер 49° ю. ш., 276° в. д."] },
-  { id: 7, key: "mercury", name: "Меркурий", from: "с Меркурия", temp: "+430 °C", light: "3 минуты света от Солнца", tex: "2k_mercury.jpg", digit: 6,
-    fact: "Кратеры Меркурия называют в честь поэтов, писателей и композиторов, есть там и кратер Пушкин. А сутки на Меркурии длятся ровно два его года.",
-    steps: ["Найди слова в стихах Пушкина по шифру", "Собери послание"] }
+    steps: ["Разгони облака Юпитера"] },
+  { id: 2, key: "mars", name: "Марс", from: "с Марса", temp: "−60 °C", light: "13 минут света от Солнца", tex: "2k_mars.jpg", km: 46,
+    fact: "Марсоход Opportunity должен был проработать 90 дней, а проработал почти 15 лет. 10 июня 2018 года его накрыла пыльная буря, и он замолчал. NASA пыталось его разбудить восемь месяцев.",
+    steps: ["Помоги марсоходу пережить ночь"] },
+  { id: 1, key: "earth", name: "Земля", from: "с Земли", temp: "+15 °C", light: "8 минут света от Солнца", tex: "2k_earth_daymap.jpg", km: 30,
+    fact: "14 февраля 1990 года, в День святого Валентина, «Вояджер-1» с расстояния 6 миллиардов километров развернул камеру и в последний раз сфотографировал Землю.",
+    steps: ["Найди Землю на снимке «Вояджера»"] },
+  { id: 0, key: "venus", name: "Венера", from: "с Венеры", temp: "+464 °C", light: "6 минут света от Солнца", tex: "2k_venus_atmosphere.jpg", km: 22,
+    fact: "Венеру целиком закрывают облака, поэтому её поверхность снимали радаром: аппарат «Магеллан» в 1990–1994 годах собирал карту полоса за полосой. Почти всё на Венере названо в честь женщин.",
+    steps: ["Посылай радарные импульсы сквозь облака", "Найди кратер, названный как ты"] },
+  { id: 7, key: "mercury", name: "Меркурий", from: "с Меркурия", temp: "+430 °C", light: "3 минуты света от Солнца", tex: "2k_mercury.jpg", km: 12,
+    fact: "Меркурий ближе всех к Солнцу, днём там больше 400 °C. Но ось у него почти не наклонена, и на дно некоторых полярных кратеров солнце не заглядывает никогда. Там лёд: его подтвердил аппарат MESSENGER в 2012 году.",
+    steps: ["Проведи Солнце по кругу", "Посмотри, что осталось в тени"] }
 ];
-const SUN = { id: 6, key: "sun", name: "Солнце", temp: "+5500 °C", light: "центр системы", tex: "2k_sun.jpg",
-  fact: "Свет Солнца летит до Земли восемь минут. Всё в этой системе вращается вокруг него. Как и всё моё вокруг тебя.",
-  steps: ["Собери координаты из девяти сигналов", "Наведи телескоп"] };
+const SUN = { id: 6, key: "sun", name: "Солнце", temp: "+5500 °C", light: "центр системы", tex: "2k_sun.jpg", km: 0,
+  fact: "Свет Солнца летит до Земли 8 минут 20 секунд. Всё в этой системе вращается вокруг него. Как и всё моё вокруг тебя.",
+  steps: ["Посмотри, где закончился маршрут", "Прочитай письмо"] };
 
 /* ===================================================================== */
 
@@ -422,34 +406,41 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;"
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const DEV = location.hash === "#dev";
 const G = window.gsap || null;
+const IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 const wait = ms => new Promise(r => setTimeout(r, REDUCED ? Math.min(ms, 300) : ms));
 const num = n => String(n + 1).padStart(2, "0"); // номер остановки: 01…09
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const plural = (n, one, few, many) => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 10 || b >= 20) ? few : many; };
+const clock = () => new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 
-/* ---------- сравнение ответов: нижний регистр, ё→е, только буквы и цифры ---------- */
-const norm = s => String(s).toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9]/g, "");
-
-/* ---------- прогресс ---------- */
-const KEY = "nebo-progress-v3";
-let state = { done: [] };
+/* ---------- прогресс и бортовой журнал ---------- */
+const KEY = "nebo-progress-v4";
+let state = { done: [], log: {} };
 try { const raw = localStorage.getItem(KEY); if (raw) state = Object.assign(state, JSON.parse(raw)); } catch (e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
 const isDone = id => state.done.includes(id);
 const doneCount = () => ROUTE.filter(isDone).length;
 const nextId = () => ROUTE.find(id => !isDone(id)) ?? 6;
 const isOpen = id => DEV || (id === 6 ? doneCount() === ROUTE.length : ROUTE.slice(0, ROUTE.indexOf(id)).every(isDone));
+const kmLeft = () => BODY(nextId()).km;
+const note = (key, text, data = {}) => { state.log[key] = { text, ...data, at: Date.now() }; save(); };
 const shake = n => { n.classList.remove("shake"); void n.offsetWidth; n.classList.add("shake"); };
 function el(html) { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
-
-/* координаты собираются из цифр: 55.7558° с. ш., 37.6° в. д. */
-function coordsHTML(all) {
-  const d = k => all || isDone(STOPS[k].id) ? `<i>${STOPS[k].digit}</i>` : `<i class="is-empty">_</i>`;
-  return `<span>${d(0)}${d(1)}.${d(2)}${d(3)}${d(4)}${d(5)}° с. ш.,&nbsp;</span><span>${d(6)}${d(7)}.${d(8)}° в. д.</span>`;
-}
 const distKm = () => {
   const r = x => x * Math.PI / 180, a = CONFIG.home, b = CONFIG.hers;
   const h = Math.sin(r(b.lat - a.lat) / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(r(b.lon - a.lon) / 2) ** 2;
   return 2 * 6371 * Math.asin(Math.sqrt(h));
 };
+
+/* ---------- датчики: на iPhone доступ к наклону даётся только по нажатию ---------- */
+async function askMotion() {
+  try {
+    if (window.DeviceOrientationEvent?.requestPermission) await DeviceOrientationEvent.requestPermission();
+    if (window.DeviceMotionEvent?.requestPermission) await DeviceMotionEvent.requestPermission();
+  } catch (e) {}
+}
+let AC = null;
+const audio = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); } catch (e) {} return AC; };
 
 /* ---------- split-текст ---------- */
 function split(node, text) {
@@ -518,6 +509,7 @@ function showStart() {
   if (G && !REDUCED) G.fromTo(["#gateLead", "#startBtn"], { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1.2, ease: "expo.out", stagger: 0.1, delay: 0.8, clearProps: "all" });
   setTimeout(() => ["#gateLead", "#startBtn"].forEach(q => $(q)?.removeAttribute("style")), 3200);
   $("#startBtn").onclick = () => {
+    askMotion(); audio();
     const go = () => { $("#gate").hidden = true; enter(true); };
     if (G && !REDUCED) G.to("#gate", { opacity: 0, filter: "blur(12px)", scale: 1.04, duration: 0.9, ease: "power3.in", onComplete: go });
     else go();
@@ -529,6 +521,7 @@ function enter(intro) {
   APP.live = true;
   buildLabels();
   refresh();
+  if (state.log.pluto?.bpm) APP.gl?.pulse(9, state.log.pluto.bpm);
   if (APP.gl) {
     APP.gl.intro(intro);
     if (G && !REDUCED) {
@@ -544,14 +537,14 @@ function enter(intro) {
 function refresh() {
   const n = doneCount(), nx = nextId();
   $("#count").innerHTML = `<b>${n}</b>/9`;
-  $("#coords").innerHTML = coordsHTML(false);
-  $("#hint").textContent = n === ROUTE.length ? "Все сигналы приняты · лети к Солнцу" : `Следующая остановка: ${BODY(nx).name} · тяни, чтобы повернуть`;
+  $("#coords").innerHTML = `До Солнца&nbsp;<i>${kmLeft().toLocaleString("ru-RU")}</i>&nbsp;км`;
+  $("#hint").textContent = n === ROUTE.length ? "Маршрут пройден · лети к Солнцу" : `Следующая остановка: ${BODY(nx).name} · тяни, чтобы повернуть`;
   document.querySelectorAll(".tag").forEach(t => {
     const id = +t.dataset.i, d = isDone(id), open = isOpen(id);
     t.classList.toggle("is-done", d);
     t.classList.toggle("is-next", id === nx);
     t.classList.toggle("is-locked", !open && !d);
-    $(".tag__txt span", t).textContent = id === 6 ? (n === ROUTE.length ? "финал открыт" : `финал · ещё ${ROUTE.length - n}`) : d ? `${num(ROUTE.indexOf(id))} · сигнал принят` : id === nx ? `${num(ROUTE.indexOf(id))} · следующая` : `${num(ROUTE.indexOf(id))} · закрыто`;
+    $(".tag__txt span", t).textContent = id === 6 ? (n === ROUTE.length ? "финал открыт" : `финал · ещё ${ROUTE.length - n}`) : d ? `${num(ROUTE.indexOf(id))} · в журнале` : id === nx ? `${num(ROUTE.indexOf(id))} · следующая` : `${num(ROUTE.indexOf(id))} · закрыто`;
   });
   APP.gl?.setDone(state.done, nx);
   renderDrawer();
@@ -564,8 +557,8 @@ function buildLabels() {
 }
 function renderFlat() {
   const f = $("#flat"); f.hidden = false;
-  f.innerHTML = `<h1>Девять миров до&nbsp;Солнца</h1><p class="pstory">Путешествие от холодного Плутона к Солнцу. На каждой планете задание и одна цифра координат.</p>
-    <div class="flat__grid">${[...ROUTE, 6].map(id => `<button type="button" data-i="${id}" ${isOpen(id) ? "" : "disabled"}><span class="flat__ball" style="background-image:url(${TEX(BODY(id).tex)})"></span><b>${esc(BODY(id).name)}</b><span class="mono" style="color:var(--muted)">${id === 6 ? "финал" : isDone(id) ? "принято" : isOpen(id) ? "открыто" : "закрыто"}</span></button>`).join("")}</div>`;
+  f.innerHTML = `<h1>Девять миров до&nbsp;Солнца</h1><p class="pstory">Путешествие от холодного Плутона к Солнцу. На каждом мире задание и запись в бортовой журнал.</p>
+    <div class="flat__grid">${[...ROUTE, 6].map(id => `<button type="button" data-i="${id}" ${isOpen(id) || isDone(id) ? "" : "disabled"}><span class="flat__ball" style="background-image:url(${TEX(BODY(id).tex)})"></span><b>${esc(BODY(id).name)}</b><span class="mono" style="color:var(--muted)">${id === 6 ? "финал" : isDone(id) ? "в журнале" : isOpen(id) ? "открыто" : "закрыто"}</span></button>`).join("")}</div>`;
   f.onclick = e => { const b = e.target.closest("[data-i]"); if (b && !b.disabled) openPlanet(+b.dataset.i); };
 }
 
@@ -585,7 +578,7 @@ function bindCursor() {
 function openPlanet(id) {
   if (!isOpen(id) && !isDone(id)) {
     const t = document.querySelector(`.tag[data-i="${id}"]`); if (t) shake(t);
-    $("#hint").textContent = id === 6 ? `Солнце откроется, когда придут все девять сигналов. Осталось ${ROUTE.length - doneCount()}` : `Сначала ${BODY(nextId()).name}: планеты открываются по очереди`;
+    $("#hint").textContent = id === 6 ? `Солнце откроется в конце маршрута. Осталось планет: ${ROUTE.length - doneCount()}` : `Сначала ${BODY(nextId()).name}: планеты открываются по очереди`;
     return;
   }
   stopAll();
@@ -605,12 +598,9 @@ function openPlanet(id) {
   $("#pIntro").style.cssText = "";
   $("#pIntro").innerHTML = `
     <ul class="steps">${p.steps.map((s, n) => `<li><i>${num(n)}</i><span>${esc(s)}</span></li>`).join("")}</ul>
-    <div class="row">
-      <button class="btn" type="button" id="pStart">${d ? "Пройти ещё раз" : id === 6 ? "Собрать координаты" : "Начать"}</button>
-      ${d ? `<button class="btn btn--glass" type="button" id="pPost">Цифра ${p.digit}</button>` : ""}
-    </div>`;
+    ${d && state.log[p.key] ? `<p class="fact">Запись в журнале: <b>${esc(state.log[p.key].text)}</b></p>` : ""}
+    <div class="row"><button class="btn" type="button" id="pStart">${d ? "Пройти ещё раз" : id === 6 ? "Посмотреть, где мы" : "Начать"}</button></div>`;
   $("#pStart").onclick = () => startPlanet(id);
-  if (d) $("#pPost").onclick = () => openSignal(id, false);
   const panel = $("#panel");
   panel.classList.add("is-open"); panel.setAttribute("aria-hidden", "false");
   $("#pScroll").scrollTop = 0;
@@ -645,19 +635,20 @@ function closePlanet() {
 function win(id) {
   const first = !isDone(id);
   if (first) { state.done.push(id); save(); }
+  stopAll();
   APP.gl?.celebrate(id);
   refresh();
   openSignal(id, first);
 }
 
-/* ---------- принятый сигнал: цифра координат ---------- */
+/* ---------- запись в журнал: сколько осталось до Солнца ---------- */
 let afterSignal = null;
 function openSignal(id, fresh) {
-  const p = BODY(id), k = ROUTE.indexOf(id), nx = nextId();
-  $("#sigTitle").textContent = `Сигнал ${p.from} принят`;
-  $("#sigDigit").textContent = p.digit;
-  $("#sigNote").textContent = `Цифра ${k + 1} из 9. Из них сложатся координаты, и в конце станет ясно, куда они ведут.`;
-  $("#sigCoords").innerHTML = coordsHTML(false);
+  const p = BODY(id), nx = nextId(), left = BODY(nx).km;
+  $("#sigTitle").textContent = `Бортовой журнал · ${p.name}`;
+  $("#sigDigit").textContent = left.toLocaleString("ru-RU");
+  $("#sigNote").textContent = state.log[p.key]?.text || "";
+  $("#sigCoords").innerHTML = left ? `км до Солнца` : `Маршрут пройден`;
   const goNext = fresh && APP.playing === id;
   $("#postClose").textContent = goNext ? (nx === 6 ? "Лететь к Солнцу" : `Лететь дальше: ${BODY(nx).name}`) : "Закрыть";
   afterSignal = goNext ? nx : null;
@@ -665,7 +656,8 @@ function openSignal(id, fresh) {
   if (G && !REDUCED) {
     G.fromTo(post, { opacity: 0 }, { opacity: 1, duration: 0.4 });
     G.fromTo("#postcard", { scale: 0.9, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 1.1, ease: "expo.out" });
-    G.fromTo("#sigDigit", { yPercent: 60, opacity: 0, filter: "blur(12px)" }, { yPercent: 0, opacity: 1, filter: "blur(0px)", duration: 1.4, ease: "expo.out", delay: 0.25 });
+    const n = { v: p.km };
+    G.to(n, { v: left, duration: 1.6, ease: "expo.out", delay: 0.3, onUpdate: () => { $("#sigDigit").textContent = Math.round(n.v).toLocaleString("ru-RU"); } });
   }
   $("#postClose").focus({ preventScroll: true });
 }
@@ -682,8 +674,8 @@ function closeSignal() {
 function renderDrawer() {
   $("#drawerList").innerHTML = [...ROUTE, 6].map((id, k) => {
     const p = BODY(id), d = isDone(id), open = isOpen(id);
-    return `<button class="ditem ${d ? "is-done" : ""}" type="button" data-i="${id}" ${open || d ? "" : 'aria-disabled="true"'}><span class="ditem__ball" style="background-image:url(${TEX(p.tex)})"></span><span><b>${esc(p.name)}</b><small>${esc(p.temp)}</small></span><span class="mono">${id === 6 ? "финал" : d ? `цифра ${p.digit}` : open ? "сейчас" : num(k)}</span></button>`;
-  }).join("") + `<p class="credits">Снимки и карты: NASA, JPL-Caltech, JHUAPL/SwRI (New Horizons), Magellan, через Wikimedia Commons (общественное достояние). Текстуры планет: Solar System Scope, CC BY 4.0.</p>` + (DEV ? devHTML() : "");
+    return `<button class="ditem ${d ? "is-done" : ""}" type="button" data-i="${id}" ${open || d ? "" : 'aria-disabled="true"'}><span class="ditem__ball" style="background-image:url(${TEX(p.tex)})"></span><span><b>${esc(p.name)}</b><small>${esc(d && state.log[p.key] ? state.log[p.key].text : p.temp)}</small></span><span class="mono">${id === 6 ? "финал" : d ? "✓" : open ? "сейчас" : num(k)}</span></button>`;
+  }).join("") + `<p class="credits">Снимки и карты: NASA, JPL-Caltech, JHUAPL/SwRI (New Horizons), Magellan, Voyager 1, через Wikimedia Commons (общественное достояние). Текстуры планет: Solar System Scope, CC BY 4.0.</p>` + (DEV ? devHTML() : "");
   if (DEV) bindDev();
 }
 function openDrawer() { const d = $("#drawer"); d.classList.add("is-open"); d.setAttribute("aria-hidden", "false"); $("#drawerClose").focus({ preventScroll: true }); }
@@ -695,439 +687,591 @@ $("#drawerList").addEventListener("click", e => { const b = e.target.closest(".d
 /* =====================================================================
    ЗАДАНИЯ
    ===================================================================== */
-let timers = [], runId = 0;
+let timers = [], cleanups = [], runId = 0;
 const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
-function stopAll() { timers.forEach(clearTimeout); timers = []; runId++; }
-
-function answerField(stage, { label, hints = [], check, okText = "Проверить", onOk }) {
-  const box = document.createElement("div");
-  box.className = "field";
-  const id = "in" + Math.random().toString(36).slice(2, 7);
-  box.innerHTML = `<label for="${id}">${esc(label)}</label>
-    <input class="input" id="${id}" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
-    <p class="msg" role="status"></p><p class="note" hidden></p>
-    <div class="row"><button class="btn" type="button">${esc(okText)}</button>${hints.length ? '<button class="link" type="button">Подсказка</button>' : ""}</div>`;
-  stage.appendChild(box);
-  const inp = $("input", box), msg = $(".msg", box), hint = $(".note", box), [go, hb] = box.querySelectorAll(".row button");
-  let shown = 0, fails = 0;
-  const showHint = () => { if (shown < hints.length) { hint.hidden = false; hint.textContent = hints.slice(0, ++shown).join(" "); } if (shown >= hints.length && hb) hb.hidden = true; };
-  const run = async () => {
-    if (!inp.value.trim()) { inp.focus(); return; }
-    if (await check(inp.value)) { inp.disabled = true; go.disabled = true; if (hb) hb.hidden = true; msg.textContent = ""; onOk(); return; }
-    fails++; inp.classList.add("is-bad"); shake(box);
-    msg.textContent = fails >= 2 && shown < hints.length ? "Держи подсказку." : "Не то. Попробуй ещё раз.";
-    if (fails >= 2) showHint();
-  };
-  go.onclick = run;
-  if (hb) hb.onclick = showHint;
-  inp.onkeydown = e => { if (e.key === "Enter") run(); };
-  inp.oninput = () => { inp.classList.remove("is-bad"); msg.textContent = ""; };
-  return box;
+const onCleanup = fn => cleanups.push(fn);
+function stopAll() {
+  timers.forEach(clearTimeout); timers = [];
+  cleanups.forEach(f => { try { f(); } catch (e) {} }); cleanups = [];
+  runId++;
+}
+function listen(target, type, fn, opt) { target.addEventListener(type, fn, opt); onCleanup(() => target.removeEventListener(type, fn, opt)); }
+function loop(fn) {
+  const my = runId; let last = performance.now();
+  const f = t => { if (my !== runId) return; const dt = Math.min(0.05, (t - last) / 1000); last = t; fn(dt, t / 1000); requestAnimationFrame(f); };
+  requestAnimationFrame(f);
 }
 function appear(...nodes) { if (G && !REDUCED) G.from(nodes, { y: 20, opacity: 0, duration: 0.9, ease: "expo.out", stagger: 0.08 }); }
-function finishBtn(stage, done, text = "Принять сигнал") {
-  const b = el(`<button class="btn" type="button">${esc(text)}</button>`);
-  b.onclick = done; stage.appendChild(b); appear(b);
+function finale(stage, html, done) {
+  const f = el(`<p class="fact">${html}</p>`), b = el(`<button class="btn" type="button">Записать в журнал</button>`);
+  b.onclick = done; stage.append(f, b); appear(f, b);
+  later(() => f.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "center" }), 200);
 }
-function nextStep(stage, label, fn) {
-  const b = el(`<button class="btn" type="button">${esc(label)} →</button>`);
-  b.onclick = () => {
-    stage.innerHTML = ""; fn();
-    $("#pScroll").scrollTo({ top: Math.max(0, stage.offsetTop - 90), behavior: REDUCED ? "auto" : "smooth" });
-    if (G && !REDUCED) G.from(stage.children, { y: 24, opacity: 0, duration: 0.9, ease: "expo.out", stagger: 0.06 });
-  };
-  stage.appendChild(b); appear(b);
+function canvasFit(cv, ratio) {
+  const ctx = cv.getContext("2d"), d = Math.min(2, devicePixelRatio || 1);
+  const fit = () => { const w = cv.clientWidth; cv.width = w * d; cv.height = w * ratio * d; ctx.setTransform(d, 0, 0, d, 0, 0); cv.W = w; cv.H = w * ratio; };
+  fit(); listen(window, "resize", fit);
+  return ctx;
 }
 const loadImg = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
+const heartPath = (ctx, x, y, s) => { ctx.beginPath(); ctx.moveTo(x, y + s * 0.35); ctx.bezierCurveTo(x - s, y - s * 0.4, x - s * 0.45, y - s, x, y - s * 0.45); ctx.bezierCurveTo(x + s * 0.45, y - s, x + s, y - s * 0.4, x, y + s * 0.35); };
+const HEART_SVG = `<svg viewBox="0 0 100 92" aria-hidden="true"><path d="M50 88C20 64 2 46 2 26 2 12 13 2 27 2c10 0 18 6 23 14C55 8 63 2 73 2c14 0 25 10 25 24 0 20-18 38-48 62z"/></svg>`;
 
-/* ---------- 1. Плутон: фонарик в темноте ---------- */
+/* ---------- 1. Плутон: её пульс становится сердцем Плутона ---------- */
 function gPluto(p, stage, done) {
   stage.innerHTML = `
-    <p class="mono step">Этап 01 / 01</p>
-    <p class="task">Солнце отсюда — просто яркая звезда, света почти нет. Води пальцем по Плутону, это фонарик. Где-то на поверхности светятся четыре надписи.</p>
-    <canvas class="torch" id="torch" aria-label="Карта Плутона в темноте"></canvas>
-    <p class="note" id="torchNote">Найдено 0 из 4</p>`;
-  const cv = $("#torch", stage), cx = cv.getContext("2d"), note = $("#torchNote", stage);
-  // кусок карты New Horizons с сердцем-равниной Томбо в центре
-  const SX = 256, SY = 26, SW = 512, SH = 322;
-  const marks = [
-    { t: "Даже", x: 0.16, y: 0.24 }, { t: "на самом", x: 0.8, y: 0.2 },
-    { t: "холодном краю", x: 0.26, y: 0.84 }, { t: "есть сердце", x: 0.5, y: 0.6, heart: true }
-  ];
-  let img = null, W = 0, H = 0, px = -999, py = -999, found = 0, over = false;
-  const R = () => Math.min(W, H) * 0.24;
-  const heart = (x, y, s) => { cx.beginPath(); cx.moveTo(x, y + s * 0.35); cx.bezierCurveTo(x - s, y - s * 0.4, x - s * 0.45, y - s, x, y - s * 0.45); cx.bezierCurveTo(x + s * 0.45, y - s, x + s, y - s * 0.4, x, y + s * 0.35); cx.fill(); };
-  const label = m => {
-    const x = m.x * W, y = m.y * H, fs = Math.max(13, W * 0.036);
-    cx.save(); cx.shadowColor = "rgba(255,181,71,0.9)"; cx.shadowBlur = 14; cx.fillStyle = "#ffd58a";
-    cx.font = `400 ${fs}px Unbounded, sans-serif`; cx.textAlign = "center"; cx.textBaseline = "middle";
-    if (m.heart) heart(x, y - fs * 1.1, fs * 0.9);
-    cx.fillText(m.t, x, y); cx.restore();
+    <p class="task">Покажи Плутону своё сердце.</p>
+    <div class="pulse"><canvas id="pWave"></canvas><button class="pulse__heart" type="button" id="pHeart" aria-label="Сердце">${HEART_SVG}</button></div>
+    <p class="note" id="pNote">Прижми подушечку пальца к задней камере, чтобы закрыть её целиком. Лучше рядом с лампой или окном: свет должен проходить сквозь палец.</p>
+    <div class="row"><button class="btn" type="button" id="pCam">Приложить палец</button><button class="btn btn--glass" type="button" id="pTap">Отстучать пальцем</button></div>`;
+  const cv = $("#pWave", stage), ctx = canvasFit(cv, 0.5), heart = $("#pHeart", stage), msg = $("#pNote", stage);
+  let wave = [], mode = "", taps = [], got = false;
+  loop(() => {
+    ctx.clearRect(0, 0, cv.W, cv.H);
+    if (wave.length < 3) return;
+    const pts = wave.slice(-180), mn = Math.min(...pts), mx = Math.max(...pts), r = mx - mn || 1;
+    ctx.strokeStyle = "#ffb547"; ctx.lineWidth = 2; ctx.beginPath();
+    pts.forEach((v, k) => { const x = k / 179 * cv.W, y = cv.H * 0.85 - (v - mn) / r * cv.H * 0.7; k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    ctx.stroke();
+  });
+  const finish = (bpm, how) => {
+    if (got) return; got = true;
+    heart.style.setProperty("--beat", `${(60 / bpm).toFixed(3)}s`); heart.classList.add("is-beating");
+    APP.gl?.pulse(9, bpm);
+    note("pluto", `Пульс ${bpm} ударов в минуту. Сердце Плутона бьётся в твоём ритме`, { bpm, how });
+    msg.textContent = `${bpm} ударов в минуту.`;
+    $("#pCam", stage).hidden = $("#pTap", stage).hidden = true;
+    finale(stage, `Харон так и не увидел сердце Плутона. <b>А ты увидела, и теперь оно бьётся в твоём ритме.</b> Посмотри на Плутон, когда вернёшься к системе.`, done);
   };
-  function draw() {
-    if (!img || !W) return;
-    cx.fillStyle = "#000"; cx.fillRect(0, 0, W, H);
-    cx.globalAlpha = 0.07; cx.drawImage(img, SX, SY, SW, SH, 0, 0, W, H); cx.globalAlpha = 1;
-    marks.forEach(m => m.f && label(m));
-    if (px > -900 && !over) {
-      const r = R();
-      cx.save(); cx.beginPath(); cx.arc(px, py, r, 0, 6.283); cx.clip();
-      cx.drawImage(img, SX, SY, SW, SH, 0, 0, W, H); marks.forEach(label);
-      const g = cx.createRadialGradient(px, py, r * 0.45, px, py, r);
-      g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,0.92)");
-      cx.fillStyle = g; cx.fillRect(px - r, py - r, r * 2, r * 2); cx.restore();
+  $("#pCam", stage).onclick = async () => {
+    if (mode) return; mode = "cam";
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: 320, height: 240 }, audio: false }); }
+    catch (e) { msg.textContent = "Камера недоступна. Найди пульс на запястье и отстучи его по сердцу."; mode = ""; return; }
+    onCleanup(() => stream.getTracks().forEach(t => t.stop()));
+    const track = stream.getVideoTracks()[0];
+    track.applyConstraints({ advanced: [{ torch: true }] }).catch(() => {}); // фонарик есть только на части Android
+    const v = document.createElement("video"); v.playsInline = true; v.muted = true; v.srcObject = stream; await v.play().catch(() => {});
+    const s = document.createElement("canvas"); s.width = 24; s.height = 18; const sx = s.getContext("2d", { willReadFrequently: true });
+    const vals = [], t0 = performance.now(), my = runId;
+    msg.textContent = "Держи палец неподвижно. Слушаю…";
+    const tick = () => {
+      if (my !== runId || got) return;
+      sx.drawImage(v, 0, 0, 24, 18);
+      const d = sx.getImageData(0, 0, 24, 18).data; let rs = 0;
+      for (let k = 0; k < d.length; k += 4) rs += d[k];
+      const t = performance.now() - t0; vals.push([t, rs / (d.length / 4)]); wave.push(-rs);
+      msg.textContent = `Держи палец неподвижно. Слушаю… ${Math.max(0, Math.ceil((15000 - t) / 1000))}`;
+      if (t < 15000) return requestAnimationFrame(tick);
+      const bpm = bpmFromSignal(vals);
+      stream.getTracks().forEach(tr => tr.stop());
+      if (bpm) finish(bpm, "камера");
+      else { mode = ""; wave = []; msg.textContent = "Не получилось поймать ритм. Попробуй ближе к свету или отстучи пульс пальцем."; }
+    };
+    requestAnimationFrame(tick);
+  };
+  $("#pTap", stage).onclick = () => {
+    mode = "tap"; taps = [];
+    msg.textContent = "Найди пульс на запястье или шее и стучи по сердцу в его ритме. Десять раз.";
+    heart.classList.add("is-tap");
+  };
+  heart.onclick = () => {
+    if (mode !== "tap" || got) return;
+    taps.push(performance.now()); heart.classList.remove("is-hit"); void heart.offsetWidth; heart.classList.add("is-hit");
+    wave.push(1, 0, 0, 0);
+    msg.textContent = `Ударов: ${taps.length} из 10`;
+    if (taps.length >= 10) {
+      const iv = taps.slice(1).map((t, k) => t - taps[k]).sort((a, b) => a - b), med = iv[Math.floor(iv.length / 2)];
+      const bpm = Math.round(60000 / med);
+      if (bpm >= 40 && bpm <= 160) finish(bpm, "пальцем");
+      else { taps = []; msg.textContent = "Слишком быстро или медленно для сердца. Ещё раз, спокойно."; }
     }
-    if (over) { cx.globalAlpha = 0.55; cx.drawImage(img, SX, SY, SW, SH, 0, 0, W, H); cx.globalAlpha = 1; marks.forEach(label); }
-  }
-  const size = () => {
-    const r = cv.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1);
-    W = r.width; H = r.height; cv.width = W * d; cv.height = H * d; cx.setTransform(d, 0, 0, d, 0, 0); draw();
   };
-  const move = e => {
-    const b = cv.getBoundingClientRect(); px = e.clientX - b.left; py = e.clientY - b.top;
-    if (!over) marks.forEach(m => {
-      if (m.f || Math.hypot(m.x * W - px, m.y * H - py) > R() * 0.55) return;
-      m.f = true; found++; note.textContent = `Найдено ${found} из 4`;
-      if (found === 4) later(finish, 600);
-    });
-    draw();
-  };
-  cv.addEventListener("pointermove", move);
-  cv.addEventListener("pointerdown", e => { cv.setPointerCapture(e.pointerId); move(e); });
-  cv.addEventListener("pointerleave", () => { if (!over) { px = -999; draw(); } });
-  addEventListener("resize", size);
-  loadImg(TEX("pluto-map.jpg")).then(i => { img = i; size(); });
-  function finish() {
-    over = true; draw();
-    const f = el(`<p class="fact">Даже на самом холодном краю есть сердце. <b>Это сердце светится для тебя.</b> Равнина Томбо почти идеальной формы, её сфотографировал аппарат New Horizons в 2015 году.</p>`);
-    stage.appendChild(f); appear(f);
-    finishBtn(stage, done);
-  }
+}
+// пики красного канала: убираем медленный дрейф и считаем медианный интервал
+function bpmFromSignal(vals) {
+  if (vals.length < 60) return 0;
+  const t = vals.map(v => v[0]), x = vals.map(v => v[1]);
+  const avg = (a, i, w) => { let s = 0, n = 0; for (let k = Math.max(0, i - w); k <= Math.min(a.length - 1, i + w); k++) { s += a[k]; n++; } return s / n; };
+  const sm = x.map((_, i) => avg(x, i, 2)), dt = sm.map((v, i) => v - avg(sm, i, 15));
+  const peaks = [];
+  for (let i = 2; i < dt.length - 2; i++) if (dt[i] > 0 && dt[i] >= dt[i - 1] && dt[i] >= dt[i + 1] && dt[i] >= dt[i - 2] && dt[i] >= dt[i + 2] && (!peaks.length || t[i] - peaks[peaks.length - 1] > 330)) peaks.push(t[i]);
+  if (peaks.length < 6) return 0;
+  const iv = peaks.slice(1).map((v, k) => v - peaks[k]).sort((a, b) => a - b), bpm = Math.round(60000 / iv[Math.floor(iv.length / 2)]);
+  return bpm >= 45 && bpm <= 140 ? bpm : 0;
 }
 
-/* ---------- 2. Нептун: вычисли меня ---------- */
+/* ---------- 2. Нептун: найти, не видя (компас и звук) ---------- */
 function gNeptune(p, stage, done) {
   stage.innerHTML = `
-    <p class="mono step">Этап 01 / 02</p>
-    <p class="task">Леверье нашёл Нептун одними вычислениями. Твоя очередь. Первое сообщение пришло ${esc(CONFIG.firstMessage.date)} года. Какой это был день недели?</p>`;
-  answerField(stage, {
-    label: "День недели", hints: ["Календарь в телефоне умеет листать назад.", "Это был выходной."],
-    check: v => ["суббота", "сб", "субота"].includes(norm(v)),
-    onOk: () => later(() => nextStep(stage, "Дальше", step2), 300)
+    <p class="task">Нептун нашли, ни разу не увидев, по тому, куда он тянет. Найди так же. Надень наушники, если есть, встань и медленно поворачивайся с телефоном в руке. Чем ближе, тем чище звук.</p>
+    <canvas class="cv" id="nCv" aria-label="Поиск направления"></canvas>
+    <p class="note" id="nNote"></p>
+    <div class="row"><button class="btn" type="button" id="nGo">Начать поиск</button></div>`;
+  const cv = $("#nCv", stage), ctx = canvasFit(cv, 0.75), msg = $("#nNote", stage);
+  const TARGET = 352, TOL = 22; // Москва из Крымска почти точно на север; поправка на магнитный север
+  let heading = null, dial = false, hold = 0, found = false, osc, gain, pan, noise, ng, run = false, dragA = null, last = 0;
+  const diff = () => { const d = ((heading - TARGET + 540) % 360) - 180; return d; };
+  function startAudio() {
+    const ac = audio(); if (!ac) return;
+    osc = ac.createOscillator(); gain = ac.createGain(); pan = ac.createStereoPanner ? ac.createStereoPanner() : null;
+    osc.type = "sine"; osc.frequency.value = 220; gain.gain.value = 0;
+    const buf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate), ch = buf.getChannelData(0); for (let k = 0; k < ch.length; k++) ch[k] = Math.random() * 2 - 1;
+    noise = ac.createBufferSource(); noise.buffer = buf; noise.loop = true; ng = ac.createGain(); ng.gain.value = 0;
+    if (pan) { osc.connect(gain).connect(pan).connect(ac.destination); } else osc.connect(gain).connect(ac.destination);
+    noise.connect(ng).connect(ac.destination);
+    osc.start(); noise.start();
+    onCleanup(() => { try { osc.stop(); noise.stop(); } catch (e) {} });
+  }
+  const onOri = e => {
+    let h = null;
+    if (typeof e.webkitCompassHeading === "number") h = e.webkitCompassHeading;
+    else if (e.absolute && typeof e.alpha === "number") h = (360 - e.alpha) % 360;
+    if (h != null) { heading = h; last = performance.now(); }
+  };
+  $("#nGo", stage).onclick = async () => {
+    if (run) return; run = true;
+    await askMotion(); startAudio();
+    listen(window, "deviceorientationabsolute", onOri); listen(window, "deviceorientation", onOri);
+    $("#nGo", stage).hidden = true;
+    msg.textContent = "Поворачивайся медленно, по кругу.";
+    later(() => { if (heading == null) { dial = true; heading = (TARGET + 150) % 360; msg.textContent = "Компаса нет, поэтому крути диск пальцем или мышью. Слушай звук."; } }, 2500);
+  };
+  const ang = e => { const b = cv.getBoundingClientRect(); return Math.atan2(e.clientX - b.left - b.width / 2, -(e.clientY - b.top - b.height / 2)) * 180 / Math.PI; };
+  cv.addEventListener("pointerdown", e => { if (!dial) return; dragA = { a: ang(e), h: heading }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointermove", e => { if (!dragA) return; heading = (dragA.h - (ang(e) - dragA.a) + 720) % 360; });
+  cv.addEventListener("pointerup", () => dragA = null);
+  loop(dt => {
+    const W = cv.W, H = cv.H; ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    if (heading == null) { ctx.fillStyle = "#555b70"; ctx.font = "500 13px JetBrains Mono, monospace"; ctx.textAlign = "center"; ctx.fillText("ТЕМНО", W / 2, H / 2); return; }
+    const d = diff(), close = 1 - Math.abs(d) / 180;
+    // свечение с той стороны, куда надо поворачиваться
+    const side = d > 0 ? 0 : W, g = ctx.createRadialGradient(side, H / 2, 0, side, H / 2, W * 0.7);
+    g.addColorStop(0, `rgba(95,139,255,${0.08 + close * 0.35})`); g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const core = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, H * 0.4 * (0.2 + close));
+    core.addColorStop(0, `rgba(160,190,255,${Math.pow(close, 6)})`); core.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = core; ctx.fillRect(0, 0, W, H);
+    if (dial) { ctx.strokeStyle = "rgba(255,255,255,0.18)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(W / 2, H / 2, H * 0.38, 0, 6.283); ctx.stroke(); const a = (heading - 90) * Math.PI / 180; ctx.fillStyle = "#eef0f7"; ctx.beginPath(); ctx.arc(W / 2 + Math.cos(a) * H * 0.38, H / 2 + Math.sin(a) * H * 0.38, 7, 0, 6.283); ctx.fill(); }
+    if (osc && AC) {
+      const t = AC.currentTime;
+      osc.frequency.setTargetAtTime(160 + Math.pow(close, 3) * 360, t, 0.08);
+      gain.gain.setTargetAtTime(found ? 0 : 0.05 + close * 0.12, t, 0.1);
+      ng.gain.setTargetAtTime(found ? 0 : 0.06 * (1 - close), t, 0.1);
+      if (pan) pan.pan.setTargetAtTime(clamp(-d / 60, -1, 1), t, 0.1);
+    }
+    if (found) return;
+    hold = Math.abs(d) < TOL ? hold + dt : Math.max(0, hold - dt * 2);
+    if (hold > 3) { found = true; win2(); }
   });
-  function step2() {
-    stage.innerHTML = `
-      <p class="mono step">Этап 02 / 02</p>
-      <p class="task">А теперь как настоящий астроном. Сколько дней прошло от того сообщения, ${esc(CONFIG.firstMessage.date)}, до Нового 2026 года, то есть до 1 января 2026?</p>`;
-    answerField(stage, {
-      label: "Число дней", hints: ["2024 год был високосным: в нём 366 дней.", "Посчитай по годам: с 25.03.2023 до 25.03.2025, а потом остаток до 1 января."],
-      check: v => ["1013", "1014"].includes(norm(v)),
-      onOk: () => {
-        const f = el(`<p class="fact">1013 дней. Нептун делает один оборот вокруг Солнца за 165 лет, так что для него мы знакомы всего ничего. <b>А для меня это целая жизнь.</b></p>`);
-        stage.appendChild(f); appear(f); finishBtn(stage, done);
-      }
-    });
+  function win2() {
+    if (navigator.vibrate) navigator.vibrate([60, 60, 120]);
+    note("neptune", `Повернулась к Москве в ${clock()}. Нашла, не видя`, { heading: Math.round(heading) });
+    msg.textContent = "";
+    finale(stage, `Стоп. <b>Ты сейчас смотришь прямо на меня.</b> Москва в той стороне, 1204 километра. Леверье тоже искал, не видя, и не промахнулся.`, done);
   }
 }
 
-/* ---------- 3. Уран: акростих ---------- */
+/* ---------- 3. Уран: лечь на бок вместе с ним ---------- */
 function gUranus(p, stage, done) {
-  const lines = [
-    "Кружит Уран, упавший на бок, в ледяной темноте,",
-    "И луны его носят имена шекспировских героинь.",
-    "Сияют Джульетта, Офелия, Миранда в пустоте,",
-    "У каждой своя история, своя печаль и своя синь.",
-    "Но имя той, о ком я думаю, не найдёшь у Шекспира в саду,",
-    "Я спрятал его прямо здесь, у каждой строки на виду."
-  ];
   stage.innerHTML = `
-    <p class="mono step">Этап 01 / 01</p>
-    <p class="task">Джульетта ждала Ромео на балконе. ${esc(CONFIG.him)} оставил на Уране стихи, и в них спрятано имя. Какое?</p>
-    <div class="poem">${lines.map(l => `<p>${esc(l)}</p>`).join("")}</div>`;
-  answerField(stage, {
-    label: "Спрятанное имя", hints: ["Читай не слова, а строки целиком: откуда каждая начинается?", "Первые буквы строк, сверху вниз."],
-    check: v => norm(v) === norm(CONFIG.her),
-    onOk: () => {
-      const poem = $(".poem", stage);
-      poem.innerHTML = lines.map(l => `<p><b class="acro">${esc(l[0])}</b>${esc(l.slice(1))}</p>`).join("");
-      if (G && !REDUCED) G.from(poem.querySelectorAll(".acro"), { scale: 1.8, opacity: 0, duration: 0.8, ease: "back.out(2)", stagger: 0.1 });
-      const f = el(`<p class="fact">Вот она, <b>${esc(CONFIG.her)}</b>. Луны Урана придумывали поэты, а свою я нашёл сам.</p>`);
-      stage.appendChild(f); appear(f); finishBtn(stage, done);
-    }
-  });
-}
-
-/* ---------- 4. Сатурн: шифровальные кольца ---------- */
-const AB = "АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
-const encode = (s, k) => [...s.toUpperCase().replace(/Ё/g, "Е")].map(ch => { const i = AB.indexOf(ch); return i < 0 ? ch : AB[(i + k) % 32]; }).join("");
-function gSaturn(p, stage, done) {
-  const plain = CONFIG.saturnPhrase;
-  stage.innerHTML = `
-    <p class="mono step">Этап 01 / 01</p>
-    <p class="task">На кольцах зашифровано послание. Каждая буква сдвинута по алфавиту на столько шагов, какая по счёту планета Сатурн от Солнца. Поверни внутреннее кольцо так, чтобы под каждой буквой стояла её шифровка, найди буквы шифра на внутреннем кольце и читай букву над ними.</p>
-    <p class="cipher" aria-label="Шифр">${esc(encode(plain, 6))}</p>
-    <svg class="disk" viewBox="0 0 320 320" role="slider" tabindex="0" aria-label="Внутреннее кольцо" aria-valuemin="0" aria-valuemax="31" aria-valuenow="0">
-      <circle cx="160" cy="160" r="156" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)"/><circle cx="160" cy="160" r="118" fill="rgba(0,0,0,0.35)" stroke="rgba(255,181,71,0.3)"/><circle cx="160" cy="160" r="80" fill="#03040a"/>
-      <rect x="149" y="2" width="22" height="78" rx="11" fill="rgba(255,181,71,0.16)"/>
-      <g class="outer">${[...AB].map((ch, k) => { const a = k / 32 * 2 * Math.PI; return `<text x="${(160 + 137 * Math.sin(a)).toFixed(1)}" y="${(160 - 137 * Math.cos(a)).toFixed(1)}">${ch}</text>`; }).join("")}</g>
-      <g class="inner" style="transform-origin:160px 160px">${[...AB].map((ch, k) => { const a = k / 32 * 2 * Math.PI, x = (160 + 99 * Math.sin(a)).toFixed(1), y = (160 - 99 * Math.cos(a)).toFixed(1); return `<text x="${x}" y="${y}" transform="rotate(${(k / 32 * 360).toFixed(2)} ${x} ${y})">${ch}</text>`; }).join("")}</g>
-      <text x="160" y="160" fill="#8a90a6" style="font-size:11px">тяни кольцо</text>
-    </svg>
-    <div class="row"><button class="btn btn--glass btn--small" type="button" id="rl">← Повернуть</button><button class="btn btn--glass btn--small" type="button" id="rr">Повернуть →</button></div>
-    <p class="note" id="pair">Сейчас под А стоит А</p>`;
-  const disk = $(".disk", stage), inner = $(".inner", stage), pair = $("#pair", stage);
-  let rot = 0;
-  const setRot = r => {
-    rot = ((Math.round(r) % 32) + 32) % 32;
-    inner.style.transform = `rotate(${-rot * 360 / 32}deg)`;
-    disk.setAttribute("aria-valuenow", rot);
-    pair.textContent = `Сейчас под А стоит ${AB[rot]}`;
+    <p class="task">Уран смотрит на мир лёжа на боку. Посмотри на него так же: поверни телефон набок и подержи. Лучше всего лёжа.</p>
+    <canvas class="cv" id="uCv" aria-label="Кольца Урана"></canvas>
+    <p class="note mono" id="uRead"></p>
+    <p class="note" id="uNote"></p>
+    <input class="range" type="range" id="uRange" min="0" max="90" value="0" hidden aria-label="Наклон">`;
+  const cv = $("#uCv", stage), ctx = canvasFit(cv, 1), msg = $("#uNote", stage), read = $("#uRead", stage), range = $("#uRange", stage);
+  let tilt = 0, up = [0, -1], sens = false, hold = 0, ok = false;
+  const N = 140, chaos = [], heart = [];
+  for (let k = 0; k < N; k++) {
+    const a = k / N * Math.PI * 2, r = 0.25 + (k % 7) * 0.035;
+    chaos.push([Math.cos(a * (1 + (k % 3))) * r, Math.sin(a * 2.3) * r * 0.45 + ((k % 5) - 2) * 0.03]);
+    const t = a; heart.push([16 * Math.sin(t) ** 3 / 40, -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) / 40]);
+  }
+  const onMotion = e => {
+    const g = e.accelerationIncludingGravity; if (!g || g.x == null) return;
+    sens = true; range.hidden = true;
+    const gx = IOS ? -g.x : g.x, gy = IOS ? -g.y : g.y;
+    tilt = Math.atan2(Math.abs(gx), Math.abs(gy)) * 180 / Math.PI;
+    const l = Math.hypot(gx, gy) || 1; up = [gx / l, -gy / l];
   };
-  $("#rl", stage).onclick = () => setRot(rot - 1);
-  $("#rr", stage).onclick = () => setRot(rot + 1);
-  disk.addEventListener("keydown", e => { if (e.key === "ArrowLeft" || e.key === "ArrowDown") setRot(rot - 1); if (e.key === "ArrowRight" || e.key === "ArrowUp") setRot(rot + 1); });
-  let drag = null;
-  const ang = e => { const b = disk.getBoundingClientRect(); return Math.atan2(e.clientX - b.left - b.width / 2, -(e.clientY - b.top - b.height / 2)); };
-  disk.addEventListener("pointerdown", e => { drag = { a: ang(e), r: rot }; disk.setPointerCapture(e.pointerId); disk.classList.add("is-drag"); });
-  disk.addEventListener("pointermove", e => {
-    if (!drag) return;
-    let da = ang(e) - drag.a; if (da > Math.PI) da -= 2 * Math.PI; if (da < -Math.PI) da += 2 * Math.PI;
-    setRot(drag.r - da / (2 * Math.PI) * 32);
-  });
-  const end = () => { drag = null; disk.classList.remove("is-drag"); };
-  disk.addEventListener("pointerup", end); disk.addEventListener("pointercancel", end);
-  answerField(stage, {
-    label: "Расшифровка", hints: ["Сатурн шестой от Солнца. Поверни кольцо так, чтобы под А стояла Ж.", `Первое слово: ${plain.split(" ")[0].toUpperCase()}.`],
-    check: v => norm(v) === norm(plain),
-    onOk: () => {
-      const f = el(`<p class="fact">Сатурн держит свои кольца одним притяжением, без всяких креплений. <b>Вот и меня держит к тебе так же.</b></p>`);
-      stage.appendChild(f); appear(f); finishBtn(stage, done);
+  askMotion().then(() => listen(window, "devicemotion", onMotion));
+  later(() => { if (!sens) { range.hidden = false; msg.textContent = "Датчика наклона нет, поэтому двигай ползунок."; } }, 2000);
+  range.oninput = () => { tilt = +range.value; const a = tilt * Math.PI / 180; up = [Math.sin(a), -Math.cos(a)]; };
+  loop(dt => {
+    const W = cv.W, H = cv.H, s = Math.min(W, H);
+    ctx.clearRect(0, 0, W, H);
+    const k = clamp((tilt - 50) / 35, 0, 1), e = k * k * (3 - 2 * k);
+    ctx.save(); ctx.translate(W / 2, H / 2);
+    ctx.rotate(Math.atan2(up[0], -up[1])); // рисунок всегда стоит «вверх» относительно земли
+    ctx.fillStyle = "#3e6b77"; ctx.beginPath(); ctx.arc(0, 0, s * 0.07, 0, 6.283); ctx.fill();
+    ctx.strokeStyle = `rgba(160, 225, 235, ${0.35 + e * 0.6})`; ctx.lineWidth = 1.4 + e; ctx.beginPath();
+    for (let n = 0; n <= N; n++) {
+      const a = chaos[n % N], b = heart[n % N], x = (a[0] + (b[0] - a[0]) * e) * s, y = (a[1] + (b[1] - a[1]) * e) * s;
+      n ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
     }
+    ctx.stroke(); ctx.restore();
+    if (ok) return;
+    hold = tilt > 78 ? hold + dt : 0;
+    read.textContent = tilt > 78 ? "Держи…" : `Наклон ${Math.round(tilt)}°`;
+    if (hold > 2.5) { ok = true; read.textContent = ""; msg.textContent = ""; win2(); }
   });
+  function win2() {
+    const h = new Date().getHours(), night = h >= 22 || h < 5;
+    note("uranus", `Легла на бок вместе с Ураном в ${clock()}`);
+    finale(stage, `У Джульетты на Уране нет Ромео. <b>У тебя есть ${esc(CONFIG.him)}.</b>${night ? " И сейчас, судя по времени, он тоже не спит и думает о тебе." : ""}`, done);
+  }
 }
 
-/* ---------- 5. Юпитер: глаза Юноны (стеганография) ---------- */
+/* ---------- 4. Сатурн: театр теней колец ---------- */
+function gSaturn(p, stage, done) {
+  stage.innerHTML = `
+    <p class="task">Кольца отбрасывают на Сатурн тени. Двигай пальцем по картинке: так ты двигаешь Солнце. Смотри не на кольца, а на тени на планете.</p>
+    <canvas class="cv" id="sCv" aria-label="Сатурн и тени колец" tabindex="0"></canvas>
+    <p class="note" id="sNote">Тени пока похожи на шум.</p>`;
+  const cv = $("#sCv", stage), ctx = canvasFit(cv, 1), msg = $("#sNote", stage);
+  const TARGET = 24; let phi = -38, drag = null, hold = 0, ok = false, show = 0;
+  const N = 34, off = Array.from({ length: N }, () => Math.random() * 2 - 1), spokes = Array.from({ length: 70 }, () => [Math.random() * 6.283, 0.4 + Math.random() * 0.6]);
+  const mask = document.createElement("canvas"), mx = mask.getContext("2d");
+  let img = null; loadImg(TEX("2k_saturn.jpg")).then(i => img = i);
+  cv.addEventListener("pointerdown", e => { drag = { x: e.clientX, p: phi }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointermove", e => { if (drag && !ok) phi = clamp(drag.p + (e.clientX - drag.x) * 0.22, -70, 70); });
+  cv.addEventListener("pointerup", () => drag = null);
+  cv.addEventListener("keydown", e => { if (e.key === "ArrowLeft") phi -= 2; if (e.key === "ArrowRight") phi += 2; });
+  loop(dt => {
+    const W = cv.W, H = cv.H, cx = W / 2, cy = H * 0.56, R = W * 0.27;
+    if (!ok && !drag && Math.abs(phi - TARGET) < 6) phi += (TARGET - phi) * Math.min(1, dt * 4); // мягкий магнит у ответа
+    const err = ok ? 0 : (phi - TARGET) / 30;
+    ctx.clearRect(0, 0, W, H);
+    // Солнце на дуге сверху
+    const sa = phi * Math.PI / 180, sx = cx + Math.sin(sa) * W * 0.42, sy = H * 0.1 + (1 - Math.cos(sa)) * H * 0.25;
+    const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, 26); sg.addColorStop(0, "#fff3d0"); sg.addColorStop(0.3, "#ffb547"); sg.addColorStop(1, "rgba(255,181,71,0)");
+    ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(sx, sy, 26, 0, 6.283); ctx.fill();
+    const ring = (back) => {
+      ctx.save(); ctx.translate(cx, cy); ctx.scale(1, 0.26);
+      ctx.beginPath(); ctx.rect(-W, back ? -W : 0, W * 2, W); ctx.clip();
+      for (let r = R * 1.22; r < R * 1.75; r += 2.2) { ctx.strokeStyle = `rgba(217,198,162,${0.25 + 0.35 * Math.sin(r * 0.21) ** 2})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, r, 0, 6.283); ctx.stroke(); }
+      ctx.strokeStyle = "rgba(20,14,8,0.35)"; ctx.lineWidth = 3;
+      spokes.forEach(([a, l]) => { ctx.beginPath(); ctx.moveTo(Math.cos(a) * R * 1.3, Math.sin(a) * R * 1.3); ctx.lineTo(Math.cos(a) * R * (1.3 + l * 0.4), Math.sin(a) * R * (1.3 + l * 0.4)); ctx.stroke(); });
+      ctx.restore();
+    };
+    ring(true);
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.clip();
+    if (img) ctx.drawImage(img, 0, img.height * 0.3, img.width * 0.5, img.height * 0.4, cx - R, cy - R, R * 2, R * 2); else { ctx.fillStyle = "#d8c49a"; ctx.fillRect(cx - R, cy - R, R * 2, R * 2); }
+    // тень колец: полоса и «спицы», которые складываются в слово только при одном свете
+    const mw = Math.round(R * 1.6), mh = Math.round(R * 0.75);
+    if (mask.width !== mw) { mask.width = mw; mask.height = mh; mx.fillStyle = "#000"; mx.textAlign = "center"; mx.textBaseline = "middle"; mx.font = `500 ${mh * 0.9}px Unbounded, sans-serif`; mx.fillText("ТЫ", mw / 2, mh * 0.55); }
+    ctx.globalAlpha = 0.72;
+    const bx = cx - mw / 2 + err * R * 0.35, by = cy - mh * 0.55 + err * R * 0.2;
+    for (let k = 0; k < N; k++) { const w = mw / N; ctx.drawImage(mask, k * w, 0, w + 0.5, mh, bx + k * w, by + off[k] * err * R * 0.8, w + 0.5, mh); }
+    ctx.globalAlpha = 0.3; ctx.fillStyle = "#000"; ctx.fillRect(cx - R, cy - R * 0.05 + err * R * 0.3 + mh * 0.5, R * 2, R * 0.08);
+    ctx.globalAlpha = 1;
+    const lit = ctx.createLinearGradient(cx + Math.sin(sa) * R, cy - R, cx - Math.sin(sa) * R, cy + R); lit.addColorStop(0, "rgba(0,0,0,0)"); lit.addColorStop(1, "rgba(0,0,0,0.55)");
+    ctx.fillStyle = lit; ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+    ctx.restore();
+    ring(false);
+    if (ok) { show = Math.min(1, show + dt); return; }
+    hold = Math.abs(phi - TARGET) < 1.6 ? hold + dt : 0;
+    if (Math.abs(phi - TARGET) < 8) msg.textContent = "Тени что-то складывают…";
+    if (hold > 0.6) { ok = true; phi = TARGET; win2(); }
+  });
+  function win2() {
+    msg.textContent = "";
+    note("saturn", `Тени колец Сатурна сложились в «ТЫ»`);
+    finale(stage, `Тени колец сложились в «ТЫ». Кольца держатся одним притяжением и не вечные, <b>а ты мой центр притяжения.</b>`, done);
+  }
+}
+
+/* ---------- 5. Юпитер: дыхание на стекле ---------- */
 function gJupiter(p, stage, done) {
   stage.innerHTML = `
-    <p class="mono step">Этап 01 / 01</p>
-    <p class="task">Юпитер что-то спрятал в облаках. Обычным глазом не видно. Юнона смотрела иначе: разбирала свет на цвета и слои. Разбери и ты.</p>
-    <canvas class="stego" id="stego" width="640" height="320" aria-label="Облака Юпитера"></canvas>
-    <div class="seg" id="chan" role="group" aria-label="Цвет">
-      <button type="button" data-c="-1" aria-pressed="true">Все цвета</button><button type="button" data-c="0" aria-pressed="false">Красный</button><button type="button" data-c="1" aria-pressed="false">Зелёный</button><button type="button" data-c="2" aria-pressed="false">Синий</button>
-    </div>
-    <div class="field"><label for="bit">Слой яркости: <b id="bitV">7</b> из 7 (0 — самый тонкий)</label><input class="range" type="range" id="bit" min="0" max="7" value="7" disabled></div>`;
-  const cv = $("#stego", stage), cx = cv.getContext("2d", { willReadFrequently: true }), W = 640, H = 320;
-  let base = null, chan = -1, bit = 7;
-  loadImg(TEX("2k_jupiter.jpg")).then(img => {
-    if (!img) return;
-    cx.drawImage(img, 300, 260, 1300, 650, 0, 0, W, H);
-    base = cx.getImageData(0, 0, W, H);
-    // текст прячется в самый младший бит синего канала
-    const m = document.createElement("canvas"); m.width = W; m.height = H;
-    const mx = m.getContext("2d"); mx.fillStyle = "#fff"; mx.textAlign = "center"; mx.textBaseline = "middle";
-    mx.font = "500 30px Unbounded, sans-serif"; mx.fillText("ЮНОНА ВИДИТ:", W / 2, H * 0.3);
-    mx.font = "500 72px Unbounded, sans-serif"; mx.fillText("ТОЛЬКО ТЫ", W / 2, H * 0.6);
-    const md = mx.getImageData(0, 0, W, H).data, d = base.data;
-    for (let k = 0; k < d.length; k += 4) d[k + 2] = (d[k + 2] & 0xfe) | (md[k] > 128 ? 1 : 0);
-    render();
-  });
-  function render() {
-    if (!base) return;
-    if (chan < 0) { cx.putImageData(base, 0, 0); return; }
-    const out = cx.createImageData(W, H), s = base.data, o = out.data;
-    for (let k = 0; k < s.length; k += 4) { const v = (s[k + chan] >> bit) & 1 ? 255 : 0; o[k] = o[k + 1] = o[k + 2] = v; o[k + 3] = 255; }
-    cx.putImageData(out, 0, 0);
-  }
-  const range = $("#bit", stage);
-  $("#chan", stage).onclick = e => {
-    const b = e.target.closest("button"); if (!b) return;
-    chan = +b.dataset.c; range.disabled = chan < 0;
-    $("#chan", stage).querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
-    render();
+    <p class="task">Юнона видела сквозь облака Юпитера. Подуй на экран, как на зимнее окно, и облака разойдутся. Если микрофон не даёшь, протри их пальцем.</p>
+    <canvas class="cv" id="jCv" aria-label="Облака Юпитера"></canvas>
+    <p class="note" id="jNote"></p>
+    <div class="row"><button class="btn" type="button" id="jMic">Подуть</button></div>`;
+  const cv = $("#jCv", stage), ctx = canvasFit(cv, 1.1), msg = $("#jNote", stage);
+  const cover = document.createElement("canvas"), cx = cover.getContext("2d", { willReadFrequently: true });
+  let img = null, breaths = 0, wiped = false, ok = false, an = null, buf = null, base = 0, inBreath = false, heartT = 0, frame = 0;
+  loadImg(TEX("2k_jupiter.jpg")).then(i => { img = i; resetCover(); });
+  function resetCover() { if (!img || !cv.W) return; cover.width = cv.W; cover.height = cv.H; cx.drawImage(img, img.width * 0.3, img.height * 0.25, img.width * 0.35, img.height * 0.5, 0, 0, cv.W, cv.H); }
+  const hole = (x, y, r) => {
+    cx.save(); cx.globalCompositeOperation = "destination-out";
+    const g = cx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, "rgba(0,0,0,0.9)"); g.addColorStop(1, "rgba(0,0,0,0)");
+    cx.fillStyle = g; cx.beginPath(); cx.arc(x, y, r, 0, 6.283); cx.fill(); cx.restore();
   };
-  range.oninput = () => { bit = +range.value; $("#bitV", stage).textContent = bit; render(); };
-  answerField(stage, {
-    label: "Что увидела Юнона?", hints: ["Выбери один цвет и опускай слой яркости вниз.", "Самый тонкий слой синего."],
-    check: v => norm(v).includes("толькоты"),
-    onOk: () => {
-      const f = el(`<p class="fact">Юпитеру было что прятать. <b>Мне нечего: только ты.</b></p>`);
-      stage.appendChild(f); appear(f); finishBtn(stage, done);
+  cv.addEventListener("pointermove", e => { if (ok || !(e.buttons || e.pointerType === "touch")) return; const b = cv.getBoundingClientRect(); hole(e.clientX - b.left, e.clientY - b.top, cv.W * 0.12); wiped = true; });
+  cv.addEventListener("pointerdown", e => cv.setPointerCapture(e.pointerId));
+  $("#jMic", stage).onclick = async () => {
+    try {
+      const st = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+      onCleanup(() => st.getTracks().forEach(t => t.stop()));
+      const ac = audio(); an = ac.createAnalyser(); an.fftSize = 1024; ac.createMediaStreamSource(st).connect(an);
+      buf = new Uint8Array(an.frequencyBinCount); base = 0;
+      $("#jMic", stage).hidden = true; msg.textContent = "Подуй на экран.";
+    } catch (e) { msg.textContent = "Микрофон недоступен. Протри облака пальцем."; }
+  };
+  loop(dt => {
+    const W = cv.W, H = cv.H;
+    if (cover.width !== W) resetCover();
+    // под облаками — запотевшее стекло с нарисованным сердцем
+    ctx.fillStyle = "#05070d"; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "rgba(205,215,230,0.16)"; ctx.fillRect(0, 0, W, H);
+    ctx.save(); ctx.strokeStyle = "rgba(10,12,20,0.95)"; ctx.lineWidth = W * 0.035; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    heartPath(ctx, W / 2, H * 0.52, W * 0.32);
+    if (ok) { ctx.setLineDash([W * 3, W * 3]); ctx.lineDashOffset = W * 3 * (1 - Math.min(1, heartT)); heartT += dt * 0.5; }
+    ctx.stroke(); ctx.restore();
+    if (an) {
+      an.getByteFrequencyData(buf);
+      const bin = AC.sampleRate / 2 / buf.length; let lo = 0, all = 0;
+      for (let k = 1; k < buf.length; k++) { all += buf[k]; if (k * bin < 600) lo += buf[k]; }
+      const lvl = all / buf.length; base = base ? base * 0.995 + Math.min(lvl, base * 1.2) * 0.005 : lvl;
+      const blowing = lvl > base * 2.2 + 6 && lo / (all || 1) > 0.45;
+      if (blowing && !ok) { for (let k = 0; k < 3; k++) hole(W / 2 + (Math.random() - 0.5) * W * 0.5, H / 2 + (Math.random() - 0.5) * H * 0.5, W * (0.1 + Math.random() * 0.15)); }
+      if (blowing && !inBreath) breaths++;
+      inBreath = blowing;
+    }
+    if (!ok) { cx.globalAlpha = 0.006; resetCoverSoft(); cx.globalAlpha = 1; } // облака медленно смыкаются
+    ctx.drawImage(cover, 0, 0);
+    if (ok) return;
+    if (++frame % 20 === 0 && cover.width) {
+      const d = cx.getImageData(0, 0, cover.width, cover.height).data; let a = 0, n = 0;
+      for (let k = 3; k < d.length; k += 400) { a += d[k]; n++; }
+      if (a / n < 70) { ok = true; cx.clearRect(0, 0, cover.width, cover.height); win2(); }
     }
   });
+  function resetCoverSoft() { if (img) cx.drawImage(img, img.width * 0.3, img.height * 0.25, img.width * 0.35, img.height * 0.5, 0, 0, cv.W, cv.H); }
+  function win2() {
+    msg.textContent = ""; $("#jMic", stage).hidden = true;
+    note("jupiter", breaths ? `Разогнала облака Юпитера за ${breaths} ${plural(breaths, "выдох", "выдоха", "выдохов")}` : "Протёрла облака Юпитера, как запотевшее окно");
+    finale(stage, `Под облаками кто-то нарисовал сердце, как на зимнем стекле. Юнона видела сквозь облака все секреты Юпитера. <b>У меня секрет один, и он теперь у тебя.</b>`, done);
+  }
 }
 
-/* ---------- 6. Марс: морзянка марсохода ---------- */
-const MORSE = { А: ".-", Б: "-...", В: ".--", Г: "--.", Д: "-..", Е: ".", Ж: "...-", З: "--..", И: "..", Й: ".---", К: "-.-", Л: ".-..", М: "--", Н: "-.", О: "---", П: ".--.", Р: ".-.", С: "...", Т: "-", У: "..-", Ф: "..-.", Х: "....", Ц: "-.-.", Ч: "---.", Ш: "----", Щ: "--.-", Ъ: "--.--", Ы: "-.--", Ь: "-..-", Э: "..-..", Ю: "..--", Я: ".-.-" };
-let AC = null;
-function beep(on) {
-  try {
-    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
-    if (on) { const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = 640; g.gain.value = 0.12; o.connect(g).connect(AC.destination); o.start(); beep.o = o; }
-    else if (beep.o) { beep.o.stop(); beep.o = null; }
-  } catch (e) {}
-}
+/* ---------- 6. Марс: пережить с марсоходом ночь ---------- */
 function gMars(p, stage, done) {
-  const word = "СКУЧАЮ";
   stage.innerHTML = `
-    <p class="mono step">Этап 01 / 01</p>
-    <p class="task">Марсоход нашёл на равнине сердце из камней и передаёт об этом сигнал. Связь слабая, только мигалка и писк. Включи звук и расшифруй морзянку: короткая вспышка — точка, длинная — тире.</p>
-    <div class="beacon"><span class="lamp" id="lamp" aria-hidden="true"></span><div class="row"><button class="btn" type="button" id="play">Принять сигнал</button><button class="btn btn--glass" type="button" id="slow" aria-pressed="false">Медленнее</button></div></div>
-    <p class="tape" id="tape" aria-live="polite"></p>
-    <div class="morse">${Object.entries(MORSE).map(([k, v]) => `<span><b>${k}</b>${v.replace(/\./g, "·").replace(/-/g, "–")}</span>`).join("")}</div>`;
-  const lamp = $("#lamp", stage), tape = $("#tape", stage);
-  let slow = false, plays = 0;
-  $("#slow", stage).onclick = e => { slow = !slow; e.currentTarget.setAttribute("aria-pressed", slow); e.currentTarget.textContent = slow ? "Быстрее" : "Медленнее"; };
-  $("#play", stage).onclick = async e => {
-    const btn = e.currentTarget, my = ++runId; btn.disabled = true; plays++;
-    const u = slow ? 330 : 210;
-    for (const ch of word) {
-      for (const s of MORSE[ch]) {
-        lamp.classList.add("is-on"); beep(true);
-        await wait(s === "." ? u : u * 3);
-        lamp.classList.remove("is-on"); beep(false);
-        await wait(u);
-        if (my !== runId) return;
-      }
-      await wait(u * 3);
-    }
-    btn.disabled = false; btn.textContent = "Ещё раз";
-    if (plays >= 3) tape.textContent = [...word].map(c => MORSE[c].replace(/\./g, "·").replace(/-/g, "–")).join("   ");
+    <canvas class="cv" id="mCv" aria-label="Марсоход в пыльной буре"></canvas>
+    <div class="logbox" id="mLog" aria-live="polite"></div>
+    <div class="row" id="mRow" hidden><button class="btn" type="button" id="mNight">Положить телефон</button></div>`;
+  const cv = $("#mCv", stage), ctx = canvasFit(cv, 0.7), log = $("#mLog", stage);
+  let battery = 42, dark = 0, dawn = 0, phase = "storm", downAt = 0, ok = false;
+  const dust = Array.from({ length: 140 }, () => [Math.random(), Math.random(), 0.3 + Math.random()]);
+  const say = t => { const l = el(`<p>${t}</p>`); log.appendChild(l); appear(l); };
+  (async () => {
+    const my = runId;
+    for (const t of ["Сол 5111. Пыльная буря.", "Солнечные панели под слоем пыли.", "Заряд падает."]) { if (my !== runId) return; say(t); await wait(2200); }
+    phase = "low"; if (my !== runId) return;
+    say(`Ему нужно пережить ночь. <b>Положи телефон экраном вниз и подожди минуту.</b> Потом переверни.`);
+    $("#mRow", stage).hidden = false;
+  })();
+  const nightDone = secs => {
+    if (ok) return;
+    if (secs < 50) { say(`Ночь на Марсе длиннее. Прошло ${Math.round(secs)} с, нужна минута.`); return; }
+    ok = true; phase = "dawn"; $("#mRow", stage).hidden = true; $("#nightCover")?.remove();
+    note("mars", `Пережила с марсоходом ночь на Марсе: ${Math.round(secs)} ${plural(Math.round(secs), "секунда", "секунды", "секунд")} в темноте`, { secs: Math.round(secs) });
+    later(() => { say("Рассвет. Заряд 100%."); }, 1200);
+    later(() => { say(`<b>«Батарея заряжена. Я всё ещё здесь».</b>`); }, 3200);
+    later(() => finale(stage, `Настоящий Opportunity так и не проснулся. В переписке на расстоянии кто-то всегда засыпает первым. <b>Он замолчал навсегда. А ты — только до утра.</b>`, done), 5200);
   };
-  answerField(stage, {
-    label: "Что передал марсоход?", hints: ["Пиши по одной букве на каждую паузу. Слово из шести букв.", "Начинается на С: · · ·"],
-    check: v => norm(v) === norm(word),
-    onOk: () => {
-      runId++; beep(false); lamp.classList.remove("is-on");
-      const f = el(`<p class="fact">Марсоход скучает по Земле. <b>А я по тебе, каждый день.</b> Сигнал до Марса идёт до 22 минут, мой до тебя доходит быстрее.</p>`);
-      stage.appendChild(f); appear(f); finishBtn(stage, done);
+  // экран вниз: наклон телефона около ±180°
+  const onOri = e => {
+    if (phase !== "low" || typeof e.beta !== "number") return;
+    const down = Math.abs(e.beta) > 140;
+    if (down && !downAt) downAt = Date.now();
+    if (!down && downAt) { const s = (Date.now() - downAt) / 1000; downAt = 0; if (s > 3) nightDone(s); }
+  };
+  listen(window, "deviceorientation", onOri);
+  // если телефон заблокировал экран, считаем время по возвращению на вкладку
+  let hiddenAt = 0;
+  listen(document, "visibilitychange", () => {
+    if (phase !== "low") return;
+    if (document.hidden) hiddenAt = Date.now(); else if (hiddenAt) { const s = (Date.now() - hiddenAt) / 1000; hiddenAt = 0; if (s > 3) nightDone(s); }
+  });
+  $("#mNight", stage).onclick = async () => {
+    await askMotion();
+    try { const wl = await navigator.wakeLock?.request("screen"); if (wl) onCleanup(() => wl.release()); } catch (e) {}
+    // на компьютере датчика нет: экран сам становится ночью
+    const cover = el(`<div class="night" id="nightCover"><p>Ночь на Марсе. Переверни телефон или подожди минуту здесь.</p><button class="btn btn--glass btn--small" type="button">Рассвело</button></div>`);
+    document.body.appendChild(cover); onCleanup(() => cover.remove());
+    const t0 = Date.now();
+    cover.querySelector("button").onclick = () => { const s = (Date.now() - t0) / 1000; if (s >= 50) nightDone(s); else { cover.remove(); say(`Прошло ${Math.round(s)} с. Ночь на Марсе длиннее: нужна минута.`); } };
+    downAt = downAt || 0;
+  };
+  loop(dt => {
+    const W = cv.W, H = cv.H;
+    if (phase !== "dawn") { battery = Math.max(3, battery - dt * 4); dark = Math.min(1, dark + dt * 0.08); }
+    else { battery = Math.min(100, battery + dt * 40); dawn = Math.min(1, dawn + dt * 0.35); }
+    const sky = phase === "dawn" ? [`rgb(${60 + 80 * dawn},${50 + 60 * dawn},${45 + 40 * dawn})`] : [`rgb(${150 - 120 * dark},${100 - 80 * dark},${70 - 60 * dark})`];
+    ctx.fillStyle = sky[0]; ctx.fillRect(0, 0, W, H);
+    if (phase === "dawn") { // голубой закат-рассвет: синее свечение у солнца
+      const sx = W * 0.7, sy = H * 0.62, g = ctx.createRadialGradient(sx, sy, 0, sx, sy, W * 0.45 * dawn);
+      g.addColorStop(0, "rgba(238,244,248,1)"); g.addColorStop(0.08, "rgba(169,194,218,0.95)"); g.addColorStop(0.4, "rgba(110,150,190,0.5)"); g.addColorStop(1, "rgba(110,150,190,0)");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     }
+    ctx.fillStyle = phase === "dawn" ? "#4a3424" : `rgb(${74 - 50 * dark},${52 - 36 * dark},${36 - 26 * dark})`;
+    ctx.beginPath(); ctx.moveTo(0, H * 0.7); ctx.lineTo(W * 0.25, H * 0.62); ctx.lineTo(W * 0.5, H * 0.68); ctx.lineTo(W * 0.8, H * 0.6); ctx.lineTo(W, H * 0.66); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.fill();
+    // марсоход
+    const rx = W * 0.32, ry = H * 0.72; ctx.fillStyle = "#1a1410";
+    ctx.fillRect(rx - 34, ry - 24, 68, 14); ctx.fillRect(rx - 6, ry - 46, 4, 22); ctx.fillRect(rx - 14, ry - 52, 20, 8);
+    [-26, 0, 26].forEach(o => { ctx.beginPath(); ctx.arc(rx + o, ry - 4, 7, 0, 6.283); ctx.fill(); });
+    if (phase !== "dawn") { ctx.fillStyle = `rgba(190,130,90,${0.25 + dark * 0.3})`; dust.forEach(d => { d[0] = (d[0] + dt * 0.12 * d[2]) % 1; ctx.fillRect(d[0] * W, d[1] * H, 2, 1); }); }
+    ctx.fillStyle = battery < 10 ? "#ff8a6b" : "#ebe7e0"; ctx.font = "500 13px JetBrains Mono, monospace"; ctx.textAlign = "left";
+    ctx.fillText(`ЗАРЯД ${Math.round(battery)}%`, 14, 24);
   });
 }
 
-/* ---------- 7. Земля: долететь на МКС ---------- */
+/* ---------- 7. Земля: бледно-голубая точка ---------- */
 function gEarth(p, stage, done) {
-  const km = Math.round(distKm());
   stage.innerHTML = `
-    <p class="mono step">Этап 01 / 01</p>
-    <p class="task">МКС облетает всю Землю примерно за полтора часа, скорость у неё <b>7,66 км в секунду</b>. Между Москвой и Крымском по прямой <b>${km} км</b>. За сколько секунд космонавты долетели бы от меня до тебя?</p>`;
-  answerField(stage, {
-    label: "Секунд", hints: ["Раздели расстояние на скорость.", `${km} ÷ 7,66`],
-    check: v => { const n = parseFloat(String(v).replace(",", ".")); return n >= 150 && n <= 165; },
-    onOk: () => {
-      const f = el(`<p class="fact">Около 157 секунд. <b>Две с половиной минуты, и я у тебя.</b> Жаль, на МКС не продают билеты до Крымска.</p>`);
-      stage.appendChild(f); appear(f); finishBtn(stage, done);
-    }
+    <p class="task">Снимок «Вояджера-1», 14 февраля 1990 года, 6 миллиардов километров от Солнца. Где-то на нём Земля. Найди её.</p>
+    <div class="pbd" id="pbd"><img src="${TEX("pale-blue-dot.jpg")}" alt="Снимок «Бледно-голубая точка»" draggable="false"><span class="pbd__ring" id="pbdRing"></span></div>
+    <p class="note" id="eNote"></p>`;
+  const box = $("#pbd", stage), msg = $("#eNote", stage), ring = $("#pbdRing", stage);
+  const DOT = [0.595, 0.52], t0 = Date.now(); let miss = 0, ok = false;
+  box.addEventListener("click", e => {
+    if (ok) return;
+    const b = box.getBoundingClientRect(), x = (e.clientX - b.left) / b.width, y = (e.clientY - b.top) / b.height;
+    if (Math.hypot(x - DOT[0], y - DOT[1]) < 0.06) return found();
+    miss++;
+    const r = el(`<span class="pbd__miss" style="left:${x * 100}%;top:${y * 100}%"></span>`); box.appendChild(r); setTimeout(() => r.remove(), 700);
+    if (miss === 3) msg.textContent = "Она прячется в одном из солнечных лучей.";
+    if (miss === 6) { msg.textContent = "Смотри внимательно в середину светлого луча."; ring.classList.add("is-hint"); }
   });
-}
-
-/* ---------- 8. Венера: кратер с её именем ---------- */
-function gVenus(p, stage, done) {
-  const T = { lat: -49.0, lon: 275.8 };
-  stage.innerHTML = `
-    <p class="mono step">Этап 01 / 01</p>
-    <p class="task">Это настоящая радарная карта Венеры, её снял аппарат «Магеллан» сквозь облака. Широта идёт снизу вверх от 90° ю. ш. до 90° с. ш., долгота слева направо от 0° до 360° в. д. Найди кратер с координатами <b>49° ю. ш., 276° в. д.</b> и нажми на него.</p>
-    <div class="vmap"><canvas id="vmap" aria-label="Карта Венеры"></canvas></div>
-    <p class="vread" id="vread" aria-live="polite">Наведи на карту</p>`;
-  const cv = $("#vmap", stage), cx = cv.getContext("2d"), read = $("#vread", stage);
-  let img = null, W = 0, H = 0, hit = null, cur = null;
-  const fmt = (lat, lon) => `${Math.abs(lat).toFixed(1)}° ${lat < 0 ? "ю. ш." : "с. ш."} · ${lon.toFixed(1)}° в. д.`;
-  function draw() {
-    if (!img || !W) return;
-    // у снимка края на 240° в. д.: перекладываем так, чтобы карта шла от 0° до 360°
-    const iw = img.width, ih = img.height;
-    cx.drawImage(img, iw / 3, 0, iw * 2 / 3, ih, 0, 0, W * 2 / 3, H);
-    cx.drawImage(img, 0, 0, iw / 3, ih, W * 2 / 3, 0, W / 3, H);
-    cx.strokeStyle = "rgba(255,255,255,0.18)"; cx.lineWidth = 1; cx.fillStyle = "rgba(255,255,255,0.6)";
-    cx.font = "500 10px JetBrains Mono, monospace";
-    for (let lon = 0; lon <= 360; lon += 30) { const x = lon / 360 * W; cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x, H); cx.stroke(); if (lon < 360) cx.fillText(lon + "°", x + 3, H - 4); }
-    for (let lat = -60; lat <= 60; lat += 30) { const y = (90 - lat) / 180 * H; cx.beginPath(); cx.moveTo(0, y); cx.lineTo(W, y); cx.stroke(); cx.fillText((lat < 0 ? -lat + "° ю" : lat > 0 ? lat + "° с" : "0°"), 3, y - 3); }
-    if (cur && !hit) { cx.strokeStyle = "#ffb547"; cx.beginPath(); cx.arc(cur.x, cur.y, 10, 0, 6.283); cx.moveTo(cur.x - 16, cur.y); cx.lineTo(cur.x + 16, cur.y); cx.moveTo(cur.x, cur.y - 16); cx.lineTo(cur.x, cur.y + 16); cx.stroke(); }
-    if (hit) {
-      const x = T.lon / 360 * W, y = (90 - T.lat) / 180 * H;
-      cx.save(); cx.shadowColor = "#ffb547"; cx.shadowBlur = 16; cx.strokeStyle = "#ffb547"; cx.lineWidth = 2;
-      cx.beginPath(); cx.arc(x, y, 9 + hit.r, 0, 6.283); cx.stroke();
-      cx.fillStyle = "#ffd58a"; cx.font = "400 15px Unbounded, sans-serif"; cx.textAlign = "right"; cx.fillText("Nastya", x - 16, y - 12); cx.restore();
-    }
-  }
-  const size = () => { const r = cv.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1); W = r.width; H = r.height; cv.width = W * d; cv.height = H * d; cx.setTransform(d, 0, 0, d, 0, 0); draw(); };
-  const at = e => { const b = cv.getBoundingClientRect(); const x = e.clientX - b.left, y = e.clientY - b.top; return { x, y, lat: 90 - y / H * 180, lon: x / W * 360 }; };
-  cv.addEventListener("pointermove", e => { if (hit) return; cur = at(e); read.textContent = fmt(cur.lat, cur.lon); draw(); });
-  cv.addEventListener("pointerdown", e => {
-    if (hit) return;
-    cur = at(e); read.textContent = fmt(cur.lat, cur.lon); draw();
-    const dLat = T.lat - cur.lat, dLon = T.lon - cur.lon;
-    if (Math.hypot(dLat, dLon * Math.cos(T.lat * Math.PI / 180)) < 4.5) return found();
-    const hints = [];
-    if (Math.abs(dLat) > 3) hints.push(dLat < 0 ? "южнее" : "севернее");
-    if (Math.abs(dLon) > 4) hints.push(dLon > 0 ? "восточнее (правее)" : "западнее (левее)");
-    read.textContent = `${fmt(cur.lat, cur.lon)} — кратер ${hints.join(" и ")}`;
-  });
-  addEventListener("resize", size);
-  loadImg(TEX("venus-radar.jpg")).then(i => { img = i; size(); });
   function found() {
-    hit = { r: 0 }; draw();
-    if (G && !REDUCED) G.to(hit, { r: 18, duration: 1.4, ease: "expo.out", onUpdate: draw }); else { hit.r = 18; draw(); }
-    read.textContent = "49,0° ю. ш. · 275,8° в. д. · кратер Nastya";
-    const f = el(`<p class="fact">Кратер <b>Nastya</b>, 12,5 километра в поперечнике. Международный астрономический союз назвал его так в 1997 году, от русского имени Анастасия. Получается, у тебя уже есть место на Венере.</p>`);
-    stage.appendChild(f); appear(f); finishBtn(stage, done);
+    ok = true; msg.textContent = "";
+    const secs = Math.round((Date.now() - t0) / 1000);
+    note("earth", `Нашла Землю на снимке «Вояджера» за ${secs} ${plural(secs, "секунду", "секунды", "секунд")}`, { secs });
+    box.classList.add("is-found");
+    if (G && !REDUCED) G.to(box.querySelector("img"), { scale: 9, transformOrigin: `${DOT[0] * 100}% ${DOT[1] * 100}%`, duration: 3, ease: "power2.inOut" });
+    later(() => finale(stage, `Вся Земля на этом снимке занимает 0,12 пикселя. Расстояние между Москвой и Крымском — около одной сотой пикселя. <b>С такого расстояния между нами нет никакого расстояния: мы в одной точке.</b>`, done), REDUCED ? 200 : 2600);
   }
 }
 
-/* ---------- 9. Меркурий: книжный шифр по Пушкину ---------- */
-function gMercury(p, stage, done) {
-  const poem = [
-    "Я помню чудное мгновенье:", "Передо мной явилась ты,", "Как мимолётное виденье,", "Как гений чистой красоты.",
-    "В томленьях грусти безнадежной,", "В тревогах шумной суеты,", "Звучал мне долго голос нежный", "И снились милые черты.",
-    "Душе настало пробужденье:", "И вот опять явилась ты,", "Как мимолётное виденье,", "Как гений чистой красоты.",
-    "И сердце бьётся в упоенье,", "И для него воскресли вновь", "И божество, и вдохновенье,", "И жизнь, и слёзы, и любовь."
-  ];
-  const codes = ["1.1", "1.2", "4.1", "10.4", "10.5", "13.1", "13.2", "13.3"];
-  const answer = codes.map(c => { const [l, w] = c.split(".").map(Number); return poem[l - 1].replace(/[.,:]/g, "").split(" ")[w - 1]; }).join(" ").toLowerCase();
+/* ---------- 8. Венера: радарное эхо и кратер Nastya ---------- */
+function gVenus(p, stage, done) {
   stage.innerHTML = `
-    <p class="mono step">Этап 01 / 01</p>
-    <p class="task">Рядом с кратером Пушкин нашлись строки и шифр. Каждая пара чисел — это «строка.слово». Найди слова и собери послание.</p>
-    <div class="codes">${codes.map(c => `<span>${c}</span>`).join("")}</div>
-    <div class="poem poem--num">${poem.map((l, k) => `<p><span class="n">${k + 1}</span>${esc(l)}</p>`).join("")}</div>
-    <p class="note">А. С. Пушкин, «К***», 1825</p>`;
-  answerField(stage, {
-    label: "Послание", hints: ["Например, 1.1 — первое слово первой строки: «Я».", "Восемь слов, знаки препинания не важны."],
-    check: v => norm(v) === norm(answer),
-    onOk: () => {
-      const f = el(`<p class="fact">«${esc(answer[0].toUpperCase() + answer.slice(1))}». Пушкин написал это в 1825 году. <b>Я подписываюсь под каждым словом.</b></p>`);
-      stage.appendChild(f); appear(f); finishBtn(stage, done);
+    <p class="task">Сквозь облака Венеры видно только радаром. Касайся карты: каждое касание посылает импульс, и эхо проявляет полосу поверхности. Где-то в южном полушарии есть кратер, названный так же, как ты.</p>
+    <canvas class="cv" id="vCv" aria-label="Радарная карта Венеры"></canvas>
+    <p class="note" id="vNote">Импульсов: 0</p>`;
+  const cv = $("#vCv", stage), ctx = canvasFit(cv, 0.5), msg = $("#vNote", stage);
+  const T = { lon: 275.8, lat: -49 }; let img = null, pulses = 0, strips = [], ok = false, glow = 0, label = 0;
+  loadImg(TEX("venus-radar.jpg")).then(i => img = i);
+  const drawMap = (x0, w, h) => { // карта перекладывается в 0–360° (края снимка на 240° в. д.)
+    const iw = img.width, ih = img.height, W = cv.W, H = cv.H;
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, 0, w, h); ctx.clip();
+    ctx.drawImage(img, iw / 3, 0, iw * 2 / 3, ih, 0, 0, W * 2 / 3, H); ctx.drawImage(img, 0, 0, iw / 3, ih, W * 2 / 3, 0, W / 3, H);
+    ctx.restore();
+  };
+  cv.addEventListener("click", e => {
+    if (!img) return;
+    const b = cv.getBoundingClientRect(), x = e.clientX - b.left, y = e.clientY - b.top, tx = T.lon / 360 * cv.W, ty = (90 - T.lat) / 180 * cv.H;
+    const covered = strips.some(s => tx > s.x - s.w / 2 && tx < s.x + s.w / 2 && s.p >= 1);
+    if (covered && Math.hypot(x - tx, y - ty) < 22 && !ok) return found();
+    pulses++; strips.push({ x, w: cv.W / 14, p: 0 }); msg.textContent = `Импульсов: ${pulses}`;
+    if (pulses % 4 === 0 && !covered) msg.textContent += Math.abs(x - tx) < cv.W * 0.08 ? " · эхо совсем рядом" : x < tx ? " · эхо сильнее правее" : " · эхо сильнее левее";
+  });
+  loop(dt => {
+    const W = cv.W, H = cv.H;
+    ctx.fillStyle = "#c9a96a"; ctx.fillRect(0, 0, W, H); // облака
+    ctx.fillStyle = "rgba(255,240,200,0.15)"; for (let k = 0; k < 6; k++) ctx.fillRect(0, (k / 6 + performance.now() / 60000 % 1) % 1 * H, W, H * 0.06);
+    if (!img) return;
+    strips.forEach(s => { s.p = Math.min(1, s.p + dt * 1.6); drawMap(s.x - s.w / 2, s.w, H * s.p); ctx.fillStyle = "rgba(255,181,71,0.6)"; ctx.fillRect(s.x - s.w / 2, H * s.p - 2, s.w, 2); });
+    const tx = T.lon / 360 * W, ty = (90 - T.lat) / 180 * H;
+    if (strips.some(s => tx > s.x - s.w / 2 && tx < s.x + s.w / 2 && s.p >= 1)) {
+      glow += dt; ctx.strokeStyle = `rgba(255,181,71,${ok ? 1 : 0.4 + 0.4 * Math.sin(glow * 4)})`; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(tx, ty, ok ? 10 + label * 10 : 9, 0, 6.283); ctx.stroke();
+    }
+    if (ok) {
+      label = Math.min(1, label + dt);
+      ctx.globalAlpha = label; ctx.fillStyle = "#ffd58a"; ctx.font = "400 14px Unbounded, sans-serif"; ctx.textAlign = "right"; ctx.fillText("Nastya", tx - 18, ty - 10); ctx.globalAlpha = 1;
     }
   });
+  function found() {
+    ok = true; strips.push({ x: cv.W / 2, w: cv.W * 2, p: 0 });
+    note("venus", `Нашла кратер Nastya за ${pulses} ${plural(pulses, "радарный импульс", "радарных импульса", "радарных импульсов")}`, { pulses });
+    msg.textContent = "49° ю. ш., 275,8° в. д. · кратер Nastya, 12,5 км";
+    finale(stage, `Кратер <b>Nastya</b>. Международный астрономический союз назвал его так в 1997 году, от русского имени Анастасия. <b>Получается, у тебя уже есть место на Венере.</b>`, done);
+  }
 }
 
-/* ---------- ☉ Солнце: координаты, дуга между городами, письмо ---------- */
+/* ---------- 9. Меркурий: вечная тень ---------- */
+function gMercury(p, stage, done) {
+  stage.innerHTML = `
+    <p class="task">Ты у полюса Меркурия. Солнце здесь ползёт по самому горизонту. Веди его пальцем по кругу вокруг картинки, пока свет не заглянет во все кратеры. Смотри, что останется в тени.</p>
+    <canvas class="cv" id="meCv" aria-label="Полярные кратеры Меркурия"></canvas>
+    <p class="note" id="meNote">Обошла 0%</p>`;
+  const cv = $("#meCv", stage), ctx = canvasFit(cv, 0.62), msg = $("#meNote", stage);
+  const F = { М: ["10001", "11011", "10101", "10001", "10001", "10001", "10001"], О: ["01110", "10001", "10001", "10001", "10001", "10001", "01110"], Я: ["01111", "10001", "10001", "01111", "00101", "01001", "10001"] };
+  const word = "МОЯ", cols = 17, rows = 7, cells = [];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const li = Math.floor(c / 6), lc = c % 6, letter = lc < 5 && F[word[li]][r][lc] === "1";
+    cells.push({ c, r, closed: letter, open: Math.random() * 360, lit: 0, gap: Math.random() * 360 });
+  }
+  const sectors = new Array(72).fill(0); let theta = 200, drag = null, ok = false, glow = 0;
+  const ang = e => { const b = cv.getBoundingClientRect(); return (Math.atan2(e.clientY - b.top - b.height / 2, e.clientX - b.left - b.width / 2) * 180 / Math.PI + 360) % 360; };
+  cv.addEventListener("pointerdown", e => { drag = true; cv.setPointerCapture(e.pointerId); theta = ang(e); });
+  cv.addEventListener("pointermove", e => { if (drag) theta = ang(e); });
+  cv.addEventListener("pointerup", () => drag = null);
+  loop(dt => {
+    const W = cv.W, H = cv.H, cw = W / (cols + 1), ch = H / (rows + 1.2), rad = Math.min(cw, ch) * 0.38;
+    if (!ok) {
+      sectors[Math.floor(theta / 5) % 72] = 1;
+      cells.forEach(k => { if (!k.closed && Math.abs(((theta - k.open + 540) % 360) - 180) < 50) k.lit = 1; });
+      const cov = sectors.reduce((a, b) => a + b, 0) / 72;
+      msg.textContent = `Обошла ${Math.round(cov * 100)}%`;
+      if (cells.every(k => k.closed || k.lit)) { ok = true; win2(); }
+    } else glow = Math.min(1, glow + dt * 0.6);
+    ctx.fillStyle = "#16130f"; ctx.fillRect(0, 0, W, H);
+    const a = theta * Math.PI / 180, lx = W / 2 + Math.cos(a) * W, ly = H / 2 + Math.sin(a) * W;
+    const g = ctx.createLinearGradient(lx, ly, W - lx, H - ly); g.addColorStop(0, "rgba(255,200,140,0.18)"); g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    cells.forEach(k => {
+      const x = (k.c + 1) * cw, y = (k.r + 1.1) * ch;
+      ctx.fillStyle = k.closed ? (ok ? `rgba(150,215,255,${0.4 + 0.6 * glow})` : "#0b0c10") : k.lit ? (ok ? "#2a2119" : "#6b4a30") : "#0b0c10";
+      ctx.beginPath(); ctx.arc(x, y, rad, 0, 6.283); ctx.fill();
+      ctx.strokeStyle = "rgba(160,150,135,0.45)"; ctx.lineWidth = 1.5; const gp = k.gap * Math.PI / 180;
+      ctx.beginPath(); ctx.arc(x, y, rad + 1.5, gp + 0.7, gp + 6.283 - 0.7); ctx.stroke();
+      if (ok && k.closed) { ctx.shadowColor = "#8fd4ff"; ctx.shadowBlur = 12 * glow; ctx.beginPath(); ctx.arc(x, y, rad * 0.6, 0, 6.283); ctx.fill(); ctx.shadowBlur = 0; }
+    });
+    const sx = W / 2 + Math.cos(a) * (W / 2 - 14), sy = H / 2 + Math.sin(a) * (H / 2 - 14);
+    ctx.fillStyle = "#ffb547"; ctx.beginPath(); ctx.arc(sx, sy, 8, 0, 6.283); ctx.fill();
+  });
+  function win2() {
+    msg.textContent = "";
+    note("mercury", `В вечной тени Меркурия остался лёд и слово «МОЯ»`);
+    const t = state.log.saturn ? "Тени Сатурна сказали «ТЫ». Вечная тень Меркурия добавила «МОЯ»." : "В вечной тени осталось слово «МОЯ».";
+    finale(stage, `Лёд на самой горячей планете, в кратерах, куда не заглядывает солнце. ${t} <b>Это не тает.</b>`, done);
+  }
+}
+
+/* ---------- ☉ Солнце: дорога в масштабе, дуга, письмо, журнал ---------- */
 function gSun(p, stage) {
   stage.innerHTML = `
-    <p class="task">Девять сигналов приняты. Вот что из них сложилось:</p>
-    <div class="coords coords--big" id="sunCoords">${coordsHTML(true)}</div>
-    <p class="note">Это широта и долгота точки на Земле. Наведи телескоп, и узнаешь, что там.</p>
-    <button class="btn" type="button" id="aim">Навести телескоп</button>`;
-  if (G && !REDUCED) G.from("#sunCoords i", { yPercent: 80, opacity: 0, filter: "blur(8px)", duration: 1, ease: "expo.out", stagger: 0.12, delay: 0.3 });
-  $("#aim", stage).onclick = finale;
+    <p class="task">Маршрут пройден. Ты всё время смотрела на счётчик «до Солнца». Пора узнать, что он считал.</p>
+    <p class="km-big" id="kmBig">12</p>
+    <button class="btn" type="button" id="aim">Показать</button>`;
+  if (G && !REDUCED) { const n = { v: 12 }; G.to(n, { v: 0, duration: 2, ease: "power2.inOut", delay: 0.6, onUpdate: () => $("#kmBig", stage).textContent = Math.round(n.v) }); }
+  else $("#kmBig", stage).textContent = 0;
+  $("#aim", stage).onclick = run;
 
-  async function finale() {
+  async function run() {
     if (!isDone(6)) { state.done.push(6); save(); }
     const my = runId, panel = $("#panel");
     panel.classList.remove("is-open", "is-play");
     APP.gl?.showArc(CONFIG.home, CONFIG.hers);
     const cap = $("#caption"); cap.hidden = false;
-    const km = Math.round(distKm() / 10) * 10, sec = (distKm() / 299792.458).toFixed(3).replace(".", ",");
     const lines = [
-      `${CONFIG.home.lat}° с. ш., ${CONFIG.home.lon}° в. д.`,
-      `${CONFIG.home.name}. Здесь ${CONFIG.him}`,
-      `До ${CONFIG.hers.name}а ${km.toLocaleString("ru-RU")} км`,
-      `Свет пролетает их за ${sec} секунды`
+      "Пройдено 5,9 миллиарда километров",
+      "На самом деле — 1204",
+      `Плутон был ${CONFIG.hers.name}ом. Солнце — ${CONFIG.home.name}`,
+      `Весь этот путь был дорогой ко мне`
     ];
     await wait(2600);
     for (const l of lines) {
       if (my !== runId) return;
-      if (G && !REDUCED) { G.fromTo(split(cap, l), { yPercent: 115 }, { yPercent: 0, duration: 1.1, ease: "expo.out", stagger: 0.025 }); }
+      if (G && !REDUCED) G.fromTo(split(cap, l), { yPercent: 115 }, { yPercent: 0, duration: 1.1, ease: "expo.out", stagger: 0.025 });
       else cap.textContent = l;
-      await wait(3200);
+      await wait(3400);
     }
     if (my !== runId) return;
     if (G && !REDUCED) await new Promise(r => G.to(cap, { opacity: 0, duration: 0.8, onComplete: r }));
@@ -1135,8 +1279,18 @@ function gSun(p, stage) {
     $("#pName").style.setProperty("--n", 6);
     $("#pName").textContent = "Письмо";
     $("#pIntro").innerHTML = ""; $("#pStory").textContent = ""; $("#pMeta").innerHTML = "";
-    stage.innerHTML = `<div class="letter" id="letter"></div>`;
+    stage.innerHTML = `<p class="mono light" id="light">Свет, который несёт это письмо, долетит до Земли через 8:20</p><div class="letter" id="letter"></div>`;
     panel.classList.add("is-open", "is-play");
+    // 8 минут 20 секунд света — настоящее время, отсчёт идёт, пока она читает
+    const t0 = Date.now();
+    const tick = () => {
+      if (my !== runId) return;
+      const left = Math.max(0, 500 - (Date.now() - t0) / 1000), m = Math.floor(left / 60), s = Math.floor(left % 60);
+      const h = new Date().getHours();
+      $("#light").textContent = left > 0 ? `Свет, который несёт это письмо, долетит до Земли через ${m}:${String(s).padStart(2, "0")}` : h >= 6 && h < 18 ? "Свет долетел. Сейчас он у тебя за окном." : "Свет долетел. Сейчас он отразится от Луны, и ты его увидишь.";
+      if (left > 0) later(tick, 1000);
+    };
+    tick();
     await wait(900);
     const box = $("#letter", stage);
     for (const [t, sig] of [...CONFIG.letter.map(t => [t, false]), [CONFIG.signature, true]]) {
@@ -1145,13 +1299,48 @@ function gSun(p, stage) {
       for (let k = 1; k <= t.length; k++) { para.textContent = t.slice(0, k); await new Promise(r => setTimeout(r, ".,".includes(t[k - 1]) ? 160 : 28)); if (my !== runId) return; }
       await wait(380);
     }
+    const jb = el(`<button class="btn" type="button">Сохранить бортовой журнал</button>`);
+    jb.onclick = saveJournal; stage.appendChild(jb); appear(jb);
   }
+}
+
+/* ---------- бортовой журнал: постер 1080×1920, который остаётся у неё ---------- */
+async function saveJournal() {
+  const W = 1080, H = 1920, c = document.createElement("canvas"); c.width = W; c.height = H; const x = c.getContext("2d");
+  await document.fonts?.ready;
+  x.fillStyle = "#03040a"; x.fillRect(0, 0, W, H);
+  for (let k = 0; k < 400; k++) { x.fillStyle = `rgba(255,255,255,${Math.random() * 0.6})`; x.fillRect(Math.random() * W, Math.random() * H, 1.6, 1.6); }
+  const g = x.createRadialGradient(W / 2, H + 200, 0, W / 2, H + 200, 900); g.addColorStop(0, "rgba(255,181,71,0.35)"); g.addColorStop(1, "rgba(255,181,71,0)"); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.fillStyle = "#eef0f7"; x.font = "300 84px Unbounded, sans-serif"; x.fillText("БОРТОВОЙ", 80, 190); x.fillText("ЖУРНАЛ", 80, 290);
+  x.fillStyle = "#8a90a6"; x.font = "400 30px Onest, sans-serif"; x.fillText(`${CONFIG.her} · Плутон → Солнце · ${new Date().toLocaleDateString("ru-RU")}`, 80, 350);
+  const imgs = await Promise.all(STOPS.map(s => loadImg(TEX(s.tex))));
+  let y = 430;
+  const wrap = (t, mx, by, lh, maxW) => { const words = t.split(" "); let line = "", ly = 0; words.forEach(w => { const tt = line ? line + " " + w : w; if (x.measureText(tt).width > maxW) { x.fillText(line, mx, by + ly); line = w; ly += lh; } else line = tt; }); x.fillText(line, mx, by + ly); return ly; };
+  STOPS.forEach((s, k) => {
+    const r = 44, cx = 124, cy = y + 30;
+    x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 6.283); x.clip();
+    if (imgs[k]) x.drawImage(imgs[k], 0, 0, imgs[k].width / 2, imgs[k].height, cx - r * 1.6, cy - r, r * 3.2, r * 2);
+    const sh = x.createRadialGradient(cx - r * 0.4, cy - r * 0.4, r * 0.2, cx, cy, r); sh.addColorStop(0, "rgba(0,0,0,0)"); sh.addColorStop(1, "rgba(0,0,0,0.6)"); x.fillStyle = sh; x.fillRect(cx - r, cy - r, r * 2, r * 2);
+    x.restore();
+    x.fillStyle = "#eef0f7"; x.font = "400 34px Unbounded, sans-serif"; x.fillText(s.name, 200, y + 16);
+    x.fillStyle = "#ffb547"; x.font = "400 26px JetBrains Mono, monospace"; x.textAlign = "right"; x.fillText(`${s.km} км`, W - 80, y + 16); x.textAlign = "left";
+    x.fillStyle = "#c7cad6"; x.font = "400 26px Onest, sans-serif";
+    const extra = wrap(state.log[s.key]?.text || "—", 200, y + 58, 32, W - 290);
+    y += 124 + extra;
+  });
+  x.fillStyle = "#eef0f7"; x.font = "300 44px Unbounded, sans-serif"; x.fillText("Пройдено 5,9 млрд км.", 80, H - 200);
+  x.fillStyle = "#ffb547"; x.fillText("На самом деле — 1204.", 80, H - 140);
+  x.fillStyle = "#8a90a6"; x.font = "400 30px Onest, sans-serif"; x.fillText(CONFIG.signature, 80, H - 80);
+  const blob = await new Promise(r => c.toBlob(r, "image/png"));
+  const file = new File([blob], "bortovoy-zhurnal.png", { type: "image/png" });
+  if (navigator.canShare?.({ files: [file] })) { try { await navigator.share({ files: [file], title: "Бортовой журнал" }); return; } catch (e) { if (e.name === "AbortError") return; } }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
 }
 
 const GAMES = { pluto: gPluto, neptune: gNeptune, uranus: gUranus, saturn: gSaturn, jupiter: gJupiter, mars: gMars, earth: gEarth, venus: gVenus, mercury: gMercury, sun: gSun };
 
 /* =====================================================================
-   РЕЖИМ РАЗРАБОТЧИКА (index.html#dev): всё открыто, генератор хешей
+   РЕЖИМ РАЗРАБОТЧИКА (index.html#dev): всё открыто
    ===================================================================== */
 function devHTML() {
   return `<div class="fact" style="margin-top:16px;display:grid;gap:10px">
@@ -1159,11 +1348,13 @@ function devHTML() {
     <div class="row">
       <button class="btn btn--glass btn--small" type="button" id="devAll">Всё пройдено</button>
       <button class="btn btn--glass btn--small" type="button" id="devReset">Сбросить</button>
+      <button class="btn btn--glass btn--small" type="button" id="devJournal">Постер журнала</button>
     </div></div>`;
 }
 function bindDev() {
-  $("#devAll").onclick = () => { state.done = [...ROUTE]; save(); refresh(); };
-  $("#devReset").onclick = () => { state = { done: [] }; save(); refresh(); };
+  $("#devAll").onclick = () => { state.done = [...ROUTE]; STOPS.forEach(s => state.log[s.key] ||= { text: `Тестовая запись: ${s.name}` }); save(); refresh(); };
+  $("#devReset").onclick = () => { state = { done: [], log: {} }; save(); refresh(); };
+  $("#devJournal").onclick = saveJournal;
 }
 
 /* ---------- клавиши и кнопки ---------- */
@@ -1504,6 +1695,7 @@ const api = {
     else arc.g.setDrawRange(0, 81);
   },
   setHover(i) { hover = i; },
+  pulse(i, bpm) { const pl = byId(i); if (pl) pl.bpm = bpm; },
   celebrate(i) {
     const pl = byId(i); if (!pl || !G) return;
     G.fromTo(pl, { glow: 1 }, { glow: 0, duration: 2.4, ease: "power2.out" });
@@ -1588,8 +1780,9 @@ function frame() {
     p.mesh.rotation.y += dt * p.rot * (focusI === i ? 0.4 : 1) * spin;
     if (p.clouds) p.clouds.rotation.y += dt * p.rot * 1.15 * spin;
     p.sats.forEach(s => { s.a += dt * s.sp * Math.max(ts.v, 0.25); s.m.position.set(Math.cos(s.a) * s.dist, Math.sin(s.a * 0.7) * 0.2, Math.sin(s.a) * s.dist); });
-    const target = (1 + p.glow * 0.25 + (hover === i ? 0.1 : 0)) * Math.max(p.vis ?? 1, 0.001);
-    p.holder.scale.lerp(one.set(target, target, target), 0.12);
+    const beat = p.bpm ? Math.pow(Math.max(0, Math.sin(t * Math.PI * p.bpm / 60)), 16) * 0.12 : 0;
+    const target = (1 + p.glow * 0.25 + beat + (hover === i ? 0.1 : 0)) * Math.max(p.vis ?? 1, 0.001);
+    p.holder.scale.lerp(one.set(target, target, target), p.bpm ? 0.5 : 0.12);
     // при приближении к планете орбиты гаснут, чтобы не резать кадр
     const o = p.orbit.material, want = focusI >= 0 ? 0 : hover === i ? Math.max(o.opacity, 0.6) : p.orbit.userData.base + (p.next ? Math.sin(t * 2.4) * 0.15 : 0);
     o.opacity += (want - o.opacity) * 0.08;
