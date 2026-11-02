@@ -64,7 +64,7 @@ a { color: inherit; }
   min-height: 52px; padding: 0 26px; border: 0; border-radius: 999px; cursor: pointer;
   background: var(--sun); color: var(--sun-ink); font: 500 15px/1 var(--text); letter-spacing: 0.01em;
   text-decoration: none; overflow: hidden; isolation: isolate;
-  transition: transform 160ms var(--ease-out), opacity 200ms ease;
+  transition: transform 160ms var(--ease-out);
   touch-action: manipulation; user-select: none; -webkit-user-select: none;
 }
 .btn::after { content: ""; position: absolute; inset: 0; z-index: -1; background: #fff; transform: translateY(101%); transition: transform 420ms var(--ease-out); }
@@ -513,8 +513,10 @@ function bootFlat() {
 function showStart() {
   $("#gate").hidden = false;
   $("#startBtn").textContent = doneCount() ? "Продолжить путешествие" : "Начать путешествие";
-  reveal($("#gateTitle"), "Семь планет до Солнца", 0.1);
-  if (G && !REDUCED) G.from(["#gateLead", "#startBtn"], { y: 30, opacity: 0, duration: 1.2, ease: "expo.out", stagger: 0.1, delay: 0.8 });
+  reveal($("#gateTitle"), $("#gateTitle").textContent, 0.1);
+  // кнопка всегда остаётся видимой: анимация явно доводится до конца и снимает свои стили
+  if (G && !REDUCED) G.fromTo(["#gateLead", "#startBtn"], { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1.2, ease: "expo.out", stagger: 0.1, delay: 0.8, clearProps: "all" });
+  setTimeout(() => ["#gateLead", "#startBtn"].forEach(q => $(q)?.removeAttribute("style")), 3200);
   $("#startBtn").onclick = () => {
     const go = () => { $("#gate").hidden = true; enter(true); };
     if (G && !REDUCED) G.to("#gate", { opacity: 0, filter: "blur(12px)", scale: 1.04, duration: 0.9, ease: "power3.in", onComplete: go });
@@ -562,7 +564,7 @@ function buildLabels() {
 }
 function renderFlat() {
   const f = $("#flat"); f.hidden = false;
-  f.innerHTML = `<h1>Семь планет до&nbsp;Солнца</h1><p class="pstory">Путешествие от холодного Плутона к Солнцу. На каждой планете задание и одна цифра координат.</p>
+  f.innerHTML = `<h1>Девять миров до&nbsp;Солнца</h1><p class="pstory">Путешествие от холодного Плутона к Солнцу. На каждой планете задание и одна цифра координат.</p>
     <div class="flat__grid">${[...ROUTE, 6].map(id => `<button type="button" data-i="${id}" ${isOpen(id) ? "" : "disabled"}><span class="flat__ball" style="background-image:url(${TEX(BODY(id).tex)})"></span><b>${esc(BODY(id).name)}</b><span class="mono" style="color:var(--muted)">${id === 6 ? "финал" : isDone(id) ? "принято" : isOpen(id) ? "открыто" : "закрыто"}</span></button>`).join("")}</div>`;
   f.onclick = e => { const b = e.target.closest("[data-i]"); if (b && !b.disabled) openPlanet(+b.dataset.i); };
 }
